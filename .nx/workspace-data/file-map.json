@@ -1,0 +1,979 @@
+{
+  "version": "6.0",
+  "nxVersion": "21.4.1",
+  "pathMappings": {
+    "@magic-memory/*": [
+      "apps/magic-memory/src/*"
+    ],
+    "@magic-memory-ui/*": [
+      "libs/magic-memory-ui/src/index.ts"
+    ],
+    "@assets/*": [
+      "libs/magic-memory-ui/assets/*"
+    ],
+    "@components/*": [
+      "apps/magic-memory/src/components/*"
+    ],
+    "@navigation/*": [
+      "apps/magic-memory/src/navigation/*"
+    ],
+    "@screens/*": [
+      "apps/magic-memory/src/screens/*"
+    ],
+    "@contexts/*": [
+      "apps/magic-memory/src/contexts/*"
+    ],
+    "@styles/*": [
+      "apps/magic-memory/src/styles/*"
+    ],
+    "@mytypes/*": [
+      "apps/magic-memory/src/types/*"
+    ],
+    "@utils/*": [
+      "apps/magic-memory/src/utils/*"
+    ],
+    "@org/magic-memory/*": [
+      "apps/magic-memory/*"
+    ]
+  },
+  "nxJsonPlugins": [
+    {
+      "name": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json",
+          "buildDepsName": "build-deps",
+          "watchDepsName": "watch-deps"
+        }
+      }
+    },
+    {
+      "name": "@nx/expo/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "prebuildTargetName": "prebuild",
+        "serveTargetName": "serve",
+        "installTargetName": "install",
+        "exportTargetName": "export",
+        "submitTargetName": "submit",
+        "runIosTargetName": "run-ios",
+        "runAndroidTargetName": "run-android",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "name": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "name": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      }
+    },
+    {
+      "name": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
+    },
+    {
+      "name": "@nx/react-native/plugin",
+      "options": {
+        "startTargetName": "start",
+        "upgradeTargetName": "update",
+        "bundleTargetName": "bundle",
+        "podInstallTargetName": "pod-install",
+        "runIosTargetName": "run-ios",
+        "runAndroidTargetName": "run-android",
+        "buildIosTargetName": "build-ios",
+        "buildAndroidTargetName": "build-android",
+        "syncDepsTargetName": "sync-deps"
+      }
+    },
+    {
+      "name": "@nx/react/router-plugin",
+      "options": {
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "startTargetName": "start",
+        "watchDepsTargetName": "watch-deps",
+        "buildDepsTargetName": "build-deps",
+        "typecheckTargetName": "typecheck"
+      }
+    },
+    {
+      "name": "@nx/rollup/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "name": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "testTargetName": "test",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    }
+  ],
+  "fileMap": {
+    "nonProjectFiles": [],
+    "projectFileMap": {
+      "@org/source-monorepo": [
+        {
+          "file": ".gitignore",
+          "hash": "3201019639816823154"
+        },
+        {
+          "file": ".verdaccio/config.yml",
+          "hash": "300035921567345902"
+        },
+        {
+          "file": ".vscode/settings.json",
+          "hash": "370186655382607755"
+        },
+        {
+          "file": "App.tsx",
+          "hash": "18015777408861126518"
+        },
+        {
+          "file": "App2.tsx",
+          "hash": "12682315850129718363"
+        },
+        {
+          "file": "NUL",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "README.md",
+          "hash": "8804971060047656406"
+        },
+        {
+          "file": "app.config.js",
+          "hash": "15617663987582971935"
+        },
+        {
+          "file": "babel.config.js",
+          "hash": "2049454834218652615"
+        },
+        {
+          "file": "babel.config.root.js",
+          "hash": "1574361440588976471"
+        },
+        {
+          "file": "eas.json",
+          "hash": "13553811667868592784"
+        },
+        {
+          "file": "error.log",
+          "hash": "10011522935163518115"
+        },
+        {
+          "file": "eslint.config.mjs",
+          "hash": "11108643518505279730",
+          "deps": [
+            "npm:@nx/eslint-plugin"
+          ]
+        },
+        {
+          "file": "jest.config.ts",
+          "hash": "6870352021923392442",
+          "deps": [
+            "npm:jest",
+            "npm:@nx/jest"
+          ]
+        },
+        {
+          "file": "jest.preset.js",
+          "hash": "9430166341120122740",
+          "deps": [
+            "npm:@nx/jest"
+          ]
+        },
+        {
+          "file": "metro.config.js",
+          "hash": "7522476451410977876",
+          "deps": [
+            "npm:expo",
+            "npm:react-native-svg-transformer"
+          ]
+        },
+        {
+          "file": "metro.config2.js",
+          "hash": "7522476451410977876",
+          "deps": [
+            "npm:expo",
+            "npm:react-native-svg-transformer"
+          ]
+        },
+        {
+          "file": "nx.json",
+          "hash": "8877490484207633458"
+        },
+        {
+          "file": "org-source-monorepo-0.0.0.tgz",
+          "hash": "12782432054667951130"
+        },
+        {
+          "file": "package-lock.json",
+          "hash": "9835645270061298391"
+        },
+        {
+          "file": "package.json",
+          "hash": "327624941142860801",
+          "deps": [
+            "npm:@babel/core",
+            "npm:@babel/preset-react",
+            "npm:@eslint/js",
+            "npm:@expo/cli",
+            "npm:@nx/devkit",
+            "npm:@nx/eslint",
+            "npm:@nx/eslint-plugin",
+            "npm:@nx/expo",
+            "npm:@nx/jest",
+            "npm:@nx/js",
+            "npm:@nx/playwright",
+            "npm:@nx/react",
+            "npm:@nx/react-native",
+            "npm:@nx/rollup",
+            "npm:@nx/vite",
+            "npm:@nx/web",
+            "npm:@playwright/test",
+            "npm:@react-native-community/cli",
+            "npm:@react-native-community/cli-platform-android",
+            "npm:@react-native-community/cli-platform-ios",
+            "npm:@react-native/babel-preset",
+            "npm:@react-native/metro-config",
+            "npm:@rollup/plugin-url",
+            "npm:@svgr/rollup",
+            "npm:@swc-node/register",
+            "npm:@swc/core",
+            "npm:@swc/helpers",
+            "npm:@swc/jest",
+            "npm:@testing-library/react-native",
+            "npm:@types/jest",
+            "npm:@types/node",
+            "npm:@types/react",
+            "npm:@types/react-dom",
+            "npm:@vitejs/plugin-react",
+            "npm:@vitest/ui",
+            "npm:babel-jest",
+            "npm:babel-plugin-module-resolver",
+            "npm:babel-preset-expo",
+            "npm:core-js",
+            "npm:detox",
+            "npm:eslint",
+            "npm:eslint-config-prettier",
+            "npm:eslint-import-resolver-typescript",
+            "npm:eslint-plugin-import",
+            "npm:eslint-plugin-jsx-a11y",
+            "npm:eslint-plugin-playwright",
+            "npm:eslint-plugin-react",
+            "npm:eslint-plugin-react-hooks",
+            "npm:glob",
+            "npm:jest",
+            "npm:jest-environment-jsdom",
+            "npm:jest-environment-node",
+            "npm:jest-expo",
+            "npm:jest-util",
+            "npm:jiti",
+            "npm:jsdom",
+            "npm:jsonc-eslint-parser",
+            "npm:nx",
+            "npm:prettier",
+            "npm:react-native-svg-transformer",
+            "npm:react-native-svg-web",
+            "npm:react-test-renderer",
+            "npm:rimraf",
+            "npm:rollup",
+            "npm:ts-jest",
+            "npm:ts-node",
+            "npm:tslib",
+            "npm:typescript",
+            "npm:typescript-eslint",
+            "npm:verdaccio",
+            "npm:vite",
+            "npm:vitest",
+            "npm:@expo/metro-config",
+            "npm:@expo/metro-runtime",
+            "npm:@react-native/virtualized-lists",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:expo",
+            "npm:expo-asset",
+            "npm:expo-av",
+            "npm:expo-font",
+            "npm:expo-linear-gradient",
+            "npm:expo-navigation-bar",
+            "npm:expo-screen-orientation",
+            "npm:expo-splash-screen",
+            "npm:expo-status-bar",
+            "npm:expo-system-ui",
+            "npm:i18next",
+            "npm:lottie-react-native",
+            "npm:metro",
+            "npm:metro-config",
+            "npm:metro-core",
+            "npm:metro-resolver",
+            "npm:react",
+            "npm:react-dom",
+            "npm:react-i18next",
+            "npm:react-native",
+            "npm:react-native-gesture-handler",
+            "npm:react-native-immersive",
+            "npm:react-native-linear-gradient",
+            "npm:react-native-reanimated",
+            "npm:react-native-safe-area-context",
+            "npm:react-native-screens",
+            "npm:react-native-svg",
+            "npm:react-native-system-navigation-bar",
+            "npm:react-native-web"
+          ]
+        },
+        {
+          "file": "tools/scripts/eas-build-post-install.mjs",
+          "hash": "18390423807559123090"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "14188263342690369147"
+        },
+        {
+          "file": "tsconfig.json",
+          "hash": "9269099868059732263"
+        }
+      ],
+      "@org/magic-memory-ui": [
+        {
+          "file": "libs/magic-memory-ui/.babelrc.js",
+          "hash": "14979312733604419163"
+        },
+        {
+          "file": "libs/magic-memory-ui/README.md",
+          "hash": "12821100608288091724"
+        },
+        {
+          "file": "libs/magic-memory-ui/package.json",
+          "hash": "7392189938804949861",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:@types/node",
+            "npm:typescript"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Background.jpg",
+          "hash": "5234837485522624265"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Exclude.png",
+          "hash": "8278666522422642906"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame 7978.png",
+          "hash": "5219223260438861970"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame 7979.png",
+          "hash": "14563135213312892343"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame_Type3_03_Decor.png",
+          "hash": "2942955465924652437"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame_Type3_03_Decor1.png",
+          "hash": "14374189118160400740"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Group1359.png",
+          "hash": "4134032281410537720"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/MagicMemory.jpg",
+          "hash": "1044193365801572718"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Stars.png",
+          "hash": "13854863647942208594"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/TitlFon.png",
+          "hash": "11770415568964574188"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Union.png",
+          "hash": "9448090647168818608"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/adaptive-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/adjusted_background.svg",
+          "hash": "354069583405825537"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/Confetti.json",
+          "hash": "11730146504865559441"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/lights.json",
+          "hash": "13058851588236058166"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/success-animation.json",
+          "hash": "11777891021451333427"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg",
+          "hash": "14461346665339024262"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg",
+          "hash": "2933801299383708345"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg",
+          "hash": "6127201285510885084"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg",
+          "hash": "12555206434825708980"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg",
+          "hash": "1960565181143130733"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg",
+          "hash": "14850669909483429258"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg",
+          "hash": "1150157565779310440"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg",
+          "hash": "10928489749860466482"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg",
+          "hash": "6672125985757744591"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg",
+          "hash": "13010323594188282631"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg",
+          "hash": "16893300470470694058"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg",
+          "hash": "393042389947635413"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg",
+          "hash": "1702968923373693796"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg",
+          "hash": "17522545384196983480"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/boy.png",
+          "hash": "1000485403827510255"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/donkey.png",
+          "hash": "800100990681421789"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/girl.png",
+          "hash": "1743947371739258452"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/kengoo.png",
+          "hash": "14403984085665542845"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/owl.png",
+          "hash": "12641091918653362582"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/pig.png",
+          "hash": "9479446811132398471"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/puh.png",
+          "hash": "3206918668390513890"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/tigr.png",
+          "hash": "17063252413453423831"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/back-button.png",
+          "hash": "18098901060027490572"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/card-1.jpg",
+          "hash": "15257370265405974855"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-1.jpg",
+          "hash": "11821005963811251909"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-2.jpg",
+          "hash": "1642698165627710424"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-3.jpg",
+          "hash": "4445323530113752528"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-4.jpg",
+          "hash": "11924351622373322536"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-5.jpg",
+          "hash": "1016790049197834942"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-6.jpg",
+          "hash": "1200740973645419122"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/faceSmile.png",
+          "hash": "12604944083821613466"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/favicon.png",
+          "hash": "10556792184362654649"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Bangers-Regular.ttf",
+          "hash": "10404695100578156336"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Fredoka-Regular.ttf",
+          "hash": "8694215525695573015"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Fredoka-SemiBold.ttf",
+          "hash": "18008733331016310832"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/hourglass.png",
+          "hash": "6987858129986864473"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/icon.png",
+          "hash": "14252482080276080187"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/index.ts",
+          "hash": "4875477978843641487"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-10.png",
+          "hash": "1911750846910992566"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-12.png",
+          "hash": "3117532985540682279"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-4.png",
+          "hash": "12738528059085928862"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-6.png",
+          "hash": "2941808095832436238"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-8.png",
+          "hash": "17953474052698322166"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/play-button.png",
+          "hash": "7869020435122310710"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/playAgain.png",
+          "hash": "7851970525054811809"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/background-music.wav",
+          "hash": "11058583065054758179"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/notification-sound-effect.mp3",
+          "hash": "10600295090947785251"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/success-fanfare-trumpets.mp3",
+          "hash": "4232454828985718780"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/splash-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/star_cursor.png",
+          "hash": "10971533835194998603"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/translation.png",
+          "hash": "9410583140955025359"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/icons/BackIcon.tsx",
+          "hash": "13986488886892702385",
+          "deps": [
+            "npm:react",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/icons/PlayIcon.tsx",
+          "hash": "16613192514007541689",
+          "deps": [
+            "npm:react",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/index.ts",
+          "hash": "17214598044760092629"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/BackgroundWrapper.styles.ts",
+          "hash": "6814467976297978397",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/BackgroundWrapper.tsx",
+          "hash": "278924703187341177",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CanvasBackground.styles.ts",
+          "hash": "8456939832213779097",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CanvasBackground.tsx",
+          "hash": "485821521951009020",
+          "deps": [
+            "npm:react",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Card.styles.ts",
+          "hash": "15611625507972467860",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Card.tsx",
+          "hash": "15640155976220831024",
+          "deps": [
+            "npm:react",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Confetti.styles.ts",
+          "hash": "12580794035252608554",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Confetti.tsx",
+          "hash": "15361655706393209411",
+          "deps": [
+            "npm:react",
+            "npm:lottie-react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CustomAlert.styles.ts",
+          "hash": "9676056190727199729",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CustomAlert.tsx",
+          "hash": "2641434850116741645",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:expo-linear-gradient"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/contexts/LanguageContext.tsx",
+          "hash": "16758389914712525775",
+          "deps": [
+            "npm:react"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/contexts/SoundContext.tsx",
+          "hash": "4606790129810827597",
+          "deps": [
+            "npm:react",
+            "npm:expo-av",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/i18n/index.ts",
+          "hash": "15665843180850186604",
+          "deps": [
+            "npm:i18next",
+            "npm:react-i18next"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout-asdasdasdasdasd.spec.tsx",
+          "hash": "2041170766707196780",
+          "deps": [
+            "npm:react",
+            "npm:@testing-library/react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout-asdasdasdasdasd.tsx",
+          "hash": "14235567611279051061",
+          "deps": [
+            "npm:react",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout.spec.tsx",
+          "hash": "8907395742949804190",
+          "deps": [
+            "npm:react",
+            "npm:@testing-library/react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout.tsx",
+          "hash": "7790323638153119941",
+          "deps": [
+            "npm:react",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/magic-memory-ui.tsx",
+          "hash": "5809803279186408621",
+          "deps": [
+            "npm:react",
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/navigation/AppNavigator.tsx",
+          "hash": "3982389241976554420",
+          "deps": [
+            "npm:react",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:expo-font",
+            "npm:react-native",
+            "npm:expo-screen-orientation",
+            "npm:react-native-screens",
+            "npm:expo-navigation-bar"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/GameScreen.styles.ts",
+          "hash": "14256090148200404102",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/GameScreen.tsx",
+          "hash": "3940005844835826743",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:expo-linear-gradient",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:expo-screen-orientation",
+            "npm:react-native-reanimated",
+            "npm:react-native-svg"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LevelSelect.styles.ts",
+          "hash": "1314298872597569706",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LevelSelect.tsx",
+          "hash": "4969914921451411003",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:@react-navigation/native",
+            "npm:expo-status-bar",
+            "npm:@react-navigation/native-stack",
+            "npm:react-native-reanimated"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LoadingScreen.styles.ts",
+          "hash": "2648353886045696790",
+          "deps": [
+            "npm:react-native",
+            "npm:expo-linear-gradient"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LoadingScreen.tsx",
+          "hash": "9702615516126451064",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:expo-status-bar",
+            "npm:react-native-reanimated",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:expo-linear-gradient"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/SplashScreen.styles.ts",
+          "hash": "12793206202093190727",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/SplashScreen.tsx",
+          "hash": "5063409465493793151",
+          "deps": [
+            "npm:react",
+            "npm:react-native",
+            "npm:@react-navigation/native",
+            "npm:@react-navigation/native-stack",
+            "npm:react-native-reanimated",
+            "npm:expo-screen-orientation",
+            "npm:expo-status-bar",
+            "npm:react-native-svg",
+            "npm:expo-linear-gradient"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/colors.ts",
+          "hash": "15721364175924265602"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/buttons.ts",
+          "hash": "3352637085021139218",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/containers.ts",
+          "hash": "13857957989585770735",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/progressBar.ts",
+          "hash": "4319200222953089611",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/global-styles.ts",
+          "hash": "10129740982979899411"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/index.ts",
+          "hash": "13905964000929083444",
+          "deps": [
+            "npm:react-native",
+            "npm:@react-navigation/native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/react-native-immersive-bars.d.ts",
+          "hash": "13802830707582065224"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/react-native-immersive.d.ts",
+          "hash": "15100223018152281475"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/utils/config.ts",
+          "hash": "12229052963750176927",
+          "deps": [
+            "npm:react-native"
+          ]
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/utils/imageMap.ts",
+          "hash": "74635503330772051"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.json",
+          "hash": "8773935681192489593"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.lib.json",
+          "hash": "14897514012936813700"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsup.config.ts",
+          "hash": "8592205386289721140"
+        }
+      ]
+    }
+  }
+}

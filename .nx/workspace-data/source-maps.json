@@ -1,0 +1,522 @@
+{
+  "libs/magic-memory-ui": {
+    "root": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.dependsOn": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.options": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.cache": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.inputs": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.outputs": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.syncGenerators": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.executor": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.options.cwd": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.options.command": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.technologies": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.technologies.0": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.description": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.help": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.help.command": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.typecheck.metadata.help.example": [
+      "libs/magic-memory-ui/tsconfig.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps.continuous": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps.dependsOn": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps.executor": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps.options": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.watch-deps.options.command": [
+      "libs/magic-memory-ui/tsconfig.lib.json",
+      "@nx/js/typescript"
+    ],
+    "targets.lint": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.cache": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.inputs": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.outputs": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.executor": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.cwd": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.command": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies.0": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.description": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.command": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.example": [
+      "eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "name": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:public": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageExports": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageMain": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.executor": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options.script": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.scriptContent": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.runCommand": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.executor": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.dependsOn": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.options": [
+      "libs/magic-memory-ui/package.json",
+      "nx/core/package-json"
+    ]
+  },
+  ".": {
+    "root": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.start": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.start.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.start.continuous": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.continuous": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.options.cwd": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.options.args": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.serve.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios.continuous": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios.options.cwd": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-ios.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android.continuous": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android.options.cwd": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.run-android.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.cache": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.dependsOn": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.inputs": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.outputs": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.options.cwd": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.options.args": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.export.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.install": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.install.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.prebuild": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.prebuild.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.build": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.build.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.submit": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.submit.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.submit.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.submit.options.cwd": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.submit.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.build-deps": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.build-deps.dependsOn": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps.continuous": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps.dependsOn": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps.executor": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps.options": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "targets.watch-deps.options.command": [
+      "app.config.js",
+      "@nx/expo/plugin"
+    ],
+    "name": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "includedScripts": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry.options.port": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry.options.config": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.local-registry.options.storage": [
+      "package.json",
+      "nx/core/package-json"
+    ]
+  }
+}

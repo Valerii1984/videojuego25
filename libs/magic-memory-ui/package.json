@@ -1,0 +1,30 @@
+{
+  "name": "@valerii1984/magic-memory-ui",
+  "version": "0.0.3",
+  "private": false,
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "react-native": "dist/index.js",
+  "exports": {
+    ".": { "default": "./dist/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "assets"],
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.lib.json && node scripts/copy-assets.cjs",
+    "prepare": "npm run build"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.73"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "rimraf": "^5.0.0",
+    "typescript": "~5.8.3"
+  }
+}
