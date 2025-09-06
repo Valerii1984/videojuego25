@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "types": ["react", "react-native", "node"],
+
+    "noEmitOnError": false
+  },
+  "include": ["src"]
+}
