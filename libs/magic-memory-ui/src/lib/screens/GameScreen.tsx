@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   Dimensions,
   StyleProp,
   ViewStyle,
+  ImageSourcePropType,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -21,7 +22,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import Confetti from "../components/Confetti";
 import CustomAlert from "../components/CustomAlert";
 import MemoryCard from "../components/Card";
-import { RootParamList, Card } from "../types/index";
+import { RootParamList, Card } from "../types";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import BackIcon from "../../icons/BackIcon";
@@ -42,9 +43,42 @@ import Svg, {
   Circle,
 } from "react-native-svg";
 
-// универсальные типы для таймеров
+import { useExternalConfig } from "../contexts/ExternalConfigContext";
+import type {
+  MagicMemoryConfig,
+  PerLevelURIs,
+  ImageURI,
+  LevelKey,
+} from "../types/external-config";
+
+// ===== Helpers для внешнего конфига =====
+const toArray = (v?: ImageURI | ImageURI[]): ImageURI[] =>
+  !v ? [] : Array.isArray(v) ? v : [v];
+
+const pickOne = <T,>(arr: T[]): T | undefined =>
+  arr.length ? arr[Math.floor(Math.random() * arr.length)] : undefined;
+
+/** Извлечь список URL по уровню из строки/массива/карты по уровням */
+const resolveListForLevel = (
+  src?: PerLevelURIs,
+  level?: number
+): ImageURI[] => {
+  if (!src) return [];
+  if (typeof src === "string" || Array.isArray(src)) return toArray(src);
+  const key = (level ?? 4) as LevelKey;
+  const v = src[key];
+  return toArray(v as any);
+};
+
+/** Вернуть один случайный URL по уровню */
+const resolveOneForLevel = (src?: PerLevelURIs, level?: number) =>
+  pickOne(resolveListForLevel(src, level));
+
+// ===== Универсальные типы таймеров =====
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
+
+// ===== Локальные ассеты (fallback) =====
 
 // ключи ассетов карточек и фонов
 type CardImageKeys =
@@ -101,12 +135,7 @@ const cardImages: Record<CardImageKeys, any> = {
   SJ_GAMES_WTP_CARDS_v01_0007: require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg"),
 };
 
-// иконка Play Again
-const PlayIcon = () => (
-  <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
-);
-
-// варианты задников карты
+// варианты задников карты (fallback)
 const backOptions: CardImageKeys[] = [
   "card-1",
   "SJ_GAMES_WTP_CARDS_v01_0000",
@@ -119,7 +148,7 @@ const backOptions: CardImageKeys[] = [
   "SJ_GAMES_WTP_CARDS_v01_0007",
 ];
 
-// варианты фонов
+// варианты фонов (fallback)
 const backgroundOptions = [
   { source: require("../assets/Background.jpg"), hasStars: true },
   {
@@ -148,6 +177,11 @@ const backgroundOptions = [
   },
 ];
 
+// иконка Play Again
+const PlayIcon = () => (
+  <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
+);
+
 const GameScreen = () => {
   const { language } = useLanguage();
   const {
@@ -159,7 +193,15 @@ const GameScreen = () => {
 
   const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>();
   const route = useRoute();
-  const { level } = (route.params as { level: number }) || { level: 4 };
+  const externalConfig = useExternalConfig();
+
+  // Уровень: приоритет — из route.params, затем из externalConfig, иначе 4
+  const { level: routeLevel } =
+    ((route.params as unknown as { level?: number }) || {}) ?? {};
+  const level = (routeLevel ??
+    externalConfig?.level ??
+    4) as MagicMemoryConfig["level"];
+
   const AnimatedTouchableOpacity =
     Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -185,30 +227,11 @@ const GameScreen = () => {
   const [showPlayAgain, setShowPlayAgain] = useState(false);
   const [isGameActive, setIsGameActive] = useState(true);
 
-  const arcOffsetY = useSharedValue(0);
-  const arcOpacity = useSharedValue(1);
-  const statsOffsetY = useSharedValue(0);
-  const statsOpacity = useSharedValue(1);
-  const playAgainScale = useSharedValue(1);
-  const playAgainOpacity = useSharedValue(1);
-  const hintScale = useSharedValue(1);
-  const backScale = useSharedValue(1);
-  const congratsPulse = useSharedValue(1.05);
+  // текущие выбранные EXTERNAL визуалы (рандом на каждую игру)
+  const [extBackUri, setExtBackUri] = useState<string | undefined>(undefined);
+  const [extBgUri, setExtBgUri] = useState<string | undefined>(undefined);
 
-  // группы лиц карточек
-  const frontGroups: Record<string, CardImageKeys[]> = {
-    cardFace: [
-      "cardFace-1",
-      "cardFace-2",
-      "cardFace-3",
-      "cardFace-4",
-      "cardFace-5",
-      "cardFace-6",
-    ],
-    facecard: ["boy", "donkey", "girl", "kengoo", "owl", "pig", "puh", "tigr"],
-  };
-
-  // выбранные задник/фон
+  // выбранные локальные fallback (если внешних нет)
   const [selectedBack, setSelectedBack] = useState<CardImageKeys>(
     () => backOptions[Math.floor(Math.random() * backOptions.length)]
   );
@@ -220,19 +243,28 @@ const GameScreen = () => {
       backgroundOptions[Math.floor(Math.random() * backgroundOptions.length)]
   );
 
+  // reanimated values
+  const arcOffsetY = useSharedValue(0);
+  const arcOpacity = useSharedValue(1);
+  const statsOffsetY = useSharedValue(0);
+  const statsOpacity = useSharedValue(1);
+  const playAgainScale = useSharedValue(1);
+  const playAgainOpacity = useSharedValue(1);
+  const hintScale = useSharedValue(1);
+  const backScale = useSharedValue(1);
+  const congratsPulse = useSharedValue(1.05);
+
   // размеры экрана
   const { width, height } = Dimensions.get("window");
-
-  // позиция кнопки — ниже баннера поздравления
-  const PLAY_AGAIN_OFFSET = 110; // было 140 → стало 110
-  const PLAY_AGAIN_CAP = 0.78; // было 0.82 → стало 0.78
+  const PLAY_AGAIN_OFFSET = 110;
+  const PLAY_AGAIN_CAP = 0.78;
 
   const playAgainTop = Math.min(
     height * PLAY_AGAIN_CAP,
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // предварительная загрузка фонов
+  // предзагрузка fallback-фонов
   useEffect(() => {
     const preloadImages = async () => {
       const imagePromises = backgroundOptions.map((bg) =>
@@ -240,58 +272,12 @@ const GameScreen = () => {
       );
       try {
         await Promise.all(imagePromises);
-        console.log("All background images preloaded");
-      } catch (error: unknown) {
-        console.error("Error preloading background images:", error);
-      }
+      } catch {}
     };
     preloadImages();
   }, []);
 
   useEffect(() => {
-    console.log("Screen dimensions:", { width, height });
-  }, [width, height]);
-
-  const arcAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: arcOffsetY.value }],
-    opacity: arcOpacity.value,
-  }));
-
-  const statsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: statsOffsetY.value }],
-    opacity: statsOpacity.value,
-  }));
-
-  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
-    opacity: playAgainOpacity.value,
-  }));
-
-  const hintAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
-    opacity: 1,
-  }));
-
-  const backAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(backScale.value, { duration: 200 }) }],
-    opacity: 1,
-  }));
-
-  const congratsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
-    opacity: 1,
-  }));
-
-  useEffect(() => {
-    console.log(
-      "Attempting to load Frame_Type3_03_Decor.png:",
-      require("../assets/Frame_Type3_03_Decor.png")
-    );
-    console.log(
-      "Attempting to load TitlFon.png:",
-      require("../assets/TitlFon.png")
-    );
-
     if (!isWeb) {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     }
@@ -304,17 +290,13 @@ const GameScreen = () => {
       clearInterval(timer.current);
       timer.current = null;
     }
-    if ([8, 10, 12].includes(level)) {
-      playBackgroundMusic().catch((error: unknown) =>
-        console.error("Error playing background music:", error)
-      );
+    if ([8, 10, 12].includes(level as number)) {
+      playBackgroundMusic().catch(() => {});
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
 
     if (showCongrats && isGameActive) {
-      playSuccessSound().catch((error: unknown) =>
-        console.error("Error in useEffect playSuccessSound:", error)
-      );
+      playSuccessSound().catch(() => {});
       congratsPulse.value = withRepeat(
         withTiming(1.2, { duration: 2000 }),
         -1,
@@ -325,7 +307,40 @@ const GameScreen = () => {
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, isInitialized, showCongrats, isGameActive]);
+
+  // аним стили
+  const arcAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: arcOffsetY.value }],
+    opacity: arcOpacity.value,
+  }));
+  const statsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: statsOffsetY.value }],
+    opacity: statsOpacity.value,
+  }));
+  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
+    opacity: playAgainOpacity.value,
+  }));
+  const hintAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
+    opacity: 1,
+  }));
+  const backAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(backScale.value, { duration: 200 }) }],
+    opacity: 1,
+  }));
+  const congratsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
+    opacity: 1,
+  }));
+
+  // рандом внешних визуалов на старт/повтор
+  const resetExternalVisuals = () => {
+    setExtBackUri(resolveOneForLevel(externalConfig?.backCard, level));
+    setExtBgUri(resolveOneForLevel(externalConfig?.background, level));
+  };
 
   const generateCards = () => {
     if (timer.current) {
@@ -339,28 +354,89 @@ const GameScreen = () => {
     statsOffsetY.value = -100;
     statsOpacity.value = 0;
 
-    const totalPairs = Math.floor(level / 2);
-    const groupKeys = Object.keys(frontGroups);
-    const selectedGroup =
-      groupKeys[Math.floor(Math.random() * groupKeys.length)];
-    const availableValues = frontGroups[selectedGroup];
-    const maxPairs = availableValues.length;
-    const pairsToUse = Math.min(totalPairs, maxPairs);
-    const shuffledFronts = availableValues
-      .sort(() => Math.random() - 0.5)
-      .slice(0, pairsToUse);
-    const selectedValues = shuffledFronts.flatMap((value) => [value, value]);
-    const cardPairs = selectedValues
-      .map((value, index) => ({
-        id: index,
-        value: value as Card["value"],
-        isFlipped: false,
-        isMatched: false,
-        isHidden: false,
-      }))
-      .sort(() => Math.random() - 0.5);
+    // рандом внешних картинок
+    resetExternalVisuals();
 
-    setCards(cardPairs);
+    const totalPairs = Math.floor((level as number) / 2);
+
+    // ===== внешние лица карт по уровню =====
+    const externalFrontList = resolveListForLevel(
+      externalConfig?.frontCards,
+      level
+    );
+
+    if (externalFrontList.length) {
+      const maxPairs = externalFrontList.length;
+      const pairsToUse = Math.min(totalPairs, maxPairs);
+
+      // map в "custom-i"
+      const availableValues = externalFrontList.map((_, i) => `custom-${i}`);
+
+      const shuffledFronts = availableValues
+        .sort(() => Math.random() - 0.5)
+        .slice(0, pairsToUse);
+
+      const selectedValues = shuffledFronts.flatMap((v) => [v, v]);
+
+      const cardPairs = selectedValues
+        .map((value, index) => ({
+          id: index,
+          value: value as Card["value"],
+          isFlipped: false,
+          isMatched: false,
+          isHidden: false,
+        }))
+        .sort(() => Math.random() - 0.5);
+
+      setCards(cardPairs);
+    } else {
+      // ===== твой локальный fallback =====
+
+      // группы лиц карточек
+      const frontGroups: Record<string, CardImageKeys[]> = {
+        cardFace: [
+          "cardFace-1",
+          "cardFace-2",
+          "cardFace-3",
+          "cardFace-4",
+          "cardFace-5",
+          "cardFace-6",
+        ],
+        facecard: [
+          "boy",
+          "donkey",
+          "girl",
+          "kengoo",
+          "owl",
+          "pig",
+          "puh",
+          "tigr",
+        ],
+      };
+
+      const groupKeys = Object.keys(frontGroups);
+      const selectedGroup =
+        groupKeys[Math.floor(Math.random() * groupKeys.length)];
+      const availableValues = frontGroups[selectedGroup];
+      const maxPairs = availableValues.length;
+      const pairsToUse = Math.min(totalPairs, maxPairs);
+      const shuffledFronts = availableValues
+        .sort(() => Math.random() - 0.5)
+        .slice(0, pairsToUse);
+      const selectedValues = shuffledFronts.flatMap((value) => [value, value]);
+      const cardPairs = selectedValues
+        .map((value, index) => ({
+          id: index,
+          value: value as Card["value"],
+          isFlipped: false,
+          isMatched: false,
+          isHidden: false,
+        }))
+        .sort(() => Math.random() - 0.5);
+
+      setCards(cardPairs);
+    }
+
     setSelectedCards([]);
     setMatchedCards([]);
     setShowConfetti(false);
@@ -380,41 +456,29 @@ const GameScreen = () => {
     statsOffsetY.value = withTiming(0, { duration: 500 });
     statsOpacity.value = withTiming(1, { duration: 500 });
 
-    if (level === 4) {
+    if ((level as number) === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
-        const updatedCards = cardPairs.map((card) => ({
-          ...card,
-          isFlipped: true,
-        }));
-        setCards(updatedCards);
+        setCards((prev) => prev.map((c) => ({ ...c, isFlipped: true })));
         const hideTimer: TimeoutId = setTimeout(() => {
-          const closedCards = cardPairs.map((card) => ({
-            ...card,
-            isFlipped: false,
-          }));
-          setCards(closedCards);
+          setCards((prev) => prev.map((c) => ({ ...c, isFlipped: false })));
           setIsShowingCards(false);
         }, 3000);
         completionTimers.current.push(hideTimer);
       }, 1000);
       completionTimers.current.push(showTimer);
     }
-    if ([8, 10, 12].includes(level)) {
-      playBackgroundMusic().catch((error: unknown) =>
-        console.error("Error playing background music:", error)
-      );
+    if ([8, 10, 12].includes(level as number)) {
+      playBackgroundMusic().catch(() => {});
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
   };
 
-  const getStars = (level: number, time: number, moves: number) => {
-    if (![8, 10, 12].includes(level)) return 0;
-
-    let maxTime: number;
-    let maxMoves: number;
-
-    switch (level) {
+  const getStars = (lv: number, t: number, m: number) => {
+    if (![8, 10, 12].includes(lv)) return 0;
+    let maxTime = 0;
+    let maxMoves = 0;
+    switch (lv) {
       case 8:
         maxTime = 30;
         maxMoves = 12;
@@ -427,12 +491,9 @@ const GameScreen = () => {
         maxTime = 50;
         maxMoves = 24;
         break;
-      default:
-        return 0;
     }
-
-    if (time <= maxTime && moves <= maxMoves) return 3;
-    if (time <= maxTime * 1.2 && moves <= maxMoves * 1.2) return 2;
+    if (t <= maxTime && m <= maxMoves) return 3;
+    if (t <= maxTime * 1.2 && m <= maxMoves * 1.2) return 2;
     return 1;
   };
 
@@ -456,7 +517,7 @@ const GameScreen = () => {
       )
     );
 
-    if ([8, 10, 12].includes(level)) setMoves((prev) => prev + 1);
+    if ([8, 10, 12].includes(level as number)) setMoves((prev) => prev + 1);
 
     if (newSelected.length === 2) {
       const [firstId, secondId] = newSelected;
@@ -466,9 +527,7 @@ const GameScreen = () => {
       if (firstCard?.value === secondCard?.value) {
         const matchDelay: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
-          playNotificationSound().catch((error: unknown) =>
-            console.error("Error playing notification sound:", error)
-          );
+          playNotificationSound().catch(() => {});
           const newMatchedCards = [...matchedCards, firstId, secondId];
           setMatchedCards(newMatchedCards);
 
@@ -498,10 +557,10 @@ const GameScreen = () => {
               const newRoundsCompleted = roundsCompleted + 1;
               setRoundsCompleted(newRoundsCompleted);
 
-              const starsEarned = getStars(level, time, moves);
+              const starsEarned = getStars(level as number, time, moves);
               setTotalStars((prev) => prev + starsEarned);
 
-              // NEW: сначала прячем дугу/статистику
+              // прячем дугу/статы
               const animTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 arcOffsetY.value = withTiming(height, { duration: 700 });
@@ -511,7 +570,7 @@ const GameScreen = () => {
               }, 0);
               completionTimers.current.push(animTimer);
 
-              // затем — показываем поздравление И конфетти
+              // поздравление + конфетти
               const congratsTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowCongrats(true);
@@ -519,7 +578,7 @@ const GameScreen = () => {
               }, 900);
               completionTimers.current.push(congratsTimer);
 
-              // и только после этого — кнопку
+              // кнопка
               const playAgainTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowPlayAgain(true);
@@ -618,11 +677,9 @@ const GameScreen = () => {
   const getCardSize = () => {
     switch (level) {
       case 4:
-        return 120;
       case 6:
         return 120;
       case 8:
-        return 100;
       case 10:
       case 12:
         return 100;
@@ -631,7 +688,17 @@ const GameScreen = () => {
     }
   };
 
-  // >>>>>>>>>>>>>>> смайл над карточкой
+  // карта external лиц (custom-i -> {uri: ...})
+  const externalFrontMap: Record<string, ImageSourcePropType> = {};
+  const externalFrontList = resolveListForLevel(
+    externalConfig?.frontCards,
+    level
+  );
+  externalFrontList.forEach((url, idx) => {
+    externalFrontMap[`custom-${idx}`] = { uri: url };
+  });
+
+  // смайл над карточкой
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
 
@@ -684,9 +751,13 @@ const GameScreen = () => {
             }
             style={{ opacity: 1, zIndex: 0 }}
             backImage={
-              cardImages[selectedBack] || require("../assets/card-1.jpg")
+              extBackUri
+                ? { uri: extBackUri }
+                : cardImages[selectedBack] || require("../assets/card-1.jpg")
             }
             frontImage={
+              // приоритет внешней карте
+              externalFrontMap[item.value as string] ||
               cardImages[item.value as CardImageKeys] ||
               require("../assets/card-1.jpg")
             }
@@ -697,8 +768,8 @@ const GameScreen = () => {
           <View
             style={{
               position: "absolute",
-              left: 46, // координаты не меняем
-              top: -49, // координаты не меняем
+              left: 46,
+              top: -49,
               zIndex: 9999,
               elevation: 50,
             }}
@@ -722,12 +793,10 @@ const GameScreen = () => {
       </View>
     );
   };
-  // <<<<<<<<<<<<<<< смайл
 
   const handleHintPressIn = () => {
     hintScale.value = 1.1;
   };
-
   const handleHintPressOut = () => {
     hintScale.value = 1;
   };
@@ -748,8 +817,7 @@ const GameScreen = () => {
       await stopSuccessSound();
       await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
       navigation.goBack();
-    } catch (error: unknown) {
-      console.error("Error stopping success sound:", error);
+    } catch {
       navigation.goBack();
     }
   };
@@ -758,7 +826,6 @@ const GameScreen = () => {
     playAgainScale.value = 1.1;
     playAgainOpacity.value = 0.8;
   };
-
   const handlePlayAgainPressOut = () => {
     playAgainScale.value = 1;
     playAgainOpacity.value = 1;
@@ -772,12 +839,22 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    setSelectedBackground(
-      backgroundOptions[Math.floor(Math.random() * backgroundOptions.length)]
-    );
-    setSelectedBack(
-      backOptions[Math.floor(Math.random() * backOptions.length)]
-    );
+
+    // если внешнего нет — оставляем локальный рандом
+    if (!externalConfig?.background) {
+      setSelectedBackground(
+        backgroundOptions[Math.floor(Math.random() * backgroundOptions.length)]
+      );
+    }
+    if (!externalConfig?.backCard) {
+      setSelectedBack(
+        backOptions[Math.floor(Math.random() * backOptions.length)]
+      );
+    }
+
+    // если есть внешний — выберем новый случайный
+    resetExternalVisuals();
+
     generateCards();
   };
 
@@ -793,24 +870,15 @@ const GameScreen = () => {
         }}
       >
         <ImageBackground
-          source={selectedBackground.source}
+          source={extBgUri ? { uri: extBgUri } : selectedBackground.source}
           style={[
             StyleSheet.absoluteFillObject,
             { width: "100%", height: "100%", zIndex: 0 },
           ]}
           resizeMode="cover"
-          onLoad={() =>
-            console.log("Background loaded:", selectedBackground.source)
-          }
-          onError={(error: unknown) =>
-            console.error(
-              "Error loading background:",
-              selectedBackground.source,
-              error
-            )
-          }
         />
-        {selectedBackground.hasStars && (
+        {/* Звёздный оверлей оставляем только на локальных фонах */}
+        {selectedBackground.hasStars && !extBgUri && (
           <Svg
             height="100%"
             width="100%"
@@ -918,6 +986,7 @@ const GameScreen = () => {
             overflow: "visible",
           }}
         >
+          {/* Верхняя дуга/подложка */}
           <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
             <Svg
               height={height}
@@ -925,7 +994,6 @@ const GameScreen = () => {
               style={{ position: "absolute", top: 0, left: 0, zIndex: 5 }}
               viewBox={`0 0 ${width} ${height}`}
               preserveAspectRatio="none"
-              onLayout={() => console.log("SVG arc rendered with gradient")}
             >
               <Defs>
                 <SvgLinearGradient
@@ -963,9 +1031,6 @@ const GameScreen = () => {
                 stroke="url(#arcBorderGrad)"
                 strokeWidth={4}
                 strokeLinecap="round"
-                onLayout={() =>
-                  console.log("Border path rendered with gradient")
-                }
               />
             </Svg>
             <View
@@ -1008,6 +1073,7 @@ const GameScreen = () => {
                   onPressOut={handleHintPressOut}
                 >
                   <View style={styles.hintGlow}>
+                    {/* !!! Исправление: убран className, оставлен только style */}
                     <View style={styles.hintBorder}>
                       <LinearGradient
                         colors={["#FFB380", "#D16C00"]}
@@ -1021,7 +1087,7 @@ const GameScreen = () => {
               </Animated.View>
             )}
 
-            {[8, 10, 12].includes(level) && (
+            {[8, 10, 12].includes(level as number) && (
               <Animated.View
                 style={[
                   styles.statsPanel,
@@ -1034,10 +1100,7 @@ const GameScreen = () => {
                     styles.statsItem,
                     {
                       backgroundColor: "#C57CFF",
-                      width: "auto",
                       minWidth: 100,
-                      flexShrink: 0,
-                      flexGrow: 0,
                       alignItems: "center",
                     },
                   ]}
@@ -1117,10 +1180,10 @@ const GameScreen = () => {
 
             {/* Конфетти — поверх всего, не блокируют тапы */}
             <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-              <Confetti isActive={showConfetti} level={level} />
+              <Confetti isActive={showConfetti} level={level as number} />
             </View>
 
-            {/* Поздравление — не блокирует тапы по кнопке */}
+            {/* Поздравление */}
             {showCongrats && (
               <View
                 style={[styles.congratsContainer, { zIndex: 3500 }]}
@@ -1138,20 +1201,11 @@ const GameScreen = () => {
                       opacity: 1,
                       zIndex: 2,
                     }}
-                    onError={(error: unknown) =>
-                      console.error(
-                        "Error loading Frame_Type3_03_Decor.png:",
-                        error
-                      )
-                    }
                   />
                 </Animated.View>
                 <Image
                   source={require("../assets/TitlFon.png")}
                   style={[styles.congratsFon, { opacity: 1 }]}
-                  onError={(error: unknown) =>
-                    console.error("Error loading TitlFon.png:", error)
-                  }
                 />
                 <Text
                   style={[styles.congratsText, { zIndex: 10 }]}
@@ -1163,15 +1217,15 @@ const GameScreen = () => {
               </View>
             )}
 
-            {/* Кнопка — ниже баннера, кликабельна */}
+            {/* Кнопка Play Again */}
             {showPlayAgain && (
               <AnimatedTouchableOpacity
                 style={[
                   styles.playAgainButton,
                   playAgainAnimatedStyle,
                   {
-                    top: playAgainTop, // позиционируем ниже поздравления
-                    bottom: undefined, // перекрываем bottom из стилей
+                    top: playAgainTop,
+                    bottom: undefined,
                     zIndex: 5000,
                     elevation: 50,
                     pointerEvents: "auto",
@@ -1218,7 +1272,12 @@ const GameScreen = () => {
                 }
                 onYes={() => {
                   setShowUpgradePrompt(false);
-                  const nextLevel = level === 4 ? 6 : level === 6 ? 8 : 10;
+                  const nextLevel =
+                    (level as number) === 4
+                      ? 6
+                      : (level as number) === 6
+                        ? 8
+                        : 10;
                   navigation.replace("GameScreen", { level: nextLevel });
                   setRoundsCompleted(0);
                   setMatchedCards([]);

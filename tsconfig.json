@@ -3,6 +3,7 @@
   "compileOnSave": false,
   "files": [],
   "references": [
-    { "path": "./libs/magic-memory-ui" }
+    { "path": "./libs/magic-memory-ui" },
+    { "path": "./libs/tik-tack-toe-ui" }
   ]
 }
