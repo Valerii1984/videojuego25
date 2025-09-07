@@ -43,13 +43,12 @@ import Svg, {
 
 /** -------------------------------
  * ВНЕШНИЙ КОНФИГ ЧЕРЕЗ global.*
- * -------------------------------
  * (global as any).MAGIC_MEMORY_EXTERNAL_CONFIG = {
  *   level?: 4|6|8|10|12,
  *   lang?: string,
  *   background?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
  *   backCard?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
- *   frontCards?: Partial<Record<4|6|8|10|12, string[]>> // на уровень минимум level/2 уникальных
+ *   frontCards?: Partial<Record<4|6|8|10|12, string[]>>
  * }
  */
 type LevelKey = 4 | 6 | 8 | 10 | 12;
@@ -65,11 +64,8 @@ interface ExternalConfig {
   frontCards?: Partial<Record<LevelKey, string[]>>;
 }
 
-// хелперы для конфига
-const asArray = (val?: string | string[]): string[] | undefined => {
-  if (!val) return undefined;
-  return Array.isArray(val) ? val : [val];
-};
+const asArray = (val?: string | string[]): string[] | undefined =>
+  !val ? undefined : Array.isArray(val) ? val : [val];
 
 const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
@@ -84,11 +80,11 @@ const resolvePerLevel = (
   return asArray(lvl as string | string[] | undefined);
 };
 
-// универсальные типы таймеров
+// типы для таймеров
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
 
-// ассеты (фоллбэк, когда внешних URL нет/недостаточно)
+// ассеты — фоллбэк
 const assetFrontGroups: Record<string, any[]> = {
   cardFace: [
     require("../assets/cardFace-1.jpg"),
@@ -155,8 +151,12 @@ const PlayIcon = () => (
   <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
 );
 
-// Локальный тип карточки с дополнительным полем источника картинки
+// локальный тип карточки с источником
 type UICard = Card & { __source: any };
+
+// добавляем cache-busting к URL (чтобы RN точно перезагрузил фон)
+const withBust = (uri: string, v: number) =>
+  uri.includes("?") ? `${uri}&v=${v}` : `${uri}?v=${v}`;
 
 const GameScreen = () => {
   const { language } = useLanguage();
@@ -174,13 +174,14 @@ const GameScreen = () => {
   const externalConfig: ExternalConfig | undefined = (global as any)
     ?.MAGIC_MEMORY_EXTERNAL_CONFIG;
 
-  // текущий уровень: приоритет route → external → 4
+  // уровень
   const level: LevelKey = useMemo(() => {
     const raw = (incomingLevel ?? externalConfig?.level ?? 4) as number;
     const allowed: LevelKey[] = [4, 6, 8, 10, 12];
     return (allowed.includes(raw as LevelKey) ? raw : 4) as LevelKey;
   }, [incomingLevel, externalConfig?.level]);
 
+  // состояние игры
   const [cards, setCards] = useState<UICard[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [time, setTime] = useState(0);
@@ -216,7 +217,7 @@ const GameScreen = () => {
   // размеры
   const { width, height } = Dimensions.get("window");
 
-  // позиция кнопки (ниже баннера)
+  // кнопка ниже баннера
   const PLAY_AGAIN_OFFSET = 110;
   const PLAY_AGAIN_CAP = 0.78;
   const playAgainTop = Math.min(
@@ -224,7 +225,7 @@ const GameScreen = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // -------- ПУЛЫ URL из externalConfig --------
+  // пулы URL
   const bgPool = useMemo(
     () => resolvePerLevel(externalConfig?.background, level) ?? [],
     [externalConfig?.background, level]
@@ -238,28 +239,23 @@ const GameScreen = () => {
     return perLevel && perLevel.length ? perLevel : undefined;
   }, [externalConfig?.frontCards, level]);
 
-  // -------- Состояние выбора фона/рубашки (перебираем КАЖДУЮ ИГРУ) --------
+  // состояние фона/рубашки
+  const [bgVersion, setBgVersion] = useState(1); // меняем -> ключ меняется -> ремоунт
   const [selectedBackground, setSelectedBackground] = useState<{
     source: any;
     hasStars?: boolean;
   }>(() => {
     if (bgPool.length)
-      return { source: { uri: pick(bgPool) }, hasStars: false };
+      return { source: { uri: withBust(pick(bgPool), 1) }, hasStars: false };
     return pick(assetBackgrounds);
   });
-  const [selectedBackgroundKey, setSelectedBackgroundKey] = useState<string>(
-    () =>
-      "hasStars" in selectedBackground && !selectedBackground.hasStars
-        ? (selectedBackground.source?.uri ?? "asset")
-        : "asset"
-  );
 
   const [selectedBack, setSelectedBack] = useState<any>(() => {
     if (backPool.length) return { uri: pick(backPool) };
     return pick(assetBacks);
   });
 
-  // прелоад ассетных фонов (не мешает URL)
+  // прелоад ассет-фонов
   useEffect(() => {
     const preload = async () => {
       const promises = assetBackgrounds.map((bg) =>
@@ -311,17 +307,19 @@ const GameScreen = () => {
       timer.current = null;
     }
 
-    // каждый старт выбираем новый фон/рубашку
+    // НОВОЕ: меняем фон каждый старт.
     if (bgPool.length) {
-      const uri = pick(bgPool);
+      const nextV = bgVersion + 1;
+      const uri = withBust(pick(bgPool), nextV);
       setSelectedBackground({ source: { uri }, hasStars: false });
-      setSelectedBackgroundKey(uri); // форсим ремоунт фона
+      setBgVersion(nextV); // меняем key
     } else {
-      const bg = pick(assetBackgrounds);
-      setSelectedBackground(bg);
-      setSelectedBackgroundKey("asset-" + Math.random().toString(36).slice(2));
+      // ассетный — тоже форсим смену ключа
+      setSelectedBackground(pick(assetBackgrounds));
+      setBgVersion((v) => v + 1);
     }
 
+    // рубашка
     if (backPool.length) {
       setSelectedBack({ uri: pick(backPool) });
     } else {
@@ -336,16 +334,14 @@ const GameScreen = () => {
 
     const totalPairs = Math.floor(level / 2);
 
-    // берём источники лиц
+    // лица
     let frontPool: { source: any }[] = [];
-
     if (externalFrontList && externalFrontList.length > 0) {
       const uniq = Array.from(new Set(externalFrontList));
       if (uniq.length >= totalPairs) {
         frontPool = uniq.map((u) => ({ source: { uri: u } as const }));
       }
     }
-
     if (frontPool.length === 0) {
       const groupKeys = Object.keys(assetFrontGroups);
       const selectedGroup = pick(
@@ -363,11 +359,11 @@ const GameScreen = () => {
     const cardPairs: UICard[] = selectedValues
       .map((val, index) => ({
         id: index,
-        value: "cardFace-1" as Card["value"], // типобезопасность
+        value: "cardFace-1" as Card["value"],
         isFlipped: false,
         isMatched: false,
         isHidden: false,
-        __source: val.source, // реальный источник изображения
+        __source: val.source,
       }))
       .sort(() => Math.random() - 0.5);
 
@@ -616,12 +612,8 @@ const GameScreen = () => {
     }
   };
 
-  const handleHintPressIn = () => {
-    hintScale.value = 1.1;
-  };
-  const handleHintPressOut = () => {
-    hintScale.value = 1;
-  };
+  const handleHintPressIn = () => (hintScale.value = 1.1);
+  const handleHintPressOut = () => (hintScale.value = 1);
 
   const handleBackPress = async () => {
     backScale.value = withTiming(1.1, { duration: 200 }, () => {
@@ -648,13 +640,10 @@ const GameScreen = () => {
     playAgainScale.value = 1.1;
     playAgainOpacity.value = 0.8;
   };
-
   const handlePlayAgainPressOut = () => {
     playAgainScale.value = 1;
     playAgainOpacity.value = 1;
-    const t: TimeoutId = setTimeout(() => {
-      handlePlayAgain();
-    }, 300);
+    const t: TimeoutId = setTimeout(() => handlePlayAgain(), 300);
     completionTimers.current.push(t);
   };
 
@@ -662,7 +651,7 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    generateCards(); // новый выбор фона/рубашки из пулов
+    generateCards(); // теперь меняется и фон (через bgVersion + cache-bust)
   };
 
   const renderItem = ({ item }: { item: UICard }) => {
@@ -752,7 +741,7 @@ const GameScreen = () => {
     );
   };
 
-  // анимации статики
+  // анимации статических блоков
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -778,11 +767,14 @@ const GameScreen = () => {
     opacity: 1,
   }));
 
+  // размеры
+  const { width: w, height: h } = Dimensions.get("window");
+
   return (
     <View style={{ flex: 1, width: "100%", height: "100%" }}>
-      {/* Фон. key — чтобы принудительно перерисовывался при смене URI */}
+      {/* ВАЖНО: key={bgVersion} и cache-bust в source.uri */}
       <ImageBackground
-        key={selectedBackgroundKey}
+        key={`bg-${bgVersion}`}
         source={selectedBackground.source}
         style={[
           StyleSheet.absoluteFillObject,
@@ -791,13 +783,13 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* звёздное свечение только для ассетного фона с hasStars */}
+      {/* звёздное свечение только для ассета */}
       {"hasStars" in selectedBackground && selectedBackground.hasStars && (
         <Svg
           height="100%"
           width="100%"
           style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
-          viewBox={`0 0 ${width} ${height}`}
+          viewBox={`0 0 ${w} ${h}`}
           preserveAspectRatio="none"
         >
           <Defs>
@@ -814,91 +806,91 @@ const GameScreen = () => {
           <Circle
             cx={38.11}
             cy={44.71}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={61.37}
             cy={188.17}
-            r={Math.min(width, height) * 0.02}
+            r={Math.min(w, h) * 0.02}
             fill="url(#starGradient)"
           />
           <Circle
             cx={158.31}
             cy={250.21}
-            r={Math.min(width, height) * 0.02}
+            r={Math.min(w, h) * 0.02}
             fill="url(#starGradient)"
           />
           <Circle
             cx={18.16}
             cy={366.52}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={274.63}
             cy={137.76}
-            r={Math.min(width, height) * 0.02}
+            r={Math.min(w, h) * 0.02}
             fill="url(#starGradient)"
           />
           <Circle
             cx={231.97}
             cy={356.83}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={369.62}
             cy={141.64}
-            r={Math.min(width, height) * 0.02}
+            r={Math.min(w, h) * 0.02}
             fill="url(#starGradient)"
           />
           <Circle
             cx={524.71}
             cy={25.34}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={569.3}
             cy={347.15}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={703.07}
             cy={225.01}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={751.53}
             cy={48.59}
-            r={Math.min(width, height) * 0.03}
+            r={Math.min(w, h) * 0.03}
             fill="url(#starGradient)"
           />
           <Circle
             cx={834.89}
             cy={327.75}
-            r={Math.min(width, height) * 0.04}
+            r={Math.min(w, h) * 0.04}
             fill="url(#starGradient)"
           />
           <Circle
             cx={173.82}
             cy={44.71}
-            r={Math.min(width, height) * 0.04}
+            r={Math.min(w, h) * 0.04}
             fill="url(#starGradient)"
           />
         </Svg>
       )}
 
-      {/* дуга + бордер */}
+      {/* дуга */}
       <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
         <Svg
-          height={height}
+          height={h}
           width="100%"
           style={{ position: "absolute", top: 0, left: 0, zIndex: 5 }}
-          viewBox={`0 0 ${width} ${height}`}
+          viewBox={`0 0 ${w} ${h}`}
           preserveAspectRatio="none"
         >
           <Defs>
@@ -928,11 +920,11 @@ const GameScreen = () => {
             </SvgLinearGradient>
           </Defs>
           <Path
-            d={`M0 ${height} L0 100 Q${width / 2} 60 ${width} 100 L${width} ${height} Z`}
+            d={`M0 ${h} L0 100 Q${w / 2} 60 ${w} 100 L${w} ${h} Z`}
             fill="url(#arcGrad)"
           />
           <Path
-            d={`M0 100 Q${width / 2} 60 ${width} 100`}
+            d={`M0 100 Q${w / 2} 60 ${w} 100`}
             fill="none"
             stroke="url(#arcBorderGrad)"
             strokeWidth={4}
@@ -941,7 +933,7 @@ const GameScreen = () => {
         </Svg>
         <View
           style={{
-            height: height * 0.4,
+            height: h * 0.4,
             position: "absolute",
             bottom: 0,
             width: "100%",
