@@ -44,10 +44,9 @@ import Svg, {
 /** -------------------------------
  * ВНЕШНИЙ КОНФИГ ЧЕРЕЗ global.*
  * -------------------------------
- * Поддерживаем структуру:
  * (global as any).MAGIC_MEMORY_EXTERNAL_CONFIG = {
  *   level?: 4|6|8|10|12,
- *   lang: 'es'|'en'|...,
+ *   lang?: string,
  *   background?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
  *   backCard?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
  *   frontCards?: Partial<Record<4|6|8|10|12, string[]>> // на уровень минимум level/2 уникальных
@@ -66,14 +65,13 @@ interface ExternalConfig {
   frontCards?: Partial<Record<LevelKey, string[]>>;
 }
 
-// утилиты для работы с конфигом
+// хелперы для конфига
 const asArray = (val?: string | string[]): string[] | undefined => {
   if (!val) return undefined;
   return Array.isArray(val) ? val : [val];
 };
 
-const pickRandom = <T,>(arr: T[]): T =>
-  arr[Math.floor(Math.random() * arr.length)];
+const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
 
 const resolvePerLevel = (
   src: PerLevelURIs | undefined,
@@ -157,6 +155,9 @@ const PlayIcon = () => (
   <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
 );
 
+// Локальный тип карточки с дополнительным полем источника картинки
+type UICard = Card & { __source: any };
+
 const GameScreen = () => {
   const { language } = useLanguage();
   const {
@@ -180,7 +181,7 @@ const GameScreen = () => {
     return (allowed.includes(raw as LevelKey) ? raw : 4) as LevelKey;
   }, [incomingLevel, externalConfig?.level]);
 
-  const [cards, setCards] = useState<Card[]>([]);
+  const [cards, setCards] = useState<UICard[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [time, setTime] = useState(0);
   const [moves, setMoves] = useState(0);
@@ -223,74 +224,42 @@ const GameScreen = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // -------------- URL-конфиг: вычисляем выбор для текущего старта --------------
-  // фон
-  const selectedBackground = useMemo(() => {
-    const candidates = resolvePerLevel(externalConfig?.background, level);
-    if (candidates && candidates.length > 0) {
-      const uri = pickRandom(candidates);
-      return { source: { uri }, hasStars: false as const };
-    }
-    // фоллбэк — ассет
-    return assetBackgrounds[
-      Math.floor(Math.random() * assetBackgrounds.length)
-    ];
-  }, [externalConfig?.background, level]);
-
-  // рубашка
-  const selectedBack = useMemo(() => {
-    const candidates = resolvePerLevel(externalConfig?.backCard, level);
-    if (candidates && candidates.length > 0) {
-      const uri = pickRandom(candidates);
-      return { uri } as const; // RN ImageSourcePropType совместим с {uri:string}
-    }
-    // фоллбэк — ассет
-    return assetBacks[Math.floor(Math.random() * assetBacks.length)];
-  }, [externalConfig?.backCard, level]);
-
-  // лица карточек (на уровень минимум pairs = level/2)
+  // -------- ПУЛЫ URL из externalConfig --------
+  const bgPool = useMemo(
+    () => resolvePerLevel(externalConfig?.background, level) ?? [],
+    [externalConfig?.background, level]
+  );
+  const backPool = useMemo(
+    () => resolvePerLevel(externalConfig?.backCard, level) ?? [],
+    [externalConfig?.backCard, level]
+  );
   const externalFrontList: string[] | undefined = useMemo(() => {
     const perLevel = externalConfig?.frontCards?.[level];
-    if (perLevel && perLevel.length > 0) {
-      return perLevel;
-    }
-    return undefined;
+    return perLevel && perLevel.length ? perLevel : undefined;
   }, [externalConfig?.frontCards, level]);
 
-  // ---------------------------------------------------------------------------
+  // -------- Состояние выбора фона/рубашки (перебираем КАЖДУЮ ИГРУ) --------
+  const [selectedBackground, setSelectedBackground] = useState<{
+    source: any;
+    hasStars?: boolean;
+  }>(() => {
+    if (bgPool.length)
+      return { source: { uri: pick(bgPool) }, hasStars: false };
+    return pick(assetBackgrounds);
+  });
+  const [selectedBackgroundKey, setSelectedBackgroundKey] = useState<string>(
+    () =>
+      "hasStars" in selectedBackground && !selectedBackground.hasStars
+        ? (selectedBackground.source?.uri ?? "asset")
+        : "asset"
+  );
 
-  // анимации
-  const arcAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: arcOffsetY.value }],
-    opacity: arcOpacity.value,
-  }));
+  const [selectedBack, setSelectedBack] = useState<any>(() => {
+    if (backPool.length) return { uri: pick(backPool) };
+    return pick(assetBacks);
+  });
 
-  const statsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: statsOffsetY.value }],
-    opacity: statsOpacity.value,
-  }));
-
-  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
-    opacity: playAgainOpacity.value,
-  }));
-
-  const hintAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
-    opacity: 1,
-  }));
-
-  const backAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(backScale.value, { duration: 200 }) }],
-    opacity: 1,
-  }));
-
-  const congratsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
-    opacity: 1,
-  }));
-
-  // прелоад фоновых изображений ассетов (не мешает URL)
+  // прелоад ассетных фонов (не мешает URL)
   useEffect(() => {
     const preload = async () => {
       const promises = assetBackgrounds.map((bg) =>
@@ -342,6 +311,23 @@ const GameScreen = () => {
       timer.current = null;
     }
 
+    // каждый старт выбираем новый фон/рубашку
+    if (bgPool.length) {
+      const uri = pick(bgPool);
+      setSelectedBackground({ source: { uri }, hasStars: false });
+      setSelectedBackgroundKey(uri); // форсим ремоунт фона
+    } else {
+      const bg = pick(assetBackgrounds);
+      setSelectedBackground(bg);
+      setSelectedBackgroundKey("asset-" + Math.random().toString(36).slice(2));
+    }
+
+    if (backPool.length) {
+      setSelectedBack({ uri: pick(backPool) });
+    } else {
+      setSelectedBack(pick(assetBacks));
+    }
+
     // сброс анимаций
     arcOffsetY.value = height;
     arcOpacity.value = 0;
@@ -350,13 +336,10 @@ const GameScreen = () => {
 
     const totalPairs = Math.floor(level / 2);
 
-    // берём источники лиц:
-    // 1) если пришли внешние URL → используем их
-    // 2) иначе — случайная группа ассетов
+    // берём источники лиц
     let frontPool: { source: any }[] = [];
 
     if (externalFrontList && externalFrontList.length > 0) {
-      // делаем уникальные и берём не менее totalPairs
       const uniq = Array.from(new Set(externalFrontList));
       if (uniq.length >= totalPairs) {
         frontPool = uniq.map((u) => ({ source: { uri: u } as const }));
@@ -364,35 +347,27 @@ const GameScreen = () => {
     }
 
     if (frontPool.length === 0) {
-      // фоллбэк — ассеты
       const groupKeys = Object.keys(assetFrontGroups);
-      const selectedGroup =
-        groupKeys[Math.floor(Math.random() * groupKeys.length)];
-      const assets = assetFrontGroups[selectedGroup]; // array of require()
+      const selectedGroup = pick(
+        groupKeys as (keyof typeof assetFrontGroups)[]
+      );
+      const assets = assetFrontGroups[selectedGroup];
       frontPool = assets.map((a) => ({ source: a }));
     }
 
-    // теперь выбираем пары
     const shuffled = [...frontPool].sort(() => Math.random() - 0.5);
     const pairsToUse = Math.min(totalPairs, shuffled.length);
     const chosen = shuffled.slice(0, pairsToUse);
-
-    // разворачиваем в пары
     const selectedValues = chosen.flatMap((x) => [x, x]);
 
-    // создаём карточки
-    const cardPairs: Card[] = selectedValues
+    const cardPairs: UICard[] = selectedValues
       .map((val, index) => ({
         id: index,
-        // ❗ Даем корректный тип для value из допустимых ассетных ключей,
-        // т.к. в логике совпадения мы сравниваем по __source, а не по value.
-        value: "cardFace-1" as Card["value"],
+        value: "cardFace-1" as Card["value"], // типобезопасность
         isFlipped: false,
         isMatched: false,
         isHidden: false,
-        // положим источник изображения прямо в карточку
-        // (uri или require) — это то, чем реально рендерим и сравниваем
-        __source: val.source,
+        __source: val.source, // реальный источник изображения
       }))
       .sort(() => Math.random() - 0.5);
 
@@ -485,14 +460,9 @@ const GameScreen = () => {
       const first = cards.find((c) => c.id === firstId);
       const second = cards.find((c) => c.id === secondId);
 
-      // сравниваем по __source.uri/require
-      const same =
-        // @ts-expect-error локальное поле
-        first?.__source?.uri
-          ? // @ts-expect-error локальное поле
-            first.__source.uri === second?.__source?.uri
-          : // @ts-expect-error локальное поле
-            first?.__source === second?.__source;
+      const firstKey = first?.__source?.uri ?? first?.__source;
+      const secondKey = second?.__source?.uri ?? second?.__source;
+      const same = firstKey && secondKey && firstKey === secondKey;
 
       if (same) {
         const matchDelay: TimeoutId = setTimeout(() => {
@@ -587,13 +557,9 @@ const GameScreen = () => {
     if (selectedCards.length === 1) {
       const selected = cards.find((c) => c.id === selectedCards[0]);
       if (selected) {
-        // @ts-expect-error локальное поле
         const key = selected.__source?.uri ?? selected.__source;
         const match = unmatched.find(
-          (c) =>
-            c.id !== selected.id &&
-            // @ts-expect-error локальное поле
-            (c.__source?.uri ?? c.__source) === key
+          (c) => c.id !== selected.id && (c.__source?.uri ?? c.__source) === key
         );
         if (match) {
           setHintActive([match.id]);
@@ -605,9 +571,7 @@ const GameScreen = () => {
     }
     for (let i = 0; i < unmatched.length; i++) {
       for (let j = i + 1; j < unmatched.length; j++) {
-        // @ts-expect-error локальное поле сравниваем источник
         const a = unmatched[i].__source?.uri ?? unmatched[i].__source;
-        // @ts-expect-error локальное поле
         const b = unmatched[j].__source?.uri ?? unmatched[j].__source;
         if (a === b) {
           setHintActive([unmatched[i].id, unmatched[j].id]);
@@ -652,9 +616,57 @@ const GameScreen = () => {
     }
   };
 
-  const renderItem = ({ item }: { item: Card }) => {
+  const handleHintPressIn = () => {
+    hintScale.value = 1.1;
+  };
+  const handleHintPressOut = () => {
+    hintScale.value = 1;
+  };
+
+  const handleBackPress = async () => {
+    backScale.value = withTiming(1.1, { duration: 200 }, () => {
+      backScale.value = withTiming(1, { duration: 200 });
+    });
+    try {
+      setIsGameActive(false);
+      if (timer.current) {
+        clearInterval(timer.current);
+        timer.current = null;
+      }
+      completionTimers.current.forEach((t) => clearTimeout(t));
+      completionTimers.current = [];
+      setTotalStars(0);
+      await stopSuccessSound();
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+      navigation.goBack();
+    } catch {
+      navigation.goBack();
+    }
+  };
+
+  const handlePlayAgainPressIn = () => {
+    playAgainScale.value = 1.1;
+    playAgainOpacity.value = 0.8;
+  };
+
+  const handlePlayAgainPressOut = () => {
+    playAgainScale.value = 1;
+    playAgainOpacity.value = 1;
+    const t: TimeoutId = setTimeout(() => {
+      handlePlayAgain();
+    }, 300);
+    completionTimers.current.push(t);
+  };
+
+  const handlePlayAgain = () => {
+    setShowConfetti(false);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    generateCards(); // новый выбор фона/рубашки из пулов
+  };
+
+  const renderItem = ({ item }: { item: UICard }) => {
     const cardSize = getCardSize();
-    // @ts-expect-error локальное поле
     const faceSource = item.__source as any;
 
     return (
@@ -705,8 +717,8 @@ const GameScreen = () => {
               hintActive.includes(item.id) || selectedCards.includes(item.id)
             }
             style={{ opacity: 1, zIndex: 0 }}
-            backImage={selectedBack} // <=== либо {uri}, либо require-ассет
-            frontImage={faceSource} // <=== либо {uri}, либо require-ассет
+            backImage={selectedBack}
+            frontImage={faceSource}
           />
         )}
 
@@ -740,58 +752,37 @@ const GameScreen = () => {
     );
   };
 
-  const handleHintPressIn = () => {
-    hintScale.value = 1.1;
-  };
-  const handleHintPressOut = () => {
-    hintScale.value = 1;
-  };
-
-  const handleBackPress = async () => {
-    backScale.value = withTiming(1.1, { duration: 200 }, () => {
-      backScale.value = withTiming(1, { duration: 200 });
-    });
-    try {
-      setIsGameActive(false);
-      if (timer.current) {
-        clearInterval(timer.current);
-        timer.current = null;
-      }
-      completionTimers.current.forEach((t) => clearTimeout(t));
-      completionTimers.current = [];
-      setTotalStars(0);
-      await stopSuccessSound();
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
-      navigation.goBack();
-    } catch {
-      navigation.goBack();
-    }
-  };
-
-  const handlePlayAgainPressIn = () => {
-    playAgainScale.value = 1.1;
-    playAgainOpacity.value = 0.8;
-  };
-
-  const handlePlayAgainPressOut = () => {
-    playAgainScale.value = 1;
-    playAgainOpacity.value = 1;
-    const t: TimeoutId = setTimeout(() => {
-      handlePlayAgain();
-    }, 300);
-    completionTimers.current.push(t);
-  };
-
-  const handlePlayAgain = () => {
-    setShowConfetti(false);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    generateCards();
-  };
+  // анимации статики
+  const arcAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: arcOffsetY.value }],
+    opacity: arcOpacity.value,
+  }));
+  const statsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: statsOffsetY.value }],
+    opacity: statsOpacity.value,
+  }));
+  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
+    opacity: playAgainOpacity.value,
+  }));
+  const hintAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
+    opacity: 1,
+  }));
+  const backAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(backScale.value, { duration: 200 }) }],
+    opacity: 1,
+  }));
+  const congratsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
+    opacity: 1,
+  }));
 
   return (
     <View style={{ flex: 1, width: "100%", height: "100%" }}>
+      {/* Фон. key — чтобы принудительно перерисовывался при смене URI */}
       <ImageBackground
+        key={selectedBackgroundKey}
         source={selectedBackground.source}
         style={[
           StyleSheet.absoluteFillObject,
