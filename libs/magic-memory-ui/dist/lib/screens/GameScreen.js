@@ -53,12 +53,7 @@ const BackIcon_1 = __importDefault(require("../../icons/BackIcon"));
 const GameScreen_styles_1 = __importDefault(require("./GameScreen.styles"));
 const react_native_reanimated_1 = __importStar(require("react-native-reanimated"));
 const react_native_svg_1 = __importStar(require("react-native-svg"));
-// хелперы для конфига
-const asArray = (val) => {
-    if (!val)
-        return undefined;
-    return Array.isArray(val) ? val : [val];
-};
+const asArray = (val) => !val ? undefined : Array.isArray(val) ? val : [val];
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const resolvePerLevel = (src, level) => {
     if (!src)
@@ -70,7 +65,7 @@ const resolvePerLevel = (src, level) => {
     const lvl = src[level];
     return asArray(lvl);
 };
-// ассеты (фоллбэк, когда внешних URL нет/недостаточно)
+// ассеты — фоллбэк
 const assetFrontGroups = {
     cardFace: [
         require("../assets/cardFace-1.jpg"),
@@ -131,6 +126,8 @@ const assetBackgrounds = [
 ];
 // иконка Play Again
 const PlayIcon = () => ((0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../assets/playAgain.png"), style: GameScreen_styles_1.default.playIcon }));
+// добавляем cache-busting к URL (чтобы RN точно перезагрузил фон)
+const withBust = (uri, v) => uri.includes("?") ? `${uri}&v=${v}` : `${uri}?v=${v}`;
 const GameScreen = () => {
     const { language } = (0, LanguageContext_1.useLanguage)();
     const { playNotificationSound, playSuccessSound, playBackgroundMusic, stopSuccessSound, } = (0, SoundContext_1.useSound)();
@@ -139,12 +136,13 @@ const GameScreen = () => {
     const incomingLevel = route.params?.level;
     const externalConfig = global
         ?.MAGIC_MEMORY_EXTERNAL_CONFIG;
-    // текущий уровень: приоритет route → external → 4
+    // уровень
     const level = (0, react_1.useMemo)(() => {
         const raw = (incomingLevel ?? externalConfig?.level ?? 4);
         const allowed = [4, 6, 8, 10, 12];
         return (allowed.includes(raw) ? raw : 4);
     }, [incomingLevel, externalConfig?.level]);
+    // состояние игры
     const [cards, setCards] = (0, react_1.useState)([]);
     const [selectedCards, setSelectedCards] = (0, react_1.useState)([]);
     const [time, setTime] = (0, react_1.useState)(0);
@@ -175,32 +173,30 @@ const GameScreen = () => {
     const congratsPulse = (0, react_native_reanimated_1.useSharedValue)(1.05);
     // размеры
     const { width, height } = react_native_1.Dimensions.get("window");
-    // позиция кнопки (ниже баннера)
+    // кнопка ниже баннера
     const PLAY_AGAIN_OFFSET = 110;
     const PLAY_AGAIN_CAP = 0.78;
     const playAgainTop = Math.min(height * PLAY_AGAIN_CAP, height * 0.6 + PLAY_AGAIN_OFFSET);
-    // -------- ПУЛЫ URL из externalConfig --------
+    // пулы URL
     const bgPool = (0, react_1.useMemo)(() => resolvePerLevel(externalConfig?.background, level) ?? [], [externalConfig?.background, level]);
     const backPool = (0, react_1.useMemo)(() => resolvePerLevel(externalConfig?.backCard, level) ?? [], [externalConfig?.backCard, level]);
     const externalFrontList = (0, react_1.useMemo)(() => {
         const perLevel = externalConfig?.frontCards?.[level];
         return perLevel && perLevel.length ? perLevel : undefined;
     }, [externalConfig?.frontCards, level]);
-    // -------- Состояние выбора фона/рубашки (перебираем КАЖДУЮ ИГРУ) --------
+    // состояние фона/рубашки
+    const [bgVersion, setBgVersion] = (0, react_1.useState)(1); // меняем -> ключ меняется -> ремоунт
     const [selectedBackground, setSelectedBackground] = (0, react_1.useState)(() => {
         if (bgPool.length)
-            return { source: { uri: pick(bgPool) }, hasStars: false };
+            return { source: { uri: withBust(pick(bgPool), 1) }, hasStars: false };
         return pick(assetBackgrounds);
     });
-    const [selectedBackgroundKey, setSelectedBackgroundKey] = (0, react_1.useState)(() => "hasStars" in selectedBackground && !selectedBackground.hasStars
-        ? (selectedBackground.source?.uri ?? "asset")
-        : "asset");
     const [selectedBack, setSelectedBack] = (0, react_1.useState)(() => {
         if (backPool.length)
             return { uri: pick(backPool) };
         return pick(assetBacks);
     });
-    // прелоад ассетных фонов (не мешает URL)
+    // прелоад ассет-фонов
     (0, react_1.useEffect)(() => {
         const preload = async () => {
             const promises = assetBackgrounds.map((bg) => react_native_1.Image.prefetch(react_native_1.Image.resolveAssetSource(bg.source).uri));
@@ -242,17 +238,19 @@ const GameScreen = () => {
             clearInterval(timer.current);
             timer.current = null;
         }
-        // каждый старт выбираем новый фон/рубашку
+        // НОВОЕ: меняем фон каждый старт.
         if (bgPool.length) {
-            const uri = pick(bgPool);
+            const nextV = bgVersion + 1;
+            const uri = withBust(pick(bgPool), nextV);
             setSelectedBackground({ source: { uri }, hasStars: false });
-            setSelectedBackgroundKey(uri); // форсим ремоунт фона
+            setBgVersion(nextV); // меняем key
         }
         else {
-            const bg = pick(assetBackgrounds);
-            setSelectedBackground(bg);
-            setSelectedBackgroundKey("asset-" + Math.random().toString(36).slice(2));
+            // ассетный — тоже форсим смену ключа
+            setSelectedBackground(pick(assetBackgrounds));
+            setBgVersion((v) => v + 1);
         }
+        // рубашка
         if (backPool.length) {
             setSelectedBack({ uri: pick(backPool) });
         }
@@ -265,7 +263,7 @@ const GameScreen = () => {
         statsOffsetY.value = -100;
         statsOpacity.value = 0;
         const totalPairs = Math.floor(level / 2);
-        // берём источники лиц
+        // лица
         let frontPool = [];
         if (externalFrontList && externalFrontList.length > 0) {
             const uniq = Array.from(new Set(externalFrontList));
@@ -286,11 +284,11 @@ const GameScreen = () => {
         const cardPairs = selectedValues
             .map((val, index) => ({
             id: index,
-            value: "cardFace-1", // типобезопасность
+            value: "cardFace-1",
             isFlipped: false,
             isMatched: false,
             isHidden: false,
-            __source: val.source, // реальный источник изображения
+            __source: val.source,
         }))
             .sort(() => Math.random() - 0.5);
         setCards(cardPairs);
@@ -511,12 +509,8 @@ const GameScreen = () => {
                 return 120;
         }
     };
-    const handleHintPressIn = () => {
-        hintScale.value = 1.1;
-    };
-    const handleHintPressOut = () => {
-        hintScale.value = 1;
-    };
+    const handleHintPressIn = () => (hintScale.value = 1.1);
+    const handleHintPressOut = () => (hintScale.value = 1);
     const handleBackPress = async () => {
         backScale.value = (0, react_native_reanimated_1.withTiming)(1.1, { duration: 200 }, () => {
             backScale.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 200 });
@@ -545,16 +539,14 @@ const GameScreen = () => {
     const handlePlayAgainPressOut = () => {
         playAgainScale.value = 1;
         playAgainOpacity.value = 1;
-        const t = setTimeout(() => {
-            handlePlayAgain();
-        }, 300);
+        const t = setTimeout(() => handlePlayAgain(), 300);
         completionTimers.current.push(t);
     };
     const handlePlayAgain = () => {
         setShowConfetti(false);
         setShowCongrats(false);
         setShowPlayAgain(false);
-        generateCards(); // новый выбор фона/рубашки из пулов
+        generateCards(); // теперь меняется и фон (через bgVersion + cache-bust)
     };
     const renderItem = ({ item }) => {
         const cardSize = getCardSize();
@@ -599,7 +591,7 @@ const GameScreen = () => {
                             resizeMode: "contain",
                         } }) }))] }));
     };
-    // анимации статики
+    // анимации статических блоков
     const arcAnimatedStyle = (0, react_native_reanimated_1.useAnimatedStyle)(() => ({
         transform: [{ translateY: arcOffsetY.value }],
         opacity: arcOpacity.value,
@@ -624,11 +616,13 @@ const GameScreen = () => {
         transform: [{ scale: (0, react_native_reanimated_1.withTiming)(congratsPulse.value, { duration: 2000 }) }],
         opacity: 1,
     }));
+    // размеры
+    const { width: w, height: h } = react_native_1.Dimensions.get("window");
     return ((0, jsx_runtime_1.jsxs)(react_native_1.View, { style: { flex: 1, width: "100%", height: "100%" }, children: [(0, jsx_runtime_1.jsx)(react_native_1.ImageBackground, { source: selectedBackground.source, style: [
                     react_native_1.StyleSheet.absoluteFillObject,
                     { width: "100%", height: "100%", zIndex: 0 },
-                ], resizeMode: "cover" }, selectedBackgroundKey), "hasStars" in selectedBackground && selectedBackground.hasStars && ((0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: "100%", width: "100%", style: [react_native_1.StyleSheet.absoluteFillObject, { zIndex: 1 }], viewBox: `0 0 ${width} ${height}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Defs, { children: (0, jsx_runtime_1.jsxs)(react_native_svg_1.RadialGradient, { id: "starGradient", cx: "50%", cy: "50%", r: "50%", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0%", stopColor: "#FFFFFF", stopOpacity: "1.5" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "14.58%", stopColor: "#FFFFFF", stopOpacity: "1.5" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "100%", stopColor: "rgba(165, 94, 255, 0)", stopOpacity: "0" })] }) }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 38.11, cy: 44.71, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 61.37, cy: 188.17, r: Math.min(width, height) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 158.31, cy: 250.21, r: Math.min(width, height) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 18.16, cy: 366.52, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 274.63, cy: 137.76, r: Math.min(width, height) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 231.97, cy: 356.83, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 369.62, cy: 141.64, r: Math.min(width, height) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 524.71, cy: 25.34, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 569.3, cy: 347.15, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 703.07, cy: 225.01, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 751.53, cy: 48.59, r: Math.min(width, height) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 834.89, cy: 327.75, r: Math.min(width, height) * 0.04, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 173.82, cy: 44.71, r: Math.min(width, height) * 0.04, fill: "url(#starGradient)" })] })), (0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: height, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${width} ${height}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.Defs, { children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), (0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 ${height} L0 100 Q${width / 2} 60 ${width} 100 L${width} ${height} Z`, fill: "url(#arcGrad)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 100 Q${width / 2} 60 ${width} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
-                            height: height * 0.4,
+                ], resizeMode: "cover" }, `bg-${bgVersion}`), "hasStars" in selectedBackground && selectedBackground.hasStars && ((0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: "100%", width: "100%", style: [react_native_1.StyleSheet.absoluteFillObject, { zIndex: 1 }], viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Defs, { children: (0, jsx_runtime_1.jsxs)(react_native_svg_1.RadialGradient, { id: "starGradient", cx: "50%", cy: "50%", r: "50%", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0%", stopColor: "#FFFFFF", stopOpacity: "1.5" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "14.58%", stopColor: "#FFFFFF", stopOpacity: "1.5" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "100%", stopColor: "rgba(165, 94, 255, 0)", stopOpacity: "0" })] }) }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 38.11, cy: 44.71, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 61.37, cy: 188.17, r: Math.min(w, h) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 158.31, cy: 250.21, r: Math.min(w, h) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 18.16, cy: 366.52, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 274.63, cy: 137.76, r: Math.min(w, h) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 231.97, cy: 356.83, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 369.62, cy: 141.64, r: Math.min(w, h) * 0.02, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 524.71, cy: 25.34, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 569.3, cy: 347.15, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 703.07, cy: 225.01, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 751.53, cy: 48.59, r: Math.min(w, h) * 0.03, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 834.89, cy: 327.75, r: Math.min(w, h) * 0.04, fill: "url(#starGradient)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Circle, { cx: 173.82, cy: 44.71, r: Math.min(w, h) * 0.04, fill: "url(#starGradient)" })] })), (0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: h, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.Defs, { children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), (0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 ${h} L0 100 Q${w / 2} 60 ${w} 100 L${w} ${h} Z`, fill: "url(#arcGrad)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 100 Q${w / 2} 60 ${w} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
+                            height: h * 0.4,
                             position: "absolute",
                             bottom: 0,
                             width: "100%",
