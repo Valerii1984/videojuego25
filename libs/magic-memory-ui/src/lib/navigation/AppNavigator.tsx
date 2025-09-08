@@ -71,7 +71,6 @@ const InnerNavigator = () => {
     return <View style={{ flex: 1, backgroundColor: "#16103E" }} />;
   }
 
-  // ✅ Фикс: даём теме объект fonts, чтобы native-stack не падал на fonts.regular
   const theme = {
     ...NavDefaultTheme,
     dark: true,
@@ -84,7 +83,6 @@ const InnerNavigator = () => {
       border: "#16103E",
       notification: "#16103E",
     },
-    // В некоторых версиях @react-navigation/elements ожидаются эти ключи
     fonts: {
       regular: { fontFamily: "Fredoka", fontWeight: "400" },
       medium: { fontFamily: "FredokaSemiBold", fontWeight: "600" },
@@ -95,7 +93,8 @@ const InnerNavigator = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#16103E" }}>
-      <NavigationContainer theme={theme}>
+      {/* 👇 единственное изменение — independent */}
+      <NavigationContainer theme={theme} independent={true}>
         <StatusBar
           hidden={Platform.OS !== "web"}
           translucent={Platform.OS === "android"}

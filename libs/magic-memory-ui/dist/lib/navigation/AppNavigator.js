@@ -97,7 +97,6 @@ const InnerNavigator = () => {
     if (!fontsLoaded) {
         return (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" } });
     }
-    // ✅ Фикс: даём теме объект fonts, чтобы native-stack не падал на fonts.regular
     const theme = {
         ...native_1.DefaultTheme,
         dark: true,
@@ -110,7 +109,6 @@ const InnerNavigator = () => {
             border: "#16103E",
             notification: "#16103E",
         },
-        // В некоторых версиях @react-navigation/elements ожидаются эти ключи
         fonts: {
             regular: { fontFamily: "Fredoka", fontWeight: "400" },
             medium: { fontFamily: "FredokaSemiBold", fontWeight: "600" },
@@ -118,7 +116,7 @@ const InnerNavigator = () => {
             heavy: { fontFamily: "FredokaSemiBold", fontWeight: "800" },
         },
     };
-    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsxs)(Stack.Navigator, { initialRouteName: "SplashScreen", screenOptions: {
+    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, independent: true, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsxs)(Stack.Navigator, { initialRouteName: "SplashScreen", screenOptions: {
                         headerShown: false,
                         contentStyle: { backgroundColor: "#16103E" },
                         animation: "none",
