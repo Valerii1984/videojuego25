@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -11,22 +11,11 @@ import {
   Dimensions,
   StyleProp,
   ViewStyle,
-  ImageSourcePropType,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useLanguage } from "../contexts/LanguageContext";
-import { useSound } from "../contexts/SoundContext";
 import * as ScreenOrientation from "expo-screen-orientation";
-import Confetti from "../components/Confetti";
-import CustomAlert from "../components/CustomAlert";
-import MemoryCard from "../components/Card";
-import { RootParamList, Card } from "../types/index";
-import { isWeb } from "../utils/config";
-import globalStyles from "../styles/global-styles";
-import BackIcon from "../../icons/BackIcon";
-import styles from "./GameScreen.styles";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -42,56 +31,38 @@ import Svg, {
   Circle,
 } from "react-native-svg";
 
-/** ---------- ВНЕШНИЙ КОНФИГ через global.* ----------
- * Ожидаем, что песочница положит:
- * (global as any).MAGIC_MEMORY_EXTERNAL_CONFIG = {
- *   level?: 4|6|8|10|12,
- *   lang?: string,
- *   background?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
- *   backCard?: string | string[] | Partial<Record<4|6|8|10|12, string|string[]>>,
- *   // ВАЖНО: теперь поддерживаем и массив, и помеуровневую схему
- *   frontCards?: string[] | Partial<Record<4|6|8|10|12, string[]>>
- * }
- */
+import { useLanguage } from "../contexts/LanguageContext";
+import { useSound } from "../contexts/SoundContext";
+import Confetti from "../components/Confetti";
+import CustomAlert from "../components/CustomAlert";
+import MemoryCard from "../components/Card";
+import globalStyles from "../styles/global-styles";
+import BackIcon from "../../icons/BackIcon";
+import styles from "./GameScreen.styles";
+
+// ВАЖНО: используем тип Card из ваших типов библиотеки
+import { Card as LibCard } from "../types";
+
+// типы для пропсов из навигации
 type LevelKey = 4 | 6 | 8 | 10 | 12;
-type PerLevelURIs =
-  | string
-  | string[]
-  | Partial<Record<LevelKey, string | string[]>>;
-
-interface ExternalConfig {
-  level?: LevelKey;
-  lang?: string;
-  background?: PerLevelURIs;
-  backCard?: PerLevelURIs;
-  frontCards?: string[] | Partial<Record<LevelKey, string[]>>;
-}
-
-const asArray = (val?: string | string[]): string[] | undefined => {
-  if (!val) return undefined;
-  return Array.isArray(val) ? val : [val];
-};
-
-const pickRandom = <T,>(arr: T[]): T =>
-  arr[Math.floor(Math.random() * arr.length)];
-
-const resolvePerLevel = (
-  src: PerLevelURIs | undefined,
-  level: LevelKey
-): string[] | undefined => {
-  if (!src) return undefined;
-  if (typeof src === "string") return [src];
-  if (Array.isArray(src)) return src;
-  const lvl = src[level];
-  return asArray(lvl as string | string[] | undefined);
-};
-
-// таймеры
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
 
-// ассеты (фоллбеки)
-const assetFrontGroups: Record<string, ImageSourcePropType[]> = {
+export interface MagicMemoryPropConfig {
+  age: LevelKey;
+  lang: string;
+  background?: string | string[];
+  backCardSide?: string | string[];
+  frontCardSide?: string[];
+}
+
+type RootParams = {
+  level?: number;
+  config: MagicMemoryPropConfig;
+};
+
+// ассеты-фоллбэки
+const assetFrontGroups: Record<string, any[]> = {
   cardFace: [
     require("../assets/cardFace-1.jpg"),
     require("../assets/cardFace-2.jpg"),
@@ -112,7 +83,7 @@ const assetFrontGroups: Record<string, ImageSourcePropType[]> = {
   ],
 };
 
-const assetBacks: ImageSourcePropType[] = [
+const assetBacks: any[] = [
   require("../assets/card-1.jpg"),
   require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg"),
   require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg"),
@@ -152,12 +123,19 @@ const assetBackgrounds = [
   },
 ];
 
+const pickRandom = <T,>(arr: T[]): T =>
+  arr[Math.floor(Math.random() * arr.length)];
+const asArray = (v?: string | string[]) =>
+  v ? (Array.isArray(v) ? v : [v]) : undefined;
+
 // иконка Play Again
 const PlayIcon = () => (
   <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
 );
 
-const GameScreen = () => {
+const GameScreen: React.FC = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const route = useRoute();
   const { language } = useLanguage();
   const {
     playNotificationSound,
@@ -166,25 +144,20 @@ const GameScreen = () => {
     stopSuccessSound,
   } = useSound();
 
-  const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>();
-  const route = useRoute();
-  const incomingLevel = (route.params as { level: number } | undefined)?.level;
+  // конфиг из пропсов навигации
+  const { level: routeLevel, config } = (route.params || {}) as RootParams;
 
-  const externalConfig: ExternalConfig | undefined = (global as any)
-    ?.MAGIC_MEMORY_EXTERNAL_CONFIG;
-
-  // текущий уровень: приоритет route → external → 4
+  // уровень
   const level: LevelKey = useMemo(() => {
-    const raw = (incomingLevel ?? externalConfig?.level ?? 4) as number;
+    const raw = (routeLevel ?? config?.age ?? 4) as number;
     const allowed: LevelKey[] = [4, 6, 8, 10, 12];
     return (allowed.includes(raw as LevelKey) ? raw : 4) as LevelKey;
-  }, [incomingLevel, externalConfig?.level]);
+  }, [routeLevel, config?.age]);
 
-  const [cards, setCards] = useState<Card[]>([]);
-  // map для лиц карт: id -> источник (uri/require)
-  const [frontSources, setFrontSources] = useState<
-    Record<number, ImageSourcePropType>
-  >({});
+  const { width, height } = Dimensions.get("window");
+
+  // state
+  const [cards, setCards] = useState<LibCard[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [time, setTime] = useState(0);
   const [moves, setMoves] = useState(0);
@@ -195,19 +168,23 @@ const GameScreen = () => {
   const [totalStars, setTotalStars] = useState(0);
   const [isShowingCards, setIsShowingCards] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
-
-  const timer = useRef<IntervalId | null>(null);
-  const completionTimers = useRef<TimeoutId[]>([]);
-
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [hintActive, setHintActive] = useState<number[]>([]);
-  const [smileVisible, setSmileVisible] = useState<number | null>(null);
+  const [isGameActive, setIsGameActive] = useState(true);
   const [showCongrats, setShowCongrats] = useState(false);
   const [showPlayAgain, setShowPlayAgain] = useState(false);
-  const [isGameActive, setIsGameActive] = useState(true);
+  const [hintActive, setHintActive] = useState<number[]>([]);
+  const [smileVisible, setSmileVisible] = useState<number | null>(null);
 
-  // seed, чтобы на каждый старт брать новый фон/рубашку
-  const [roundSeed, setRoundSeed] = useState(0);
+  // фон/рубашка на ТЕКУЩИЙ раунд
+  const [roundBackground, setRoundBackground] = useState<{
+    source: any;
+    hasStars?: boolean;
+  }>();
+  const [roundBack, setRoundBack] = useState<any>();
+
+  // таймеры/анимации
+  const timer = useRef<IntervalId | null>(null);
+  const completionTimers = useRef<TimeoutId[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const arcOffsetY = useSharedValue(0);
   const arcOpacity = useSharedValue(1);
@@ -219,8 +196,6 @@ const GameScreen = () => {
   const backScale = useSharedValue(1);
   const congratsPulse = useSharedValue(1.05);
 
-  const { width, height } = Dimensions.get("window");
-
   const PLAY_AGAIN_OFFSET = 110;
   const PLAY_AGAIN_CAP = 0.78;
   const playAgainTop = Math.min(
@@ -228,40 +203,6 @@ const GameScreen = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // ---------- выбор фона и рубашки: теперь завязано на roundSeed ----------
-  const selectedBackground = useMemo(() => {
-    const candidates = resolvePerLevel(externalConfig?.background, level);
-    if (candidates && candidates.length > 0) {
-      const uri = pickRandom(candidates);
-      return { source: { uri }, hasStars: false as const };
-    }
-    // фоллбэк — ассеты
-    return assetBackgrounds[
-      Math.floor(Math.random() * assetBackgrounds.length)
-    ];
-    // roundSeed в deps, чтобы менять на каждом старте
-  }, [externalConfig?.background, level, roundSeed]);
-
-  const selectedBack: ImageSourcePropType = useMemo(() => {
-    const candidates = resolvePerLevel(externalConfig?.backCard, level);
-    if (candidates && candidates.length > 0) {
-      const uri = pickRandom(candidates);
-      return { uri };
-    }
-    return assetBacks[Math.floor(Math.random() * assetBacks.length)];
-  }, [externalConfig?.backCard, level, roundSeed]);
-
-  // список лиц из внешнего конфига (поддерживаем и массив, и помеуровневую схему)
-  const externalFrontList: string[] | undefined = useMemo(() => {
-    const fc = externalConfig?.frontCards;
-    if (!fc) return undefined;
-    if (Array.isArray(fc)) return fc;
-    const byLevel = fc[level];
-    if (byLevel && byLevel.length > 0) return byLevel;
-    return undefined;
-  }, [externalConfig?.frontCards, level, roundSeed]);
-
-  // анимации
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -287,7 +228,7 @@ const GameScreen = () => {
     opacity: 1,
   }));
 
-  // прелоад ассетных фонов (не мешает URL)
+  // прелоад ассет-фонов (для скорости), не мешает URL
   useEffect(() => {
     const preload = async () => {
       const promises = assetBackgrounds.map((bg) =>
@@ -301,23 +242,21 @@ const GameScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (!isWeb) {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-    }
+    ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.LANDSCAPE
+    ).catch(() => {});
     if (!isInitialized) {
       generateCards();
       setIsInitialized(true);
     }
-
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
     if ([8, 10, 12].includes(level)) {
       playBackgroundMusic().catch(() => {});
-      timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
+      timer.current = setInterval(() => setTime((p) => p + 1), 1000);
     }
-
     if (showCongrats && isGameActive) {
       playSuccessSound().catch(() => {});
       congratsPulse.value = withRepeat(
@@ -326,70 +265,74 @@ const GameScreen = () => {
         true
       );
     }
-
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, isInitialized, showCongrats, isGameActive]);
 
+  // главное: фон/рубашка выбираются КАЖДЫЙ РАЗ при генерации раунда
   const generateCards = () => {
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
 
-    // новый seed → поменяются фон/рубашка
-    setRoundSeed((s) => s + 1);
-
-    // сброс анимаций
     arcOffsetY.value = height;
     arcOpacity.value = 0;
     statsOffsetY.value = -100;
     statsOpacity.value = 0;
 
-    const totalPairs = Math.floor(level / 2);
+    // фон
+    const bgCandidates = asArray(config?.background);
+    if (bgCandidates && bgCandidates.length > 0) {
+      setRoundBackground({ source: { uri: pickRandom(bgCandidates) } });
+    } else {
+      setRoundBackground(pickRandom(assetBackgrounds));
+    }
 
-    // формируем пул лиц
-    let frontPool: ImageSourcePropType[] = [];
-    if (externalFrontList && externalFrontList.length > 0) {
-      const uniq = Array.from(new Set(externalFrontList));
-      if (uniq.length >= totalPairs) {
-        frontPool = uniq.map((u) => ({ uri: u }));
-      }
+    // рубашка
+    const backCandidates = asArray(config?.backCardSide);
+    if (backCandidates && backCandidates.length > 0) {
+      setRoundBack({ uri: pickRandom(backCandidates) });
+    } else {
+      setRoundBack(pickRandom(assetBacks));
+    }
+
+    // лица
+    const totalPairs = Math.floor(level / 2);
+    let frontPool: { source: any }[] = [];
+    const incomingFront = config?.frontCardSide ?? [];
+
+    if (incomingFront.length >= totalPairs) {
+      const uniq = Array.from(new Set(incomingFront));
+      frontPool = uniq.map((u) => ({ source: { uri: u } }));
     }
     if (frontPool.length === 0) {
-      // фоллбэк — ассеты
       const groupKeys = Object.keys(assetFrontGroups);
-      const selectedGroup =
-        groupKeys[Math.floor(Math.random() * groupKeys.length)];
-      frontPool = assetFrontGroups[selectedGroup];
+      const selectedGroup = pickRandom(groupKeys);
+      frontPool = assetFrontGroups[selectedGroup].map((req) => ({
+        source: req,
+      }));
     }
 
     const shuffled = [...frontPool].sort(() => Math.random() - 0.5);
-    const pairsToUse = Math.min(totalPairs, shuffled.length);
-    const chosen = shuffled.slice(0, pairsToUse);
-    const duplicated = chosen
-      .flatMap((x) => [x, x])
+    const chosen = shuffled.slice(0, Math.min(totalPairs, shuffled.length));
+    const selectedValues = chosen.flatMap((x) => [x, x]);
+
+    const cardPairs: LibCard[] = selectedValues
+      .map((val, index) => ({
+        id: index,
+        // значение из допустимых ключей — чтобы тип совпал
+        value: "cardFace-1" as LibCard["value"],
+        isFlipped: false,
+        isMatched: false,
+        isHidden: false,
+        // локально кладём реальный источник
+        __source: val.source as any,
+      }))
       .sort(() => Math.random() - 0.5);
 
-    // карты (без лишних полей — чистый тип Card)
-    const cardPairs: Card[] = duplicated.map((_, index) => ({
-      id: index,
-      // значение берём любое из допустимых (совпадение будем проверять по frontSources)
-      value: "cardFace-1",
-      isFlipped: false,
-      isMatched: false,
-      isHidden: false,
-    }));
-
-    // источник лиц по id
-    const srcMap: Record<number, ImageSourcePropType> = {};
-    duplicated.forEach((src, idx) => {
-      srcMap[idx] = src;
-    });
-
-    setFrontSources(srcMap);
     setCards(cardPairs);
     setSelectedCards([]);
     setMatchedCards([]);
@@ -404,7 +347,6 @@ const GameScreen = () => {
     setShowUpgradePrompt(false);
     setIsGameActive(true);
 
-    // анимации входа
     arcOffsetY.value = withTiming(0, { duration: 500 });
     arcOpacity.value = withTiming(1, { duration: 500 });
     statsOffsetY.value = withTiming(0, { duration: 500 });
@@ -413,11 +355,9 @@ const GameScreen = () => {
     if (level === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
-        const updated = cardPairs.map((c) => ({ ...c, isFlipped: true }));
-        setCards(updated);
+        setCards((prev) => prev.map((c) => ({ ...c, isFlipped: true })));
         const hideTimer: TimeoutId = setTimeout(() => {
-          const closed = cardPairs.map((c) => ({ ...c, isFlipped: false }));
-          setCards(closed);
+          setCards((prev) => prev.map((c) => ({ ...c, isFlipped: false })));
           setIsShowingCards(false);
         }, 3000);
         completionTimers.current.push(hideTimer);
@@ -426,7 +366,7 @@ const GameScreen = () => {
     }
     if ([8, 10, 12].includes(level)) {
       playBackgroundMusic().catch(() => {});
-      timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
+      timer.current = setInterval(() => setTime((p) => p + 1), 1000);
     }
   };
 
@@ -454,12 +394,6 @@ const GameScreen = () => {
     return 1;
   };
 
-  const keyFor = (id: number) => {
-    const src = frontSources[id];
-    // для {uri} берём uri, для require — сам объект
-    return (src as any)?.uri ?? src;
-  };
-
   const handleCardPress = (id: number) => {
     if (
       isShowingCards ||
@@ -470,54 +404,53 @@ const GameScreen = () => {
     ) {
       return;
     }
-
     setIsFlipping(true);
     const newSelected = [...selectedCards, id];
     setSelectedCards(newSelected);
     setCards((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c))
     );
-
-    if ([8, 10, 12].includes(level)) setMoves((prev) => prev + 1);
+    if ([8, 10, 12].includes(level)) setMoves((p) => p + 1);
 
     if (newSelected.length === 2) {
-      const [firstId, secondId] = newSelected;
-      const same = keyFor(firstId) === keyFor(secondId);
+      const [aId, bId] = newSelected;
+      const a = cards.find((c) => c.id === aId);
+      const b = cards.find((c) => c.id === bId);
+
+      const same = (a as any)?.__source?.uri
+        ? (a as any).__source.uri === (b as any)?.__source?.uri
+        : (a as any)?.__source === (b as any)?.__source;
 
       if (same) {
         const matchDelay: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
           playNotificationSound().catch(() => {});
-          const newMatched = [...matchedCards, firstId, secondId];
+          const newMatched = [...matchedCards, aId, bId];
           setMatchedCards(newMatched);
 
           setCards((prev) =>
-            prev.map((card) =>
-              newMatched.includes(card.id)
-                ? { ...card, isMatched: true, isFlipped: true }
-                : card
+            prev.map((c) =>
+              newMatched.includes(c.id)
+                ? { ...c, isMatched: true, isFlipped: true }
+                : c
             )
           );
 
-          setSmileVisible(secondId);
-
+          setSmileVisible(bId);
           const smileTimer: TimeoutId = setTimeout(() => {
             if (!isGameActive) return;
             setSmileVisible(null);
             setCards((prev) =>
-              prev.map((card) =>
-                newMatched.includes(card.id)
-                  ? { ...card, isHidden: true }
-                  : card
+              prev.map((c) =>
+                newMatched.includes(c.id) ? { ...c, isHidden: true } : c
               )
             );
             setSelectedCards([]);
-            if (newMatched.length === cards.length) {
-              const newRounds = roundsCompleted + 1;
-              setRoundsCompleted(newRounds);
 
-              const starsEarned = getStars(level, time, moves);
-              setTotalStars((prev) => prev + starsEarned);
+            if (newMatched.length === cards.length) {
+              const rounds = roundsCompleted + 1;
+              setRoundsCompleted(rounds);
+              setTotalStars((p) => p + getStars(level, time, moves));
 
               const animTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
@@ -538,7 +471,7 @@ const GameScreen = () => {
               const playAgainTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowPlayAgain(true);
-                if (newRounds >= 5) setShowUpgradePrompt(true);
+                if (rounds >= 5) setShowUpgradePrompt(true);
               }, 2100);
               completionTimers.current.push(playAgainTimer);
             } else {
@@ -549,47 +482,50 @@ const GameScreen = () => {
         }, 500);
         completionTimers.current.push(matchDelay);
       } else {
-        const flipBackTimer: TimeoutId = setTimeout(() => {
+        const flipBack: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
           setCards((prev) =>
-            prev.map((card) =>
-              newSelected.includes(card.id)
-                ? { ...card, isFlipped: false }
-                : card
+            prev.map((c) =>
+              newSelected.includes(c.id) ? { ...c, isFlipped: false } : c
             )
           );
           setSelectedCards([]);
           setIsFlipping(false);
         }, 500);
-        completionTimers.current.push(flipBackTimer);
+        completionTimers.current.push(flipBack);
       }
     } else {
-      const unlockTimer: TimeoutId = setTimeout(
-        () => setIsFlipping(false),
-        500
-      );
-      completionTimers.current.push(unlockTimer);
+      const unlock: TimeoutId = setTimeout(() => setIsFlipping(false), 500);
+      completionTimers.current.push(unlock);
     }
   };
 
   const handleHint = () => {
     const unmatched = cards.filter((c) => !matchedCards.includes(c.id));
     if (selectedCards.length === 1) {
-      const selId = selectedCards[0];
-      const key = keyFor(selId);
-      const match = unmatched.find(
-        (c) => c.id !== selId && keyFor(c.id) === key
-      );
-      if (match) {
-        setHintActive([match.id]);
-        const t: TimeoutId = setTimeout(() => setHintActive([]), 2000);
-        completionTimers.current.push(t);
-        return;
+      const sel = cards.find((c) => c.id === selectedCards[0]);
+      if (sel) {
+        const key = (sel as any).__source?.uri ?? (sel as any).__source;
+        const match = unmatched.find(
+          (c) =>
+            c.id !== sel.id &&
+            ((c as any).__source?.uri ?? (c as any).__source) === key
+        );
+        if (match) {
+          setHintActive([match.id]);
+          const t: TimeoutId = setTimeout(() => setHintActive([]), 2000);
+          completionTimers.current.push(t);
+          return;
+        }
       }
     }
     for (let i = 0; i < unmatched.length; i++) {
       for (let j = i + 1; j < unmatched.length; j++) {
-        if (keyFor(unmatched[i].id) === keyFor(unmatched[j].id)) {
+        const a =
+          (unmatched[i] as any).__source?.uri ?? (unmatched[i] as any).__source;
+        const b =
+          (unmatched[j] as any).__source?.uri ?? (unmatched[j] as any).__source;
+        if (a === b) {
           setHintActive([unmatched[i].id, unmatched[j].id]);
           const t: TimeoutId = setTimeout(() => setHintActive([]), 2000);
           completionTimers.current.push(t);
@@ -599,42 +535,53 @@ const GameScreen = () => {
     }
   };
 
-  const getNumColumns = () => {
-    switch (level) {
-      case 4:
-        return 2;
-      case 6:
-        return 3;
-      case 8:
-        return 4;
-      case 10:
-        return 5;
-      case 12:
-        return 6;
-      default:
-        return 2;
+  const handleBackPress = async () => {
+    backScale.value = withTiming(1.1, { duration: 200 }, () => {
+      backScale.value = withTiming(1, { duration: 200 });
+    });
+    try {
+      setIsGameActive(false);
+      if (timer.current) {
+        clearInterval(timer.current);
+        timer.current = null;
+      }
+      completionTimers.current.forEach((t) => clearTimeout(t));
+      completionTimers.current = [];
+      setTotalStars(0);
+      await stopSuccessSound();
+      await new Promise<void>((r) => setTimeout(r, 100));
+      navigation.goBack();
+    } catch {
+      navigation.goBack();
     }
   };
 
-  const getCardSize = () => {
-    switch (level) {
-      case 4:
-        return 120;
-      case 6:
-        return 120;
-      case 8:
-        return 100;
-      case 10:
-      case 12:
-        return 100;
-      default:
-        return 120;
-    }
+  const handlePlayAgainPressIn = () => {
+    playAgainScale.value = 1.1;
+    playAgainOpacity.value = 0.8;
+  };
+  const handlePlayAgainPressOut = () => {
+    playAgainScale.value = 1;
+    playAgainOpacity.value = 1;
+    const t: TimeoutId = setTimeout(() => handlePlayAgain(), 300);
+    completionTimers.current.push(t);
+  };
+  const handlePlayAgain = () => {
+    setShowConfetti(false);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    generateCards(); // тут снова выбираются фон/рубашка/лица
   };
 
-  const renderItem = ({ item }: { item: Card }) => {
+  const getNumColumns = () =>
+    level === 4 ? 2 : level === 6 ? 3 : level === 8 ? 4 : level === 10 ? 5 : 6;
+  const getCardSize = () => (level <= 6 ? 120 : 100);
+
+  const { width: W, height: H } = Dimensions.get("window");
+
+  const renderItem = ({ item }: { item: LibCard }) => {
     const cardSize = getCardSize();
-    const faceSource = frontSources[item.id];
+    const faceSource = (item as any).__source as any;
 
     return (
       <View
@@ -663,7 +610,7 @@ const GameScreen = () => {
               borderColor: "#C57CFF",
               borderRadius: 10,
               backgroundColor: "transparent",
-              shadowColor: "rgba(197, 124, 255, 0.3)",
+              shadowColor: "rgba(197,124,255,0.3)",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
               shadowRadius: 15,
@@ -684,7 +631,7 @@ const GameScreen = () => {
               hintActive.includes(item.id) || selectedCards.includes(item.id)
             }
             style={{ opacity: 1, zIndex: 0 }}
-            backImage={selectedBack}
+            backImage={roundBack}
             frontImage={faceSource}
           />
         )}
@@ -709,7 +656,6 @@ const GameScreen = () => {
                 width: 32,
                 height: 32,
                 opacity: 1,
-                transform: [{ rotate: "0deg" }],
                 resizeMode: "contain",
               }}
             />
@@ -719,173 +665,62 @@ const GameScreen = () => {
     );
   };
 
-  const handleHintPressIn = () => {
-    hintScale.value = 1.1;
-  };
-  const handleHintPressOut = () => {
-    hintScale.value = 1;
-  };
-
-  const handleBackPress = async () => {
-    backScale.value = withTiming(1.1, { duration: 200 }, () => {
-      backScale.value = withTiming(1, { duration: 200 });
-    });
-    try {
-      setIsGameActive(false);
-      if (timer.current) {
-        clearInterval(timer.current);
-        timer.current = null;
-      }
-      completionTimers.current.forEach((t) => clearTimeout(t));
-      completionTimers.current = [];
-      setTotalStars(0);
-      await stopSuccessSound();
-      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
-      navigation.goBack();
-    } catch {
-      navigation.goBack();
-    }
-  };
-
-  const handlePlayAgainPressIn = () => {
-    playAgainScale.value = 1.1;
-    playAgainOpacity.value = 0.8;
-  };
-  const handlePlayAgainPressOut = () => {
-    playAgainScale.value = 1;
-    playAgainOpacity.value = 1;
-    const t: TimeoutId = setTimeout(() => {
-      handlePlayAgain();
-    }, 300);
-    completionTimers.current.push(t);
-  };
-
-  const handlePlayAgain = () => {
-    setShowConfetti(false);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    generateCards(); // здесь дергается setRoundSeed → фон/рубашка сменятся
-  };
-
   return (
     <View style={{ flex: 1, width: "100%", height: "100%" }}>
-      <ImageBackground
-        source={selectedBackground.source}
-        style={[
-          StyleSheet.absoluteFillObject,
-          { width: "100%", height: "100%", zIndex: 0 },
-        ]}
-        resizeMode="cover"
-      />
-
-      {/* звёздное свечение — только для ассетного фона с hasStars */}
-      {"hasStars" in selectedBackground && selectedBackground.hasStars && (
-        <Svg
-          height="100%"
-          width="100%"
-          style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="none"
-        >
-          <Defs>
-            <RadialGradient id="starGradient" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="1.5" />
-              <Stop offset="14.58%" stopColor="#FFFFFF" stopOpacity="1.5" />
-              <Stop
-                offset="100%"
-                stopColor="rgba(165, 94, 255, 0)"
-                stopOpacity="0"
-              />
-            </RadialGradient>
-          </Defs>
-          <Circle
-            cx={38.11}
-            cy={44.71}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={61.37}
-            cy={188.17}
-            r={Math.min(width, height) * 0.02}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={158.31}
-            cy={250.21}
-            r={Math.min(width, height) * 0.02}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={18.16}
-            cy={366.52}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={274.63}
-            cy={137.76}
-            r={Math.min(width, height) * 0.02}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={231.97}
-            cy={356.83}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={369.62}
-            cy={141.64}
-            r={Math.min(width, height) * 0.02}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={524.71}
-            cy={25.34}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={569.3}
-            cy={347.15}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={703.07}
-            cy={225.01}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={751.53}
-            cy={48.59}
-            r={Math.min(width, height) * 0.03}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={834.89}
-            cy={327.75}
-            r={Math.min(width, height) * 0.04}
-            fill="url(#starGradient)"
-          />
-          <Circle
-            cx={173.82}
-            cy={44.71}
-            r={Math.min(width, height) * 0.04}
-            fill="url(#starGradient)"
-          />
-        </Svg>
+      {roundBackground && (
+        <ImageBackground
+          source={roundBackground.source}
+          style={[
+            StyleSheet.absoluteFillObject,
+            { width: "100%", height: "100%", zIndex: 0 },
+          ]}
+          resizeMode="cover"
+        />
       )}
 
-      {/* дуга + бордер */}
+      {roundBackground &&
+        "hasStars" in roundBackground &&
+        roundBackground.hasStars && (
+          <Svg
+            height="100%"
+            width="100%"
+            style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
+            viewBox={`0 0 ${W} ${H}`}
+            preserveAspectRatio="none"
+          >
+            <Defs>
+              <RadialGradient id="starGradient" cx="50%" cy="50%" r="50%">
+                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="1.5" />
+                <Stop offset="14.58%" stopColor="#FFFFFF" stopOpacity="1.5" />
+                <Stop
+                  offset="100%"
+                  stopColor="rgba(165, 94, 255, 0)"
+                  stopOpacity="0"
+                />
+              </RadialGradient>
+            </Defs>
+            {[
+              38.11, 61.37, 158.31, 18.16, 274.63, 231.97, 369.62, 524.71,
+              569.3, 703.07, 751.53, 834.89, 173.82,
+            ].map((x, i) => (
+              <Circle
+                key={i}
+                cx={x}
+                cy={(i * 60 + 45) % H}
+                r={Math.min(W, H) * (i % 3 === 0 ? 0.04 : 0.02)}
+                fill="url(#starGradient)"
+              />
+            ))}
+          </Svg>
+        )}
+
+      {/* дуга */}
       <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
         <Svg
-          height={height}
+          height={H}
           width="100%"
           style={{ position: "absolute", top: 0, left: 0, zIndex: 5 }}
-          viewBox={`0 0 ${width} ${height}`}
+          viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="none"
         >
           <Defs>
@@ -915,27 +750,17 @@ const GameScreen = () => {
             </SvgLinearGradient>
           </Defs>
           <Path
-            d={`M0 ${height} L0 100 Q${width / 2} 60 ${width} 100 L${width} ${height} Z`}
+            d={`M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`}
             fill="url(#arcGrad)"
           />
           <Path
-            d={`M0 100 Q${width / 2} 60 ${width} 100`}
+            d={`M0 100 Q${W / 2} 60 ${W} 100`}
             fill="none"
             stroke="url(#arcBorderGrad)"
             strokeWidth={4}
             strokeLinecap="round"
           />
         </Svg>
-        <View
-          style={{
-            height: height * 0.4,
-            position: "absolute",
-            bottom: 0,
-            width: "100%",
-            opacity: 0.5,
-            zIndex: 4,
-          }}
-        />
       </Animated.View>
 
       <StatusBar hidden />
@@ -943,7 +768,7 @@ const GameScreen = () => {
       <View
         style={[
           globalStyles.containers.gameArea,
-          { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
+          { flex: 1, width: "100%", overflow: "visible" },
         ]}
       >
         {!showPlayAgain && (
@@ -962,8 +787,8 @@ const GameScreen = () => {
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
               onPress={handleHint}
-              onPressIn={handleHintPressIn}
-              onPressOut={handleHintPressOut}
+              onPressIn={() => (hintScale.value = 1.1)}
+              onPressOut={() => (hintScale.value = 1)}
             >
               <View style={styles.hintGlow}>
                 <View style={styles.hintBorder}>
@@ -981,36 +806,29 @@ const GameScreen = () => {
 
         {[8, 10, 12].includes(level) && (
           <Animated.View
-            style={[
-              styles.statsPanel,
-              statsAnimatedStyle,
-              { zIndex: 20, opacity: 1 },
-            ]}
+            style={[styles.statsPanel, statsAnimatedStyle, { zIndex: 20 }]}
           >
             <View
               style={[
                 styles.statsItem,
                 {
                   backgroundColor: "#C57CFF",
-                  width: "auto",
                   minWidth: 100,
-                  flexShrink: 0,
-                  flexGrow: 0,
                   alignItems: "center",
                 },
               ]}
             >
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
+              <Text style={[styles.statsText, { color: "#FFF" }]}>
                 Time: <Text>{time}s</Text>
               </Text>
             </View>
             <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
+              <Text style={[styles.statsText, { color: "#FFF" }]}>
                 Moves: <Text>{moves}</Text>
               </Text>
             </View>
             <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
+              <Text style={[styles.statsText, { color: "#FFF" }]}>
                 Stars: <Text>{totalStars}★</Text>
               </Text>
             </View>
@@ -1025,33 +843,23 @@ const GameScreen = () => {
               justifyContent: "center",
               alignItems: "center",
               zIndex: 100,
-              overflow: "visible",
             }}
           >
             <FlatList
               key={`flatlist-${level}`}
               data={cards}
               renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(it) => it.id.toString()}
               numColumns={getNumColumns()}
-              columnWrapperStyle={[
-                styles.row,
-                { justifyContent: "center", overflow: "visible" },
-              ]}
+              columnWrapperStyle={[styles.row, { justifyContent: "center" }]}
               contentContainerStyle={[
                 styles.grid,
-                { paddingTop: 62, width: "100%", overflow: "visible" },
+                { paddingTop: 62, width: "100%" },
               ]}
-              style={
-                {
-                  flex: 1,
-                  width: "100%",
-                  overflow: "visible",
-                } as StyleProp<ViewStyle>
-              }
-              initialNumToRender={2}
-              maxToRenderPerBatch={2}
-              windowSize={1}
+              style={{ flex: 1, width: "100%" } as StyleProp<ViewStyle>}
+              initialNumToRender={4}
+              maxToRenderPerBatch={6}
+              windowSize={3}
               extraData={cards}
               removeClippedSubviews={false}
               getItemLayout={(data, index) => ({
@@ -1077,18 +885,12 @@ const GameScreen = () => {
             <Animated.View style={[styles.congratsGlow, congratsAnimatedStyle]}>
               <Image
                 source={require("../assets/Frame_Type3_03_Decor.png")}
-                style={{
-                  width: 221,
-                  height: 221,
-                  resizeMode: "contain",
-                  opacity: 1,
-                  zIndex: 2,
-                }}
+                style={{ width: 221, height: 221, resizeMode: "contain" }}
               />
             </Animated.View>
             <Image
               source={require("../assets/TitlFon.png")}
-              style={[styles.congratsFon, { opacity: 1 }]}
+              style={styles.congratsFon}
             />
             <Text
               style={[styles.congratsText, { zIndex: 10 }]}
@@ -1100,7 +902,7 @@ const GameScreen = () => {
           </View>
         )}
 
-        {/* Кнопка Play Again */}
+        {/* Play Again */}
         {showPlayAgain && (
           <Animated.View
             style={[
@@ -1121,10 +923,10 @@ const GameScreen = () => {
               onPressOut={handlePlayAgainPressOut}
               activeOpacity={1}
             >
-              <View style={[styles.playAgainGradient, { opacity: 1 }]}>
-                <View style={[styles.playAgainContent, { opacity: 1 }]}>
+              <View style={styles.playAgainGradient}>
+                <View style={styles.playAgainContent}>
                   <Text
-                    style={[styles.playAgainText, { opacity: 1 }]}
+                    style={styles.playAgainText}
                     adjustsFontSizeToFit
                     numberOfLines={1}
                   >
@@ -1137,27 +939,25 @@ const GameScreen = () => {
           </Animated.View>
         )}
 
-        {/* Апгрейд-диалог */}
+        {/* Диалог повышения сложности */}
         <View style={{ position: "relative", zIndex: 3000 }}>
           <CustomAlert
             visible={showUpgradePrompt}
             onClose={() => setShowUpgradePrompt(false)}
             title={
               <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFF" }}>
-                {language === "es" ? "¡Coincidencia!" : "Match!"}
+                Match!
               </Text>
             }
             message={
               <Text style={{ fontSize: 16, color: "#FFF" }}>
-                {language === "es"
-                  ? "¿Subir a un nivel más difícil?"
-                  : "Increase difficulty?"}
+                Increase difficulty?
               </Text>
             }
             onYes={() => {
               setShowUpgradePrompt(false);
               const next = level === 4 ? 6 : level === 6 ? 8 : 10;
-              navigation.replace("GameScreen", { level: next });
+              navigation.replace("GameScreen", { level: next, config });
               setRoundsCompleted(0);
               setMatchedCards([]);
               setTime(0);

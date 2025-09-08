@@ -1,5 +1,4 @@
-import React from "react";
-type LevelKey = 4 | 6 | 8 | 10 | 12;
+export type LevelKey = 4 | 6 | 8 | 10 | 12;
 export interface MagicMemoryPropConfig {
     age: LevelKey;
     lang: string;
@@ -7,5 +6,3 @@ export interface MagicMemoryPropConfig {
     backCardSide?: string | string[];
     frontCardSide?: string[];
 }
-declare const GameScreen: React.FC;
-export default GameScreen;
