@@ -1,3 +1,4 @@
+// libs/magic-memory-ui/src/lib/screens/GameScreen.tsx
 import { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
@@ -40,10 +41,10 @@ import Svg, {
 } from "react-native-svg";
 import { usePropConfig } from "../contexts/PropConfigContext";
 
-// Уровни
+// уровни
 type LevelKey = 4 | 6 | 8 | 10 | 12;
 
-// Утилиты под пропсы
+// утилиты под пропсы
 const asArray = (val?: string | string[]): string[] | undefined => {
   if (!val) return undefined;
   return Array.isArray(val) ? val : [val];
@@ -51,16 +52,19 @@ const asArray = (val?: string | string[]): string[] | undefined => {
 const pickRandom = <T,>(arr: T[]): T =>
   arr[Math.floor(Math.random() * arr.length)];
 
-// Таймеры
+// таймеры
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
 
-// Иконка для кнопки
+// иконка для кнопки
 const PlayIcon = () => (
-  <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
+  <Image
+    source={require("../../assets/playAgain.png")}
+    style={styles.playIcon}
+  />
 );
 
-// Вспомогалка для сравнения «лиц» (берём uri из локального поля)
+// источник картинки у карточки (локальное поле)
 const getSrc = (c?: Card): string | undefined => {
   const anyCard = c as unknown as { __source?: { uri?: string } | string };
   if (!anyCard || !anyCard.__source) return undefined;
@@ -91,8 +95,7 @@ const GameScreen = () => {
         ]}
       >
         <Text style={{ color: "#fff", textAlign: "center" }}>
-          Missing configuration. Pass props into &quot;MagicMemory&quot;
-          component.
+          Missing configuration. Pass props into "MagicMemory" component.
         </Text>
       </View>
     );
@@ -148,7 +151,7 @@ const GameScreen = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // Фон/рубашка/лица — только из пропсов
+  // фон/рубашка/лица — только из пропсов
   const selectedBackground = useMemo(() => {
     const candidates = asArray(cfg.background);
     const uri =
@@ -167,7 +170,7 @@ const GameScreen = () => {
     return Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : [];
   }, [cfg.frontCardSide, level]);
 
-  // Анимации
+  // анимации
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -193,7 +196,7 @@ const GameScreen = () => {
     opacity: 1,
   }));
 
-  // Жизненный цикл
+  // жизненный цикл
   useEffect(() => {
     if (!isWeb) {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -227,7 +230,7 @@ const GameScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, isInitialized, showCongrats, isGameActive]);
 
-  // Генерация колоды
+  // генерация колоды
   const generateCards = () => {
     if (timer.current) {
       clearInterval(timer.current);
@@ -251,7 +254,7 @@ const GameScreen = () => {
     statsOffsetY.value = -100;
     statsOpacity.value = 0;
 
-    // выбираем нужное число лиц и разворачиваем в пары
+    // выбрать лица и развернуть в пары
     const chosen = uniqFront
       .slice()
       .sort(() => Math.random() - 0.5)
@@ -259,7 +262,7 @@ const GameScreen = () => {
       .map((u) => ({ source: { uri: u } as const }));
     const selectedValues = chosen.flatMap((x) => [x, x]);
 
-    // создаём карточки (value — муляж, рендерим по __source)
+    // карточки (value — муляж, рендер по __source)
     const cardPairs: Card[] = selectedValues
       .map((val, index) => ({
         id: index,
@@ -267,7 +270,6 @@ const GameScreen = () => {
         isFlipped: false,
         isMatched: false,
         isHidden: false,
-        // локальное поле для источника (uri)
         ...({ __source: val.source } as any),
       }))
       .sort(() => Math.random() - 0.5);
@@ -571,6 +573,34 @@ const GameScreen = () => {
             frontImage={faceSource}
           />
         )}
+
+        {/* 😄 СМАЙЛ НАД КАРТОЧКОЙ — ВЕРНУЛИ */}
+        {smileVisible === item.id && (
+          <View
+            style={{
+              position: "absolute",
+              left: 46,
+              top: -49,
+              zIndex: 9999,
+              elevation: 50,
+            }}
+            pointerEvents="none"
+            collapsable={false}
+            renderToHardwareTextureAndroid
+            needsOffscreenAlphaCompositing
+          >
+            <Image
+              source={require("../../assets/faceSmile.png")}
+              style={{
+                width: 32,
+                height: 32,
+                opacity: 1,
+                transform: [{ rotate: "0deg" }],
+                resizeMode: "contain",
+              }}
+            />
+          </View>
+        )}
       </View>
     );
   };
@@ -623,7 +653,7 @@ const GameScreen = () => {
     generateCards();
   };
 
-  // Валидация пропсов — простая подсказка (без «< >» символов, чтобы TSX не ругался)
+  // валидация пропсов
   const pairsNeeded = Math.floor(level / 2);
   const cfgOk =
     selectedBackground &&
@@ -748,8 +778,8 @@ const GameScreen = () => {
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
               onPress={handleHint}
-              onPressIn={handleHintPressIn}
-              onPressOut={handleHintPressOut}
+              onPressIn={hintAnimatedStyle as any}
+              onPressOut={hintAnimatedStyle as any}
             >
               <View style={styles.hintGlow}>
                 <View style={styles.hintBorder}>
@@ -849,12 +879,12 @@ const GameScreen = () => {
           </View>
         )}
 
-        {/* Конфетти */}
+        {/* конфетти */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           <Confetti isActive={showConfetti} level={level} />
         </View>
 
-        {/* Поздравление */}
+        {/* поздравление */}
         {showCongrats && (
           <View
             style={[styles.congratsContainer, { zIndex: 3500 }]}
@@ -862,7 +892,7 @@ const GameScreen = () => {
           >
             <Animated.View style={[styles.congratsGlow, congratsAnimatedStyle]}>
               <Image
-                source={require("../assets/Frame_Type3_03_Decor.png")}
+                source={require("../../assets/Frame_Type3_03_Decor.png")}
                 style={{
                   width: 221,
                   height: 221,
@@ -873,7 +903,7 @@ const GameScreen = () => {
               />
             </Animated.View>
             <Image
-              source={require("../assets/TitlFon.png")}
+              source={require("../../assets/TitlFon.png")}
               style={[styles.congratsFon, { opacity: 1 }]}
             />
             <Text
@@ -886,7 +916,7 @@ const GameScreen = () => {
           </View>
         )}
 
-        {/* Кнопка Play Again */}
+        {/* кнопка Play Again */}
         {showPlayAgain && (
           <Animated.View
             style={[
@@ -903,8 +933,18 @@ const GameScreen = () => {
             ]}
           >
             <TouchableOpacity
-              onPressIn={handlePlayAgainPressIn}
-              onPressOut={handlePlayAgainPressOut}
+              onPressIn={() => {
+                playAgainScale.value = 1.1;
+                playAgainOpacity.value = 0.8;
+              }}
+              onPressOut={() => {
+                playAgainScale.value = 1;
+                playAgainOpacity.value = 1;
+                const t: TimeoutId = setTimeout(() => {
+                  handlePlayAgain();
+                }, 300);
+                completionTimers.current.push(t);
+              }}
               activeOpacity={1}
             >
               <View style={[styles.playAgainGradient, { opacity: 1 }]}>
@@ -923,7 +963,7 @@ const GameScreen = () => {
           </Animated.View>
         )}
 
-        {/* Апгрейд-диалог */}
+        {/* апгрейд-диалог */}
         <View style={{ position: "relative", zIndex: 3000 }}>
           <CustomAlert
             visible={showUpgradePrompt}

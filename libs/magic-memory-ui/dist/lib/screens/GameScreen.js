@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const jsx_runtime_1 = require("react/jsx-runtime");
+// libs/magic-memory-ui/src/lib/screens/GameScreen.tsx
 const react_1 = require("react");
 const react_native_1 = require("react-native");
 const expo_linear_gradient_1 = require("expo-linear-gradient");
@@ -54,16 +55,16 @@ const GameScreen_styles_1 = __importDefault(require("./GameScreen.styles"));
 const react_native_reanimated_1 = __importStar(require("react-native-reanimated"));
 const react_native_svg_1 = __importStar(require("react-native-svg"));
 const PropConfigContext_1 = require("../contexts/PropConfigContext");
-// Утилиты под пропсы
+// утилиты под пропсы
 const asArray = (val) => {
     if (!val)
         return undefined;
     return Array.isArray(val) ? val : [val];
 };
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-// Иконка для кнопки
-const PlayIcon = () => ((0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../assets/playAgain.png"), style: GameScreen_styles_1.default.playIcon }));
-// Вспомогалка для сравнения «лиц» (берём uri из локального поля)
+// иконка для кнопки
+const PlayIcon = () => ((0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/playAgain.png"), style: GameScreen_styles_1.default.playIcon }));
+// источник картинки у карточки (локальное поле)
 const getSrc = (c) => {
     const anyCard = c;
     if (!anyCard || !anyCard.__source)
@@ -123,7 +124,7 @@ const GameScreen = () => {
     const PLAY_AGAIN_OFFSET = 110;
     const PLAY_AGAIN_CAP = 0.78;
     const playAgainTop = Math.min(height * PLAY_AGAIN_CAP, height * 0.6 + PLAY_AGAIN_OFFSET);
-    // Фон/рубашка/лица — только из пропсов
+    // фон/рубашка/лица — только из пропсов
     const selectedBackground = (0, react_1.useMemo)(() => {
         const candidates = asArray(cfg.background);
         const uri = candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
@@ -137,7 +138,7 @@ const GameScreen = () => {
     const externalFrontList = (0, react_1.useMemo)(() => {
         return Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : [];
     }, [cfg.frontCardSide, level]);
-    // Анимации
+    // анимации
     const arcAnimatedStyle = (0, react_native_reanimated_1.useAnimatedStyle)(() => ({
         transform: [{ translateY: arcOffsetY.value }],
         opacity: arcOpacity.value,
@@ -162,7 +163,7 @@ const GameScreen = () => {
         transform: [{ scale: (0, react_native_reanimated_1.withTiming)(congratsPulse.value, { duration: 2000 }) }],
         opacity: 1,
     }));
-    // Жизненный цикл
+    // жизненный цикл
     (0, react_1.useEffect)(() => {
         if (!config_1.isWeb) {
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
@@ -189,7 +190,7 @@ const GameScreen = () => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [level, isInitialized, showCongrats, isGameActive]);
-    // Генерация колоды
+    // генерация колоды
     const generateCards = () => {
         if (timer.current) {
             clearInterval(timer.current);
@@ -209,14 +210,14 @@ const GameScreen = () => {
         arcOpacity.value = 0;
         statsOffsetY.value = -100;
         statsOpacity.value = 0;
-        // выбираем нужное число лиц и разворачиваем в пары
+        // выбрать лица и развернуть в пары
         const chosen = uniqFront
             .slice()
             .sort(() => Math.random() - 0.5)
             .slice(0, pairs)
             .map((u) => ({ source: { uri: u } }));
         const selectedValues = chosen.flatMap((x) => [x, x]);
-        // создаём карточки (value — муляж, рендерим по __source)
+        // карточки (value — муляж, рендер по __source)
         const cardPairs = selectedValues
             .map((val, index) => ({
             id: index,
@@ -224,7 +225,6 @@ const GameScreen = () => {
             isFlipped: false,
             isMatched: false,
             isHidden: false,
-            // локальное поле для источника (uri)
             ...{ __source: val.source },
         }))
             .sort(() => Math.random() - 0.5);
@@ -473,7 +473,19 @@ const GameScreen = () => {
                         shadowRadius: 15,
                         elevation: 2,
                         zIndex: 1,
-                    }, pointerEvents: "none" })), !item.isHidden && ((0, jsx_runtime_1.jsx)(Card_1.default, { item: item, onPress: handleCardPress, getCardSize: getCardSize, disabled: isShowingCards || selectedCards.length >= 2, isHinted: hintActive.includes(item.id) || selectedCards.includes(item.id), style: { opacity: 1, zIndex: 0 }, backImage: selectedBack, frontImage: faceSource }))] }));
+                    }, pointerEvents: "none" })), !item.isHidden && ((0, jsx_runtime_1.jsx)(Card_1.default, { item: item, onPress: handleCardPress, getCardSize: getCardSize, disabled: isShowingCards || selectedCards.length >= 2, isHinted: hintActive.includes(item.id) || selectedCards.includes(item.id), style: { opacity: 1, zIndex: 0 }, backImage: selectedBack, frontImage: faceSource })), smileVisible === item.id && ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
+                        position: "absolute",
+                        left: 46,
+                        top: -49,
+                        zIndex: 9999,
+                        elevation: 50,
+                    }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/faceSmile.png"), style: {
+                            width: 32,
+                            height: 32,
+                            opacity: 1,
+                            transform: [{ rotate: "0deg" }],
+                            resizeMode: "contain",
+                        } }) }))] }));
     };
     const handleHintPressIn = () => {
         hintScale.value = 1.1;
@@ -520,7 +532,7 @@ const GameScreen = () => {
         setShowPlayAgain(false);
         generateCards();
     };
-    // Валидация пропсов — простая подсказка (без «< >» символов, чтобы TSX не ругался)
+    // валидация пропсов
     const pairsNeeded = Math.floor(level / 2);
     const cfgOk = selectedBackground &&
         selectedBack &&
@@ -544,7 +556,7 @@ const GameScreen = () => {
                         } })] }), (0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [
                     global_styles_1.default.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
-                ], children: [!showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.backButton, backAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleBackPress, activeOpacity: 0.7, hitSlop: { top: 20, bottom: 20, left: 20, right: 20 }, children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, {}) }) })), !showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.hintButton, hintAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleHint, onPressIn: handleHintPressIn, onPressOut: handleHintPressOut, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintGlow, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintBorder, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#FFB380", "#D16C00"], style: GameScreen_styles_1.default.hintButtonInner, children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: GameScreen_styles_1.default.hintText, children: "?" }) }) }) }) }) })), [8, 10, 12].includes(level) && ((0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [
+                ], children: [!showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.backButton, backAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleBackPress, activeOpacity: 0.7, hitSlop: { top: 20, bottom: 20, left: 20, right: 20 }, children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, {}) }) })), !showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.hintButton, hintAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleHint, onPressIn: hintAnimatedStyle, onPressOut: hintAnimatedStyle, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintGlow, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintBorder, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#FFB380", "#D16C00"], style: GameScreen_styles_1.default.hintButtonInner, children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: GameScreen_styles_1.default.hintText, children: "?" }) }) }) }) }) })), [8, 10, 12].includes(level) && ((0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [
                             GameScreen_styles_1.default.statsPanel,
                             statsAnimatedStyle,
                             { zIndex: 20, opacity: 1 },
@@ -579,13 +591,13 @@ const GameScreen = () => {
                                 length: getCardSize(),
                                 offset: getCardSize() * Math.floor(index / getNumColumns()),
                                 index,
-                            }) }, `flatlist-${level}`) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { pointerEvents: "none", style: react_native_1.StyleSheet.absoluteFill, children: (0, jsx_runtime_1.jsx)(Confetti_1.default, { isActive: showConfetti, level: level }) }), showCongrats && ((0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.congratsContainer, { zIndex: 3500 }], pointerEvents: "none", children: [(0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.congratsGlow, congratsAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../assets/Frame_Type3_03_Decor.png"), style: {
+                            }) }, `flatlist-${level}`) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { pointerEvents: "none", style: react_native_1.StyleSheet.absoluteFill, children: (0, jsx_runtime_1.jsx)(Confetti_1.default, { isActive: showConfetti, level: level }) }), showCongrats && ((0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.congratsContainer, { zIndex: 3500 }], pointerEvents: "none", children: [(0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.congratsGlow, congratsAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/Frame_Type3_03_Decor.png"), style: {
                                         width: 221,
                                         height: 221,
                                         resizeMode: "contain",
                                         opacity: 1,
                                         zIndex: 2,
-                                    } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../assets/TitlFon.png"), style: [GameScreen_styles_1.default.congratsFon, { opacity: 1 }] }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.congratsText, { zIndex: 10 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: language === "es" ? "¡Felicidades!" : "Congratulations!" })] })), showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [
+                                    } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/TitlFon.png"), style: [GameScreen_styles_1.default.congratsFon, { opacity: 1 }] }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.congratsText, { zIndex: 10 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: language === "es" ? "¡Felicidades!" : "Congratulations!" })] })), showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [
                             GameScreen_styles_1.default.playAgainButton,
                             playAgainAnimatedStyle,
                             {
@@ -596,7 +608,17 @@ const GameScreen = () => {
                                 position: "absolute",
                                 alignSelf: "center",
                             },
-                        ], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPressIn: handlePlayAgainPressIn, onPressOut: handlePlayAgainPressOut, activeOpacity: 1, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainGradient, { opacity: 1 }], children: (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainContent, { opacity: 1 }], children: [(0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.playAgainText, { opacity: 1 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: "Play Game Again" }), (0, jsx_runtime_1.jsx)(PlayIcon, {})] }) }) }) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { position: "relative", zIndex: 3000 }, children: (0, jsx_runtime_1.jsx)(CustomAlert_1.default, { visible: showUpgradePrompt, onClose: () => setShowUpgradePrompt(false), title: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: language === "es" ? "¡Coincidencia!" : "Match!" }), message: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 16, color: "#FFF" }, children: language === "es"
+                        ], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPressIn: () => {
+                                playAgainScale.value = 1.1;
+                                playAgainOpacity.value = 0.8;
+                            }, onPressOut: () => {
+                                playAgainScale.value = 1;
+                                playAgainOpacity.value = 1;
+                                const t = setTimeout(() => {
+                                    handlePlayAgain();
+                                }, 300);
+                                completionTimers.current.push(t);
+                            }, activeOpacity: 1, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainGradient, { opacity: 1 }], children: (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainContent, { opacity: 1 }], children: [(0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.playAgainText, { opacity: 1 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: "Play Game Again" }), (0, jsx_runtime_1.jsx)(PlayIcon, {})] }) }) }) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { position: "relative", zIndex: 3000 }, children: (0, jsx_runtime_1.jsx)(CustomAlert_1.default, { visible: showUpgradePrompt, onClose: () => setShowUpgradePrompt(false), title: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: language === "es" ? "¡Coincidencia!" : "Match!" }), message: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 16, color: "#FFF" }, children: language === "es"
                                     ? "¿Subir a un nivel más difícil?"
                                     : "Increase difficulty?" }), onYes: () => {
                                 setShowUpgradePrompt(false);
