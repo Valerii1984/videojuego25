@@ -1,11 +1,2 @@
-import React from "react";
-type LevelKey = 4 | 6 | 8 | 10 | 12;
-export interface MagicMemoryPropConfig {
-    age: LevelKey;
-    lang: string;
-    background?: string | string[];
-    backCardSide?: string | string[];
-    frontCardSide?: string[];
-}
-declare const GameScreen: React.FC;
+declare const GameScreen: () => import("react/jsx-runtime").JSX.Element;
 export default GameScreen;

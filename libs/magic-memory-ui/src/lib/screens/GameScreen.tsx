@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,17 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useLanguage } from "../contexts/LanguageContext";
+import { useSound } from "../contexts/SoundContext";
 import * as ScreenOrientation from "expo-screen-orientation";
+import Confetti from "../components/Confetti";
+import CustomAlert from "../components/CustomAlert";
+import MemoryCard from "../components/Card";
+import { RootParamList, Card } from "../types";
+import { isWeb } from "../utils/config";
+import globalStyles from "../styles/global-styles";
+import BackIcon from "../../icons/BackIcon";
+import styles from "./GameScreen.styles";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -27,115 +37,39 @@ import Svg, {
   LinearGradient as SvgLinearGradient,
   Stop,
   Path,
-  RadialGradient,
-  Circle,
 } from "react-native-svg";
+import { usePropConfig } from "../contexts/PropConfigContext";
 
-import { useLanguage } from "../contexts/LanguageContext";
-import { useSound } from "../contexts/SoundContext";
-import Confetti from "../components/Confetti";
-import CustomAlert from "../components/CustomAlert";
-import MemoryCard from "../components/Card";
-import globalStyles from "../styles/global-styles";
-import BackIcon from "../../icons/BackIcon";
-import styles from "./GameScreen.styles";
-
-// ВАЖНО: используем тип Card из ваших типов библиотеки
-import { Card as LibCard } from "../types";
-
-// типы для пропсов из навигации
+// Уровни
 type LevelKey = 4 | 6 | 8 | 10 | 12;
+
+// Утилиты под пропсы
+const asArray = (val?: string | string[]): string[] | undefined => {
+  if (!val) return undefined;
+  return Array.isArray(val) ? val : [val];
+};
+const pickRandom = <T,>(arr: T[]): T =>
+  arr[Math.floor(Math.random() * arr.length)];
+
+// Таймеры
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
 
-export interface MagicMemoryPropConfig {
-  age: LevelKey;
-  lang: string;
-  background?: string | string[];
-  backCardSide?: string | string[];
-  frontCardSide?: string[];
-}
-
-type RootParams = {
-  level?: number;
-  config: MagicMemoryPropConfig;
-};
-
-// ассеты-фоллбэки
-const assetFrontGroups: Record<string, any[]> = {
-  cardFace: [
-    require("../assets/cardFace-1.jpg"),
-    require("../assets/cardFace-2.jpg"),
-    require("../assets/cardFace-3.jpg"),
-    require("../assets/cardFace-4.jpg"),
-    require("../assets/cardFace-5.jpg"),
-    require("../assets/cardFace-6.jpg"),
-  ],
-  facecard: [
-    require("../assets/animtest/facecard/boy.png"),
-    require("../assets/animtest/facecard/donkey.png"),
-    require("../assets/animtest/facecard/girl.png"),
-    require("../assets/animtest/facecard/kengoo.png"),
-    require("../assets/animtest/facecard/owl.png"),
-    require("../assets/animtest/facecard/pig.png"),
-    require("../assets/animtest/facecard/puh.png"),
-    require("../assets/animtest/facecard/tigr.png"),
-  ],
-};
-
-const assetBacks: any[] = [
-  require("../assets/card-1.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg"),
-  require("../assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg"),
-];
-
-const assetBackgrounds = [
-  { source: require("../assets/Background.jpg"), hasStars: true },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg"),
-    hasStars: false,
-  },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg"),
-    hasStars: false,
-  },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg"),
-    hasStars: false,
-  },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg"),
-    hasStars: false,
-  },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg"),
-    hasStars: false,
-  },
-  {
-    source: require("../assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg"),
-    hasStars: false,
-  },
-];
-
-const pickRandom = <T,>(arr: T[]): T =>
-  arr[Math.floor(Math.random() * arr.length)];
-const asArray = (v?: string | string[]) =>
-  v ? (Array.isArray(v) ? v : [v]) : undefined;
-
-// иконка Play Again
+// Иконка для кнопки
 const PlayIcon = () => (
   <Image source={require("../assets/playAgain.png")} style={styles.playIcon} />
 );
 
-const GameScreen: React.FC = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const route = useRoute();
+// Вспомогалка для сравнения «лиц» (берём uri из локального поля)
+const getSrc = (c?: Card): string | undefined => {
+  const anyCard = c as unknown as { __source?: { uri?: string } | string };
+  if (!anyCard || !anyCard.__source) return undefined;
+  return typeof anyCard.__source === "string"
+    ? anyCard.__source
+    : anyCard.__source.uri;
+};
+
+const GameScreen = () => {
   const { language } = useLanguage();
   const {
     playNotificationSound,
@@ -144,20 +78,36 @@ const GameScreen: React.FC = () => {
     stopSuccessSound,
   } = useSound();
 
-  // конфиг из пропсов навигации
-  const { level: routeLevel, config } = (route.params || {}) as RootParams;
+  const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>();
+  const route = useRoute();
+  const cfg = usePropConfig();
 
-  // уровень
+  if (!cfg) {
+    return (
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { justifyContent: "center", alignItems: "center", padding: 24 },
+        ]}
+      >
+        <Text style={{ color: "#fff", textAlign: "center" }}>
+          Missing configuration. Pass props into &quot;MagicMemory&quot;
+          component.
+        </Text>
+      </View>
+    );
+  }
+
+  const incomingLevel = (route.params as { level?: number } | undefined)?.level;
+
+  // текущий уровень: приоритет route → props.level
   const level: LevelKey = useMemo(() => {
-    const raw = (routeLevel ?? config?.age ?? 4) as number;
+    const raw = (incomingLevel ?? cfg.level) as number;
     const allowed: LevelKey[] = [4, 6, 8, 10, 12];
-    return (allowed.includes(raw as LevelKey) ? raw : 4) as LevelKey;
-  }, [routeLevel, config?.age]);
+    return (allowed.includes(raw as LevelKey) ? raw : cfg.level) as LevelKey;
+  }, [incomingLevel, cfg.level]);
 
-  const { width, height } = Dimensions.get("window");
-
-  // state
-  const [cards, setCards] = useState<LibCard[]>([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [time, setTime] = useState(0);
   const [moves, setMoves] = useState(0);
@@ -168,23 +118,16 @@ const GameScreen: React.FC = () => {
   const [totalStars, setTotalStars] = useState(0);
   const [isShowingCards, setIsShowingCards] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
-  const [isGameActive, setIsGameActive] = useState(true);
-  const [showCongrats, setShowCongrats] = useState(false);
-  const [showPlayAgain, setShowPlayAgain] = useState(false);
-  const [hintActive, setHintActive] = useState<number[]>([]);
-  const [smileVisible, setSmileVisible] = useState<number | null>(null);
 
-  // фон/рубашка на ТЕКУЩИЙ раунд
-  const [roundBackground, setRoundBackground] = useState<{
-    source: any;
-    hasStars?: boolean;
-  }>();
-  const [roundBack, setRoundBack] = useState<any>();
-
-  // таймеры/анимации
   const timer = useRef<IntervalId | null>(null);
   const completionTimers = useRef<TimeoutId[]>([]);
+
   const [isInitialized, setIsInitialized] = useState(false);
+  const [hintActive, setHintActive] = useState<number[]>([]);
+  const [smileVisible, setSmileVisible] = useState<number | null>(null);
+  const [showCongrats, setShowCongrats] = useState(false);
+  const [showPlayAgain, setShowPlayAgain] = useState(false);
+  const [isGameActive, setIsGameActive] = useState(true);
 
   const arcOffsetY = useSharedValue(0);
   const arcOpacity = useSharedValue(1);
@@ -196,6 +139,8 @@ const GameScreen: React.FC = () => {
   const backScale = useSharedValue(1);
   const congratsPulse = useSharedValue(1.05);
 
+  const { width, height } = Dimensions.get("window");
+
   const PLAY_AGAIN_OFFSET = 110;
   const PLAY_AGAIN_CAP = 0.78;
   const playAgainTop = Math.min(
@@ -203,6 +148,26 @@ const GameScreen: React.FC = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
+  // Фон/рубашка/лица — только из пропсов
+  const selectedBackground = useMemo(() => {
+    const candidates = asArray(cfg.background);
+    const uri =
+      candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
+    return uri ? { source: { uri } } : null;
+  }, [cfg.background, level]);
+
+  const selectedBack = useMemo(() => {
+    const candidates = asArray(cfg.backCardSide);
+    const uri =
+      candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
+    return uri ? { uri } : null;
+  }, [cfg.backCardSide, level]);
+
+  const externalFrontList: string[] = useMemo(() => {
+    return Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : [];
+  }, [cfg.frontCardSide, level]);
+
+  // Анимации
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -228,35 +193,25 @@ const GameScreen: React.FC = () => {
     opacity: 1,
   }));
 
-  // прелоад ассет-фонов (для скорости), не мешает URL
+  // Жизненный цикл
   useEffect(() => {
-    const preload = async () => {
-      const promises = assetBackgrounds.map((bg) =>
-        Image.prefetch(Image.resolveAssetSource(bg.source).uri)
-      );
-      try {
-        await Promise.all(promises);
-      } catch {}
-    };
-    preload();
-  }, []);
-
-  useEffect(() => {
-    ScreenOrientation.lockAsync(
-      ScreenOrientation.OrientationLock.LANDSCAPE
-    ).catch(() => {});
+    if (!isWeb) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    }
     if (!isInitialized) {
       generateCards();
       setIsInitialized(true);
     }
+
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
     if ([8, 10, 12].includes(level)) {
       playBackgroundMusic().catch(() => {});
-      timer.current = setInterval(() => setTime((p) => p + 1), 1000);
+      timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
+
     if (showCongrats && isGameActive) {
       playSuccessSound().catch(() => {});
       congratsPulse.value = withRepeat(
@@ -265,71 +220,55 @@ const GameScreen: React.FC = () => {
         true
       );
     }
+
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, isInitialized, showCongrats, isGameActive]);
 
-  // главное: фон/рубашка выбираются КАЖДЫЙ РАЗ при генерации раунда
+  // Генерация колоды
   const generateCards = () => {
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
 
+    const pairs = Math.floor(level / 2);
+    const uniqFront = Array.from(new Set(externalFrontList));
+    const backOk = !!selectedBack?.uri;
+    const bgOk = !!selectedBackground?.source?.uri;
+    const facesOk = uniqFront.length >= pairs;
+
+    if (!bgOk || !backOk || !facesOk) {
+      setCards([]);
+      return;
+    }
+
+    // сброс анимаций
     arcOffsetY.value = height;
     arcOpacity.value = 0;
     statsOffsetY.value = -100;
     statsOpacity.value = 0;
 
-    // фон
-    const bgCandidates = asArray(config?.background);
-    if (bgCandidates && bgCandidates.length > 0) {
-      setRoundBackground({ source: { uri: pickRandom(bgCandidates) } });
-    } else {
-      setRoundBackground(pickRandom(assetBackgrounds));
-    }
-
-    // рубашка
-    const backCandidates = asArray(config?.backCardSide);
-    if (backCandidates && backCandidates.length > 0) {
-      setRoundBack({ uri: pickRandom(backCandidates) });
-    } else {
-      setRoundBack(pickRandom(assetBacks));
-    }
-
-    // лица
-    const totalPairs = Math.floor(level / 2);
-    let frontPool: { source: any }[] = [];
-    const incomingFront = config?.frontCardSide ?? [];
-
-    if (incomingFront.length >= totalPairs) {
-      const uniq = Array.from(new Set(incomingFront));
-      frontPool = uniq.map((u) => ({ source: { uri: u } }));
-    }
-    if (frontPool.length === 0) {
-      const groupKeys = Object.keys(assetFrontGroups);
-      const selectedGroup = pickRandom(groupKeys);
-      frontPool = assetFrontGroups[selectedGroup].map((req) => ({
-        source: req,
-      }));
-    }
-
-    const shuffled = [...frontPool].sort(() => Math.random() - 0.5);
-    const chosen = shuffled.slice(0, Math.min(totalPairs, shuffled.length));
+    // выбираем нужное число лиц и разворачиваем в пары
+    const chosen = uniqFront
+      .slice()
+      .sort(() => Math.random() - 0.5)
+      .slice(0, pairs)
+      .map((u) => ({ source: { uri: u } as const }));
     const selectedValues = chosen.flatMap((x) => [x, x]);
 
-    const cardPairs: LibCard[] = selectedValues
+    // создаём карточки (value — муляж, рендерим по __source)
+    const cardPairs: Card[] = selectedValues
       .map((val, index) => ({
         id: index,
-        // значение из допустимых ключей — чтобы тип совпал
-        value: "cardFace-1" as LibCard["value"],
+        value: "cardFace-1" as Card["value"],
         isFlipped: false,
         isMatched: false,
         isHidden: false,
-        // локально кладём реальный источник
-        __source: val.source as any,
+        // локальное поле для источника (uri)
+        ...({ __source: val.source } as any),
       }))
       .sort(() => Math.random() - 0.5);
 
@@ -347,6 +286,7 @@ const GameScreen: React.FC = () => {
     setShowUpgradePrompt(false);
     setIsGameActive(true);
 
+    // входные анимации
     arcOffsetY.value = withTiming(0, { duration: 500 });
     arcOpacity.value = withTiming(1, { duration: 500 });
     statsOffsetY.value = withTiming(0, { duration: 500 });
@@ -355,9 +295,11 @@ const GameScreen: React.FC = () => {
     if (level === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
-        setCards((prev) => prev.map((c) => ({ ...c, isFlipped: true })));
+        const updated = cardPairs.map((c) => ({ ...c, isFlipped: true }));
+        setCards(updated);
         const hideTimer: TimeoutId = setTimeout(() => {
-          setCards((prev) => prev.map((c) => ({ ...c, isFlipped: false })));
+          const closed = cardPairs.map((c) => ({ ...c, isFlipped: false }));
+          setCards(closed);
           setIsShowingCards(false);
         }, 3000);
         completionTimers.current.push(hideTimer);
@@ -366,7 +308,7 @@ const GameScreen: React.FC = () => {
     }
     if ([8, 10, 12].includes(level)) {
       playBackgroundMusic().catch(() => {});
-      timer.current = setInterval(() => setTime((p) => p + 1), 1000);
+      timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
   };
 
@@ -404,53 +346,57 @@ const GameScreen: React.FC = () => {
     ) {
       return;
     }
+
     setIsFlipping(true);
     const newSelected = [...selectedCards, id];
     setSelectedCards(newSelected);
     setCards((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c))
     );
-    if ([8, 10, 12].includes(level)) setMoves((p) => p + 1);
+
+    if ([8, 10, 12].includes(level)) setMoves((prev) => prev + 1);
 
     if (newSelected.length === 2) {
-      const [aId, bId] = newSelected;
-      const a = cards.find((c) => c.id === aId);
-      const b = cards.find((c) => c.id === bId);
+      const [firstId, secondId] = newSelected;
+      const first = cards.find((c) => c.id === firstId);
+      const second = cards.find((c) => c.id === secondId);
 
-      const same = (a as any)?.__source?.uri
-        ? (a as any).__source.uri === (b as any)?.__source?.uri
-        : (a as any)?.__source === (b as any)?.__source;
+      const same = getSrc(first) && getSrc(first) === getSrc(second);
 
       if (same) {
         const matchDelay: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
           playNotificationSound().catch(() => {});
-          const newMatched = [...matchedCards, aId, bId];
+          const newMatched = [...matchedCards, firstId, secondId];
           setMatchedCards(newMatched);
 
           setCards((prev) =>
-            prev.map((c) =>
-              newMatched.includes(c.id)
-                ? { ...c, isMatched: true, isFlipped: true }
-                : c
+            prev.map((card) =>
+              newMatched.includes(card.id)
+                ? { ...card, isMatched: true, isFlipped: true }
+                : card
             )
           );
 
-          setSmileVisible(bId);
+          setSmileVisible(secondId);
+
           const smileTimer: TimeoutId = setTimeout(() => {
             if (!isGameActive) return;
             setSmileVisible(null);
             setCards((prev) =>
-              prev.map((c) =>
-                newMatched.includes(c.id) ? { ...c, isHidden: true } : c
+              prev.map((card) =>
+                newMatched.includes(card.id)
+                  ? { ...card, isHidden: true }
+                  : card
               )
             );
             setSelectedCards([]);
-
             if (newMatched.length === cards.length) {
-              const rounds = roundsCompleted + 1;
-              setRoundsCompleted(rounds);
-              setTotalStars((p) => p + getStars(level, time, moves));
+              const newRounds = roundsCompleted + 1;
+              setRoundsCompleted(newRounds);
+
+              const starsEarned = getStars(level, time, moves);
+              setTotalStars((prev) => prev + starsEarned);
 
               const animTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
@@ -471,7 +417,7 @@ const GameScreen: React.FC = () => {
               const playAgainTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowPlayAgain(true);
-                if (rounds >= 5) setShowUpgradePrompt(true);
+                if (newRounds >= 5) setShowUpgradePrompt(true);
               }, 2100);
               completionTimers.current.push(playAgainTimer);
             } else {
@@ -482,34 +428,37 @@ const GameScreen: React.FC = () => {
         }, 500);
         completionTimers.current.push(matchDelay);
       } else {
-        const flipBack: TimeoutId = setTimeout(() => {
+        const flipBackTimer: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
           setCards((prev) =>
-            prev.map((c) =>
-              newSelected.includes(c.id) ? { ...c, isFlipped: false } : c
+            prev.map((card) =>
+              newSelected.includes(card.id)
+                ? { ...card, isFlipped: false }
+                : card
             )
           );
           setSelectedCards([]);
           setIsFlipping(false);
         }, 500);
-        completionTimers.current.push(flipBack);
+        completionTimers.current.push(flipBackTimer);
       }
     } else {
-      const unlock: TimeoutId = setTimeout(() => setIsFlipping(false), 500);
-      completionTimers.current.push(unlock);
+      const unlockTimer: TimeoutId = setTimeout(
+        () => setIsFlipping(false),
+        500
+      );
+      completionTimers.current.push(unlockTimer);
     }
   };
 
   const handleHint = () => {
     const unmatched = cards.filter((c) => !matchedCards.includes(c.id));
     if (selectedCards.length === 1) {
-      const sel = cards.find((c) => c.id === selectedCards[0]);
-      if (sel) {
-        const key = (sel as any).__source?.uri ?? (sel as any).__source;
+      const selected = cards.find((c) => c.id === selectedCards[0]);
+      if (selected) {
+        const key = getSrc(selected);
         const match = unmatched.find(
-          (c) =>
-            c.id !== sel.id &&
-            ((c as any).__source?.uri ?? (c as any).__source) === key
+          (c) => c.id !== selected.id && getSrc(c) === key
         );
         if (match) {
           setHintActive([match.id]);
@@ -521,11 +470,9 @@ const GameScreen: React.FC = () => {
     }
     for (let i = 0; i < unmatched.length; i++) {
       for (let j = i + 1; j < unmatched.length; j++) {
-        const a =
-          (unmatched[i] as any).__source?.uri ?? (unmatched[i] as any).__source;
-        const b =
-          (unmatched[j] as any).__source?.uri ?? (unmatched[j] as any).__source;
-        if (a === b) {
+        const a = getSrc(unmatched[i]);
+        const b = getSrc(unmatched[j]);
+        if (a && b && a === b) {
           setHintActive([unmatched[i].id, unmatched[j].id]);
           const t: TimeoutId = setTimeout(() => setHintActive([]), 2000);
           completionTimers.current.push(t);
@@ -535,51 +482,40 @@ const GameScreen: React.FC = () => {
     }
   };
 
-  const handleBackPress = async () => {
-    backScale.value = withTiming(1.1, { duration: 200 }, () => {
-      backScale.value = withTiming(1, { duration: 200 });
-    });
-    try {
-      setIsGameActive(false);
-      if (timer.current) {
-        clearInterval(timer.current);
-        timer.current = null;
-      }
-      completionTimers.current.forEach((t) => clearTimeout(t));
-      completionTimers.current = [];
-      setTotalStars(0);
-      await stopSuccessSound();
-      await new Promise<void>((r) => setTimeout(r, 100));
-      navigation.goBack();
-    } catch {
-      navigation.goBack();
+  const getNumColumns = () => {
+    switch (level) {
+      case 4:
+        return 2;
+      case 6:
+        return 3;
+      case 8:
+        return 4;
+      case 10:
+        return 5;
+      case 12:
+        return 6;
+      default:
+        return 2;
     }
   };
 
-  const handlePlayAgainPressIn = () => {
-    playAgainScale.value = 1.1;
-    playAgainOpacity.value = 0.8;
-  };
-  const handlePlayAgainPressOut = () => {
-    playAgainScale.value = 1;
-    playAgainOpacity.value = 1;
-    const t: TimeoutId = setTimeout(() => handlePlayAgain(), 300);
-    completionTimers.current.push(t);
-  };
-  const handlePlayAgain = () => {
-    setShowConfetti(false);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    generateCards(); // тут снова выбираются фон/рубашка/лица
+  const getCardSize = () => {
+    switch (level) {
+      case 4:
+        return 120;
+      case 6:
+        return 120;
+      case 8:
+        return 100;
+      case 10:
+      case 12:
+        return 100;
+      default:
+        return 120;
+    }
   };
 
-  const getNumColumns = () =>
-    level === 4 ? 2 : level === 6 ? 3 : level === 8 ? 4 : level === 10 ? 5 : 6;
-  const getCardSize = () => (level <= 6 ? 120 : 100);
-
-  const { width: W, height: H } = Dimensions.get("window");
-
-  const renderItem = ({ item }: { item: LibCard }) => {
+  const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
     const faceSource = (item as any).__source as any;
 
@@ -610,7 +546,7 @@ const GameScreen: React.FC = () => {
               borderColor: "#C57CFF",
               borderRadius: 10,
               backgroundColor: "transparent",
-              shadowColor: "rgba(197,124,255,0.3)",
+              shadowColor: "rgba(197, 124, 255, 0.3)",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
               shadowRadius: 15,
@@ -631,96 +567,111 @@ const GameScreen: React.FC = () => {
               hintActive.includes(item.id) || selectedCards.includes(item.id)
             }
             style={{ opacity: 1, zIndex: 0 }}
-            backImage={roundBack}
+            backImage={selectedBack!}
             frontImage={faceSource}
           />
-        )}
-
-        {smileVisible === item.id && (
-          <View
-            style={{
-              position: "absolute",
-              left: 46,
-              top: -49,
-              zIndex: 9999,
-              elevation: 50,
-            }}
-            pointerEvents="none"
-            collapsable={false}
-            renderToHardwareTextureAndroid
-            needsOffscreenAlphaCompositing
-          >
-            <Image
-              source={require("../assets/faceSmile.png")}
-              style={{
-                width: 32,
-                height: 32,
-                opacity: 1,
-                resizeMode: "contain",
-              }}
-            />
-          </View>
         )}
       </View>
     );
   };
 
+  const handleHintPressIn = () => {
+    hintScale.value = 1.1;
+  };
+  const handleHintPressOut = () => {
+    hintScale.value = 1;
+  };
+
+  const handleBackPress = async () => {
+    backScale.value = withTiming(1.1, { duration: 200 }, () => {
+      backScale.value = withTiming(1, { duration: 200 });
+    });
+    try {
+      setIsGameActive(false);
+      if (timer.current) {
+        clearInterval(timer.current);
+        timer.current = null;
+      }
+      completionTimers.current.forEach((t) => clearTimeout(t));
+      completionTimers.current = [];
+      setTotalStars(0);
+      await stopSuccessSound();
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 100));
+      navigation.goBack();
+    } catch {
+      navigation.goBack();
+    }
+  };
+
+  const handlePlayAgainPressIn = () => {
+    playAgainScale.value = 1.1;
+    playAgainOpacity.value = 0.8;
+  };
+  const handlePlayAgainPressOut = () => {
+    playAgainScale.value = 1;
+    playAgainOpacity.value = 1;
+    const t: TimeoutId = setTimeout(() => {
+      handlePlayAgain();
+    }, 300);
+    completionTimers.current.push(t);
+  };
+
+  const handlePlayAgain = () => {
+    setShowConfetti(false);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    generateCards();
+  };
+
+  // Валидация пропсов — простая подсказка (без «< >» символов, чтобы TSX не ругался)
+  const pairsNeeded = Math.floor(level / 2);
+  const cfgOk =
+    selectedBackground &&
+    selectedBack &&
+    externalFrontList.length >= pairsNeeded;
+
+  if (!cfgOk) {
+    return (
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { padding: 24, justifyContent: "center" },
+        ]}
+      >
+        <Text style={{ color: "#fff", fontSize: 16, marginBottom: 8 }}>
+          Invalid props. Expected:
+        </Text>
+        <Text style={{ color: "#ccc", marginBottom: 4 }}>
+          • background: at least one image URL
+        </Text>
+        <Text style={{ color: "#ccc", marginBottom: 4 }}>
+          • backCardSide: at least one image URL
+        </Text>
+        <Text style={{ color: "#ccc" }}>
+          • frontCardSide: at least {pairsNeeded} unique image URLs
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, width: "100%", height: "100%" }}>
-      {roundBackground && (
-        <ImageBackground
-          source={roundBackground.source}
-          style={[
-            StyleSheet.absoluteFillObject,
-            { width: "100%", height: "100%", zIndex: 0 },
-          ]}
-          resizeMode="cover"
-        />
-      )}
+      <ImageBackground
+        source={selectedBackground!.source}
+        style={[
+          StyleSheet.absoluteFillObject,
+          { width: "100%", height: "100%", zIndex: 0 },
+        ]}
+        resizeMode="cover"
+      />
 
-      {roundBackground &&
-        "hasStars" in roundBackground &&
-        roundBackground.hasStars && (
-          <Svg
-            height="100%"
-            width="100%"
-            style={[StyleSheet.absoluteFillObject, { zIndex: 1 }]}
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="none"
-          >
-            <Defs>
-              <RadialGradient id="starGradient" cx="50%" cy="50%" r="50%">
-                <Stop offset="0%" stopColor="#FFFFFF" stopOpacity="1.5" />
-                <Stop offset="14.58%" stopColor="#FFFFFF" stopOpacity="1.5" />
-                <Stop
-                  offset="100%"
-                  stopColor="rgba(165, 94, 255, 0)"
-                  stopOpacity="0"
-                />
-              </RadialGradient>
-            </Defs>
-            {[
-              38.11, 61.37, 158.31, 18.16, 274.63, 231.97, 369.62, 524.71,
-              569.3, 703.07, 751.53, 834.89, 173.82,
-            ].map((x, i) => (
-              <Circle
-                key={i}
-                cx={x}
-                cy={(i * 60 + 45) % H}
-                r={Math.min(W, H) * (i % 3 === 0 ? 0.04 : 0.02)}
-                fill="url(#starGradient)"
-              />
-            ))}
-          </Svg>
-        )}
-
-      {/* дуга */}
+      {/* дуга + бордер */}
       <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
         <Svg
-          height={H}
+          height={height}
           width="100%"
           style={{ position: "absolute", top: 0, left: 0, zIndex: 5 }}
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`0 0 ${width} ${height}`}
           preserveAspectRatio="none"
         >
           <Defs>
@@ -750,17 +701,27 @@ const GameScreen: React.FC = () => {
             </SvgLinearGradient>
           </Defs>
           <Path
-            d={`M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`}
+            d={`M0 ${height} L0 100 Q${width / 2} 60 ${width} 100 L${width} ${height} Z`}
             fill="url(#arcGrad)"
           />
           <Path
-            d={`M0 100 Q${W / 2} 60 ${W} 100`}
+            d={`M0 100 Q${width / 2} 60 ${width} 100`}
             fill="none"
             stroke="url(#arcBorderGrad)"
             strokeWidth={4}
             strokeLinecap="round"
           />
         </Svg>
+        <View
+          style={{
+            height: height * 0.4,
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            opacity: 0.5,
+            zIndex: 4,
+          }}
+        />
       </Animated.View>
 
       <StatusBar hidden />
@@ -768,7 +729,7 @@ const GameScreen: React.FC = () => {
       <View
         style={[
           globalStyles.containers.gameArea,
-          { flex: 1, width: "100%", overflow: "visible" },
+          { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
         {!showPlayAgain && (
@@ -787,8 +748,8 @@ const GameScreen: React.FC = () => {
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
               onPress={handleHint}
-              onPressIn={() => (hintScale.value = 1.1)}
-              onPressOut={() => (hintScale.value = 1)}
+              onPressIn={handleHintPressIn}
+              onPressOut={handleHintPressOut}
             >
               <View style={styles.hintGlow}>
                 <View style={styles.hintBorder}>
@@ -806,29 +767,36 @@ const GameScreen: React.FC = () => {
 
         {[8, 10, 12].includes(level) && (
           <Animated.View
-            style={[styles.statsPanel, statsAnimatedStyle, { zIndex: 20 }]}
+            style={[
+              styles.statsPanel,
+              statsAnimatedStyle,
+              { zIndex: 20, opacity: 1 },
+            ]}
           >
             <View
               style={[
                 styles.statsItem,
                 {
                   backgroundColor: "#C57CFF",
+                  width: "auto",
                   minWidth: 100,
+                  flexShrink: 0,
+                  flexGrow: 0,
                   alignItems: "center",
                 },
               ]}
             >
-              <Text style={[styles.statsText, { color: "#FFF" }]}>
+              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
                 Time: <Text>{time}s</Text>
               </Text>
             </View>
             <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF" }]}>
+              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
                 Moves: <Text>{moves}</Text>
               </Text>
             </View>
             <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF" }]}>
+              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
                 Stars: <Text>{totalStars}★</Text>
               </Text>
             </View>
@@ -843,23 +811,33 @@ const GameScreen: React.FC = () => {
               justifyContent: "center",
               alignItems: "center",
               zIndex: 100,
+              overflow: "visible",
             }}
           >
             <FlatList
               key={`flatlist-${level}`}
               data={cards}
               renderItem={renderItem}
-              keyExtractor={(it) => it.id.toString()}
+              keyExtractor={(item) => item.id.toString()}
               numColumns={getNumColumns()}
-              columnWrapperStyle={[styles.row, { justifyContent: "center" }]}
+              columnWrapperStyle={[
+                styles.row,
+                { justifyContent: "center", overflow: "visible" },
+              ]}
               contentContainerStyle={[
                 styles.grid,
-                { paddingTop: 62, width: "100%" },
+                { paddingTop: 62, width: "100%", overflow: "visible" },
               ]}
-              style={{ flex: 1, width: "100%" } as StyleProp<ViewStyle>}
-              initialNumToRender={4}
-              maxToRenderPerBatch={6}
-              windowSize={3}
+              style={
+                {
+                  flex: 1,
+                  width: "100%",
+                  overflow: "visible",
+                } as StyleProp<ViewStyle>
+              }
+              initialNumToRender={2}
+              maxToRenderPerBatch={2}
+              windowSize={1}
               extraData={cards}
               removeClippedSubviews={false}
               getItemLayout={(data, index) => ({
@@ -885,12 +863,18 @@ const GameScreen: React.FC = () => {
             <Animated.View style={[styles.congratsGlow, congratsAnimatedStyle]}>
               <Image
                 source={require("../assets/Frame_Type3_03_Decor.png")}
-                style={{ width: 221, height: 221, resizeMode: "contain" }}
+                style={{
+                  width: 221,
+                  height: 221,
+                  resizeMode: "contain",
+                  opacity: 1,
+                  zIndex: 2,
+                }}
               />
             </Animated.View>
             <Image
               source={require("../assets/TitlFon.png")}
-              style={styles.congratsFon}
+              style={[styles.congratsFon, { opacity: 1 }]}
             />
             <Text
               style={[styles.congratsText, { zIndex: 10 }]}
@@ -902,7 +886,7 @@ const GameScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Play Again */}
+        {/* Кнопка Play Again */}
         {showPlayAgain && (
           <Animated.View
             style={[
@@ -923,10 +907,10 @@ const GameScreen: React.FC = () => {
               onPressOut={handlePlayAgainPressOut}
               activeOpacity={1}
             >
-              <View style={styles.playAgainGradient}>
-                <View style={styles.playAgainContent}>
+              <View style={[styles.playAgainGradient, { opacity: 1 }]}>
+                <View style={[styles.playAgainContent, { opacity: 1 }]}>
                   <Text
-                    style={styles.playAgainText}
+                    style={[styles.playAgainText, { opacity: 1 }]}
                     adjustsFontSizeToFit
                     numberOfLines={1}
                   >
@@ -939,25 +923,27 @@ const GameScreen: React.FC = () => {
           </Animated.View>
         )}
 
-        {/* Диалог повышения сложности */}
+        {/* Апгрейд-диалог */}
         <View style={{ position: "relative", zIndex: 3000 }}>
           <CustomAlert
             visible={showUpgradePrompt}
             onClose={() => setShowUpgradePrompt(false)}
             title={
               <Text style={{ fontSize: 20, fontWeight: "bold", color: "#FFF" }}>
-                Match!
+                {language === "es" ? "¡Coincidencia!" : "Match!"}
               </Text>
             }
             message={
               <Text style={{ fontSize: 16, color: "#FFF" }}>
-                Increase difficulty?
+                {language === "es"
+                  ? "¿Subir a un nivel más difícil?"
+                  : "Increase difficulty?"}
               </Text>
             }
             onYes={() => {
               setShowUpgradePrompt(false);
               const next = level === 4 ? 6 : level === 6 ? 8 : 10;
-              navigation.replace("GameScreen", { level: next, config });
+              navigation.replace("GameScreen", { level: next });
               setRoundsCompleted(0);
               setMatchedCards([]);
               setTime(0);

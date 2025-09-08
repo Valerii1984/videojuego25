@@ -1,49 +1,30 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import GameScreen from "./screens/GameScreen";
+import { AppNavigator } from "./navigation/AppNavigator";
+import { PropConfigProvider } from "./contexts/PropConfigContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import { SoundProvider } from "./contexts/SoundContext";
+import type { MagicMemoryPropConfig } from "./types/props";
 
-// единый проп для клиента
-export type LevelKey = 4 | 6 | 8 | 10 | 12;
-export interface MagicMemoryPropConfig {
-  age: LevelKey;
-  lang: string;
-  background?: string; // один URL
-  backCardSide?: string | string[]; // один URL или массив
-  frontCardSide?: string[]; // список URL (минимум age/2 уникальных)
-}
-
+/**
+ * Импорт снаружи:
+ *   import { MagicMemory } from '@valerii1984/magic-memory-ui';
+ * Использование:
+ *   <MagicMemory props={...} />
+ */
 export interface MagicMemoryProps {
   props: MagicMemoryPropConfig;
 }
 
-export type RootStackParamList = {
-  GameScreen: { level?: number; config: MagicMemoryPropConfig };
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
-
 export const MagicMemory: React.FC<MagicMemoryProps> = ({ props }) => {
+  // ВАЖНО: убрали initialLanguage — ваш LanguageProvider его не принимает.
+  // Язык из props.lang вы можете выставлять внутри GameScreen, если в контексте есть setter.
   return (
-    <LanguageProvider>
-      <SoundProvider>
+    <PropConfigProvider value={props}>
+      <LanguageProvider>
         <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="GameScreen"
-            screenOptions={{ headerShown: false }}
-          >
-            <Stack.Screen
-              name="GameScreen"
-              component={GameScreen}
-              initialParams={{ level: props.age, config: props }}
-            />
-          </Stack.Navigator>
+          <AppNavigator />
         </NavigationContainer>
-      </SoundProvider>
-    </LanguageProvider>
+      </LanguageProvider>
+    </PropConfigProvider>
   );
 };
-
-export default MagicMemory;

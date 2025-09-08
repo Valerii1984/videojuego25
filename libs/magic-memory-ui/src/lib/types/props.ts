@@ -1,10 +1,27 @@
-// libs/magic-memory-ui/src/lib/types/props.ts
+// src/lib/types/props.ts
+
 export type LevelKey = 4 | 6 | 8 | 10 | 12;
 
+/**
+ * Конфиг, который приходит ИЗВНЕ в библиотеку (через пропсы).
+ * Никаких ассетов — только URL.
+ */
 export interface MagicMemoryPropConfig {
-  age: LevelKey; // уровень игры (4,6,8,10,12)
-  lang: string; // язык интерфейса ("es" | "en" и т.п.)
-  background?: string | string[]; // фон: один URL или массив URL (случайный на каждый старт)
-  backCardSide?: string | string[]; // рубашка карты: один URL или массив URL (случайный на каждый старт)
-  frontCardSide?: string[]; // лица карт: массив URL; минимум age/2 уникальных
+  /** Стартовый уровень, если не придёт через route.params */
+  level: LevelKey;
+
+  /** Язык интерфейса, например 'es' | 'en' */
+  lang: string;
+
+  /** Фон: одиночный URL или массив URL (на каждый старт берём случайный) */
+  background: string;
+
+  /** Рубашка: одиночный URL или массив URL (на каждый старт берём случайный) */
+  backCardSide: string | string[];
+
+  /**
+   * Лица карт: массив URL. Минимум level/2 уникальных URL.
+   * (для 6 — минимум 3; для 8 — минимум 4, и т.д.)
+   */
+  frontCardSide: string[];
 }

@@ -16,9 +16,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppNavigator = exports.MagicMemory = void 0;
+// Внешняя точка входа
 var magic_memory_ui_1 = require("./lib/magic-memory-ui");
 Object.defineProperty(exports, "MagicMemory", { enumerable: true, get: function () { return magic_memory_ui_1.MagicMemory; } });
-// если нужно оставить и старые экспорты:
+// Если нужно оставить и старые экспорты:
 var AppNavigator_1 = require("./lib/navigation/AppNavigator");
 Object.defineProperty(exports, "AppNavigator", { enumerable: true, get: function () { return AppNavigator_1.AppNavigator; } });
 __exportStar(require("./lib/navigation/AppNavigator"), exports);
