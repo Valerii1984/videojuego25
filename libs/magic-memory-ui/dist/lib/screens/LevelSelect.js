@@ -110,7 +110,7 @@ const LevelSelectScreen = () => {
     const handleLevelSelect = (index) => {
         const level = levels[index];
         setSelectedLevel(index);
-        navigation.navigate("GameScreen", { level: level.cards });
+        navigation.navigate("GameScreen", { age: level.cards });
     };
     // Размер карточек
     const cardWidth = 100;

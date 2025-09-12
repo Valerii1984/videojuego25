@@ -1,20 +1,27 @@
-export type LevelKey = 4 | 6 | 8 | 10 | 12;
 /**
- * Конфиг, который приходит ИЗВНЕ в библиотеку (через пропсы).
- * Никаких ассетов — только URL.
+ * ВНЕШНИЕ пропсы, которые приходят в библиотеку.
+ * Только URL, никаких ассетов.
+ *
+ * Теперь ориентируемся на age (число).
+ * Пары = Math.floor(age / 2).
  */
+export type LevelKey = number;
 export interface MagicMemoryPropConfig {
-    /** Стартовый уровень, если не придёт через route.params */
-    level: LevelKey;
+    /** Возраст/размер колоды, число. Пары = Math.floor(age / 2). */
+    age: number;
     /** Язык интерфейса, например 'es' | 'en' */
     lang: string;
-    /** Фон: одиночный URL или массив URL (на каждый старт берём случайный) */
+    /** Фон: одиночный URL ИЛИ массив URL (на каждый старт берём случайный) */
     background: string;
-    /** Рубашка: одиночный URL или массив URL (на каждый старт берём случайный) */
-    backCardSide: string | string[];
+    /** Рубашка: одиночный URL ИЛИ массив URL (на каждый старт берём случайный) */
+    backCardSide: string;
     /**
-     * Лица карт: массив URL. Минимум level/2 уникальных URL.
-     * (для 6 — минимум 3; для 8 — минимум 4, и т.д.)
+     * Лица карт: массив URL.
+     * Должно быть минимум Math.floor(age / 2) УНИКАЛЬНЫХ URL.
      */
     frontCardSide: string[];
+}
+/** Пропсы обёртки-компонента MagicMemory */
+export interface MagicMemoryProps {
+    props: MagicMemoryPropConfig;
 }
