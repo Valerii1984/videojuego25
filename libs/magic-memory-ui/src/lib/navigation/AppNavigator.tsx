@@ -101,7 +101,7 @@ const InnerNavigator = () => {
           backgroundColor="#16103E"
         />
         <Stack.Navigator
-          initialRouteName="SplashScreen"
+          initialRouteName="MagicMemorySplashScreen"
           screenOptions={{
             headerShown: false,
             contentStyle: { backgroundColor: "#16103E" },
@@ -116,16 +116,16 @@ const InnerNavigator = () => {
           }}
         >
           <Stack.Screen
-            name="SplashScreen"
+            name="MagicMemorySplashScreen"
             children={() => <SplashScreen fontsLoaded={fontsLoaded} />}
           />
           <Stack.Screen
-            name="LoadingScreen"
+            name="MagicMemoryLoadingScreen"
             component={LoadingScreen}
             options={{ gestureEnabled: false }}
           />
-          <Stack.Screen name="LevelSelect" component={LevelSelect} />
-          <Stack.Screen name="GameScreen" component={GameScreen} />
+          {/*<Stack.Screen name="LevelSelect" component={LevelSelect} /> */}
+          <Stack.Screen name="MagicMemoryGameScreen" component={GameScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

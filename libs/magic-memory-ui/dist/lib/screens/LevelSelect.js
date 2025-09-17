@@ -36,6 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.GAME_LEVELS = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const react_native_1 = require("react-native");
@@ -49,6 +50,13 @@ const card_1_jpg_1 = __importDefault(require("../../assets/card-1.jpg"));
 const Frame_Type3_03_Decor1_png_1 = __importDefault(require("../../assets/Frame_Type3_03_Decor1.png"));
 const Group1359_png_1 = __importDefault(require("../../assets/Group1359.png")); // фон под карточками
 const react_native_reanimated_1 = __importStar(require("react-native-reanimated"));
+exports.GAME_LEVELS = [
+    { cards: 4, difficulty: "Very Easy" },
+    { cards: 6, difficulty: "Easy" },
+    { cards: 8, difficulty: "Normal" },
+    { cards: 10, difficulty: "Hard" },
+    { cards: 12, difficulty: "Very Hard" },
+];
 // ================= LevelCard =================
 const LevelCard = ({ cards, difficulty, index, isSelected, onPress, cardWidth, cardHeight, }) => {
     const scale = (0, react_native_reanimated_1.useSharedValue)(1);
@@ -100,17 +108,11 @@ const LevelSelectScreen = () => {
     const navigation = (0, native_1.useNavigation)();
     const { width } = (0, react_native_1.useWindowDimensions)();
     const [selectedLevel, setSelectedLevel] = (0, react_1.useState)(null);
-    const levels = [
-        { cards: 4, difficulty: "Very Easy" },
-        { cards: 6, difficulty: "Easy" },
-        { cards: 8, difficulty: "Normal" },
-        { cards: 10, difficulty: "Hard" },
-        { cards: 12, difficulty: "Very Hard" },
-    ];
+    const levels = exports.GAME_LEVELS;
     const handleLevelSelect = (index) => {
         const level = levels[index];
         setSelectedLevel(index);
-        navigation.navigate("GameScreen", { age: level.cards });
+        navigation.navigate("MagicMemoryGameScreen", { age: level.cards });
     };
     // Размер карточек
     const cardWidth = 100;
@@ -121,7 +123,7 @@ const LevelSelectScreen = () => {
     const gap = Math.max(15, Math.min(baseGap, (width - levels.length * cardWidth - 2 * paddingHorizontal) /
         (levels.length - 1) || baseGap));
     const renderLevelItem = ({ item, index, }) => ((0, jsx_runtime_1.jsx)(LevelCard, { cards: item.cards, difficulty: item.difficulty, index: index, isSelected: selectedLevel === index, onPress: () => handleLevelSelect(index), cardWidth: cardWidth, cardHeight: cardHeight }));
-    return ((0, jsx_runtime_1.jsxs)(BackgroundWrapper_1.default, { children: [(0, jsx_runtime_1.jsx)(expo_status_bar_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: () => navigation.navigate("SplashScreen"), style: [global_styles_1.default.roundButton.topLeft, LevelSelect_styles_1.default.backButton], children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, { style: { alignSelf: "center" } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [LevelSelect_styles_1.default.title, { marginTop: 0 }], children: "CHOOSE DIFFICULTY" }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: {
+    return ((0, jsx_runtime_1.jsxs)(BackgroundWrapper_1.default, { children: [(0, jsx_runtime_1.jsx)(expo_status_bar_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: () => navigation.navigate('MagicMemorySplashScreen'), style: [global_styles_1.default.roundButton.topLeft, LevelSelect_styles_1.default.backButton], children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, { style: { alignSelf: "center" } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [LevelSelect_styles_1.default.title, { marginTop: 0 }], children: "CHOOSE DIFFICULTY" }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: {
                     position: "relative",
                     width: "100%",
                     alignItems: "center",

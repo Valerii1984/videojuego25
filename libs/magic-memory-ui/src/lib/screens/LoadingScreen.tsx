@@ -18,12 +18,13 @@ import BackgroundWrapper from "../components/BackgroundWrapper";
 import BackIcon from "../../icons/BackIcon";
 import globalStyles from "../styles/global-styles";
 import styles from "./LoadingScreen.styles";
+import { GAME_LEVELS } from "./LevelSelect";
 
 type RootStackParamList = {
-  SplashScreen: undefined;
-  LoadingScreen: undefined;
+  MagicMemorySplashScreen: undefined;
+  MagicMemoryLoadingScreen: undefined;
   LevelSelect: undefined;
-  GameScreen: undefined;
+  MagicMemoryGameScreen: { age: number };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -36,7 +37,9 @@ const LoadingScreen: React.FC = () => {
 
   // Чистая функция перехода
   const goToLevelSelect = () => {
-    navigation.replace("LevelSelect");
+    // navigation.replace("LevelSelect");
+
+    navigation.replace('MagicMemoryGameScreen', { age: GAME_LEVELS[0].cards });
   };
 
   useEffect(() => {
@@ -72,7 +75,7 @@ const LoadingScreen: React.FC = () => {
 
       {/* Кнопка Back */}
       <TouchableOpacity
-        onPress={() => navigation.replace("SplashScreen")}
+        onPress={() => navigation.replace('MagicMemorySplashScreen')}
         style={[globalStyles.roundButton.topLeft, styles.customBackPosition]}
       >
         <BackIcon style={{ alignSelf: "center" }} />

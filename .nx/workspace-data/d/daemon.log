@@ -1,0 +1,1320 @@
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.824Z - Started listening on: /private/var/folders/bp/kdhvy9rj5j31yfgp7x4y2hnm0000gn/T/6ae9761ca57bc783fea2/d.sock
+node:events:495
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EEXIST: file already exists /private/var/folders/bp/kdhvy9rj5j31yfgp7x4y2hnm0000gn/T/6ae9761ca57bc783fea2/d.sock
+    at Server.setupListenHandle [as _listen2] (node:net:1800:21)
+    at listenInCluster (node:net:1865:12)
+    at Server.listen (node:net:1964:5)
+    at /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/nx/src/daemon/server/server.js:374:20
+    at new Promise (<anonymous>)
+    at startServer (/Users/andrew/Documents/CodeProjects/videojuego25/node_modules/nx/src/daemon/server/server.js:372:12)
+    at async /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/nx/src/daemon/server/start.js:8:9
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1844:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EEXIST',
+  errno: -17,
+  syscall: 'listen',
+  address: '/private/var/folders/bp/kdhvy9rj5j31yfgp7x4y2hnm0000gn/T/6ae9761ca57bc783fea2/d.sock',
+  port: -1
+}
+
+Node.js v18.19.0
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.827Z - [WATCHER]: Subscribed to changes within: /Users/andrew/Documents/CodeProjects/videojuego25 (native)
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.829Z - Established a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.829Z - Established a connection. Number of open connections: 2
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.831Z - Closed a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.831Z - Closed a connection. Number of open connections: 0
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.839Z - Established a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.840Z - Established a connection. Number of open connections: 2
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.840Z - Closed a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.841Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.908Z - [WATCHER]: Stopping the watcher for /Users/andrew/Documents/CodeProjects/videojuego25 (sources)
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:04:58.916Z - Closed a connection. Number of open connections: 0
+Time for 'plugin worker 93250 code loading' 3.7447500228881836
+Time for 'plugin worker 93247 code loading' 21.209500312805176
+Time for 'plugin worker 93249 code loading' 16.05299997329712
+Time for 'plugin worker 93245 code loading' 22.017083644866943
+Time for 'plugin worker 93246 code loading' 40.985000133514404
+Time for 'plugin worker 93255 code loading' 19.34254217147827
+Time for 'plugin worker 93248 code loading' 19.37037467956543
+Time for 'plugin worker 93251 code loading' 18.983999729156494
+Time for 'plugin worker 93253 code loading' 5.714082717895508
+Time for 'plugin worker 93254 code loading' 3.919416904449463
+Time for 'plugin worker 93252 code loading' 39.03137493133545
+Time for 'plugin worker 93256 code loading' 9.455167293548584
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.171Z - Started listening on: /private/var/folders/bp/kdhvy9rj5j31yfgp7x4y2hnm0000gn/T/6ae9761ca57bc783fea2/d.sock
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.203Z - [WATCHER]: Subscribed to changes within: /Users/andrew/Documents/CodeProjects/videojuego25 (native)
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.204Z - Established a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.205Z - Established a connection. Number of open connections: 2
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.209Z - Closed a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.233Z - [REQUEST]: Responding to the client. handleMultiGlob
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.233Z - Done responding to the client handleMultiGlob
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.233Z - Handled MULTI_GLOB. Handling time: 21. Response time: 0.
+Time for 'plugin worker 93300 code loading' 3.348875000000021
+Time for 'plugin worker 93301 code loading' 2.6255409999999983
+Time for 'plugin worker 93296 code loading' 2.1164170000000126
+Time for 'plugin worker 93297 code loading' 2.194458999999995
+Time for 'plugin worker 93295 code loading' 2.511082999999985
+Time for 'plugin worker 93298 code loading' 5.500625000000014
+Time for 'plugin worker 93299 code loading' 2.9174170000000004
+Time for 'plugin worker 93305 code loading' 3.5772910000000024
+Time for 'plugin worker 93303 code loading' 1.2298749999999927
+Time for 'plugin worker 93304 code loading' 26.037791000000027
+Time for 'plugin worker 93302 code loading' 3.358957999999973
+Time for 'plugin worker 93306 code loading' 1.4807500000000005
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:00.969Z - Time taken for 'Load Nx Plugin: /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/nx/src/plugins/js' 658.884375ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.058Z - Time taken for 'Load Nx Plugin: /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/nx/src/plugins/project-json/build-nodes/project-json' 745.9137499999999ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.090Z - Time taken for 'Load Nx Plugin: @nx/eslint/plugin' 783.0589170000001ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.134Z - Time taken for 'loadDefaultNxPlugins' 824.0190000000001ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.159Z - Time taken for 'Load Nx Plugin: @nx/react/router-plugin' 849.8532090000001ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.176Z - Time taken for 'Load Nx Plugin: @nx/react-native/plugin' 867.581459ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.188Z - Time taken for 'Load Nx Plugin: @nx/expo/plugin' 881.4228749999999ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.189Z - Time taken for 'Load Nx Plugin: @nx/jest/plugin' 881.969375ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.206Z - Time taken for 'Load Nx Plugin: @nx/js/typescript' 900.3881670000001ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.235Z - Time taken for 'Load Nx Plugin: @nx/playwright/plugin' 926.683708ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.242Z - Time taken for 'Load Nx Plugin: @nx/vite/plugin' 932.842709ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.256Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.256Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.256Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 1.9500829999999496
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.268Z - Time taken for 'loadSpecifiedNxPlugins' 950.6878750000001ms
+Time for '@nx/playwright/plugin:createNodes' 0.5573329999999714
+Time for '@nx/react-native/plugin:createNodes' 0.5628749999999627
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.11083299999995688
+Time for 'nx/core/project-json:createNodes' 0.35349999999994
+Time for '@nx/rollup/plugin:createNodes' 3.6774169999999913
+Time for 'nx/core/package-json:createNodes' 3.649499999999989
+Time for '@nx/js/typescript:createNodes' 9.88900000000001
+Time for '@nx/jest/plugin:createNodes' 16.534374999999955
+Time for 'workspace context init' 1.4302920000000086
+Time for '@nx/vite/plugin:createNodes' 15.605584000000022
+Time for 'workspace context init' 1.2456670000000258
+Time for '@nx/react/router-plugin:createNodes' 17.60429099999999
+Time for 'workspace context init' 1.0003339999999525
+Time for 'workspace context init' 1.4275840000000244
+Time for 'workspace context init' 1.0451249999999845
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.837Z - [REQUEST]: Responding to the client. handleNxWorkspaceFiles
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.838Z - Done responding to the client handleNxWorkspaceFiles
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.838Z - Handled GET_NX_WORKSPACE_FILES. Handling time: 3. Response time: 1.
+Time for '@nx/eslint/plugin:createNodes' 577.3017090000001
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.879Z - Time taken for 'build-project-configs' 585.3464999999999ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:01.881Z - Time taken for '@nx/js/typescript:createDependencies' 3.5701669999998558ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.170Z - Time taken for '@nx/vite/plugin:createDependencies' 292.397833ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.178Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.178Z - Done responding to the client handleContextFileData
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.178Z - Handled GET_CONTEXT_FILE_DATA. Handling time: 1. Response time: 0.
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.179Z - Closed a connection. Number of open connections: 0
+Time for 'build typescript dependencies' 478.75929199999996
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.364Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.364Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.364Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.364Z - Time taken for 'total execution time for createProjectGraph()' 487.0965420000002ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.466Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.623Z - Time taken for 'loadSpecifiedNxPlugins' 2.4188749999998436ms
+Time for 'plugin worker 93315 code loading' 1.9177920000000057
+Time for 'plugin worker 93316 code loading' 2.3050420000000003
+Time for 'plugin worker 93317 code loading' 2.298374999999993
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.823Z - Time taken for 'Load Nx Plugin: /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/@nx/devkit/node_modules/nx/src/plugins/project-json/build-nodes/project-json' 201.61950000000024ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.824Z - Time taken for 'Load Nx Plugin: /Users/andrew/Documents/CodeProjects/videojuego25/node_modules/@nx/devkit/node_modules/nx/src/plugins/package-json' 202.78833399999985ms
+Time for '@nx/expo/plugin:createNodes' 0.7168750000000728
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.856Z - Time taken for 'loadDefaultNxPlugins' 221.22604200000023ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.10258300000000986
+Time for '@nx/react-native/plugin:createNodes' 0.6124170000002778
+Time for 'nx/core/project-json:createNodes' 0.09995800000001509
+Time for '@nx/jest/plugin:createNodes' 2.248500000000149
+Time for '@nx/vite/plugin:createNodes' 0.859208000000308
+Time for '@nx/react/router-plugin:createNodes' 1.9671250000001237
+Time for '@nx/playwright/plugin:createNodes' 1.5362080000004426
+Time for '@nx/rollup/plugin:createNodes' 2.2332500000002256
+Time for '@nx/eslint/plugin:createNodes' 5.12691599999971
+Time for 'nx/core/package-json:createNodes' 3.88179199999999
+Time for '@nx/js/typescript:createNodes' 19.013832999999977
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.879Z - Time taken for 'build-project-configs' 22.749374999999873ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.880Z - Time taken for '@nx/vite/plugin:createDependencies' 1.333791999999903ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:02.880Z - Time taken for '@nx/js/typescript:createDependencies' 1.769083000000137ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 221.984875
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:03.106Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:03.107Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:03.108Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 641.3971670000001ms
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+The plugin worker is exiting as it was not connected to within 5 seconds.
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.802Z - [WATCHER]: 3 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.802Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.903Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.903Z - [REQUEST]: .changeset/README.md,.verdaccio/config.yml,.changeset/config.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.903Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 1.607040999999299
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.909Z - Time taken for 'hash changed files from watcher' 0.4189169999999649ms
+Time for 'nx/core/project-json:createNodes' 1.7749579999999696
+Time for '@nx/react-native/plugin:createNodes' 1.776582999999846
+Time for '@nx/playwright/plugin:createNodes' 2.196125000000393
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 1.2857919999996739
+Time for '@nx/rollup/plugin:createNodes' 3.08075000000008
+Time for '@nx/react/router-plugin:createNodes' 4.272915999999896
+Time for '@nx/jest/plugin:createNodes' 4.933667000000241
+Time for '@nx/vite/plugin:createNodes' 3.504874999999629
+Time for 'nx/core/package-json:createNodes' 5.038666999999805
+Time for '@nx/js/typescript:createNodes' 7.776457999999366
+Time for '@nx/eslint/plugin:createNodes' 5.857958999999937
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.919Z - Time taken for 'build-project-configs' 9.855333000000428ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.920Z - Time taken for '@nx/js/typescript:createDependencies' 1.453125ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.920Z - Time taken for '@nx/vite/plugin:createDependencies' 1.2458329999999478ms
+Time for 'build typescript dependencies' 0.6001669999996011
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:06.923Z - Time taken for 'total execution time for createProjectGraph()' 4.160917000000154ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.124Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/playwright/plugin:createNodes' 0.4774170000000595
+Time for '@nx/jest/plugin:createNodes' 1.056999999999789
+Time for '@nx/expo/plugin:createNodes' 1.0377499999995052
+Time for '@nx/react/router-plugin:createNodes' 0.7986250000003565
+Time for '@nx/js/typescript:createNodes' 3.189542000000074
+Time for '@nx/vite/plugin:createNodes' 1.1644590000005337
+Time for '@nx/rollup/plugin:createNodes' 1.1989999999996144
+Time for '@nx/react-native/plugin:createNodes' 1.5351249999994252
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.17479199999979755
+Time for 'nx/core/project-json:createNodes' 0.10899999999946886
+Time for 'nx/core/package-json:createNodes' 1.6071670000001177
+Time for '@nx/eslint/plugin:createNodes' 5.982583999999406
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.139Z - Time taken for 'build-project-configs' 7.845874999999978ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.140Z - Time taken for '@nx/vite/plugin:createDependencies' 1.7420000000001892ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.140Z - Time taken for '@nx/js/typescript:createDependencies' 2.332916999999725ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 70.02474999999959
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:07.212Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.213Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:07.213Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 88.79270799999995ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.402Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.405Z - [WATCHER]: 0 file(s) created or restored, 0 file(s) modified, 210 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.607Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.607Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.607Z - [REQUEST]: libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/lib/assets/Exclude.png,libs/magic-memory-ui/dist/lib/components/Confetti.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/lib/styles/colors.d.ts,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg,libs/magic-memory-ui/dist/lib/layout/layout.d.ts,libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/lib/assets/icon.png,libs/magic-memory-ui/dist/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/lib/utils/imageMap.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.js,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/lib/assets/translation.png,libs/magic-memory-ui/dist/assets/Exclude.png,libs/magic-memory-ui/dist/lib/assets/Frame 7979.png,libs/magic-memory-ui/dist/lib/types/props.d.ts,libs/magic-memory-ui/dist/lib/assets/numbers/number-12.png,libs/magic-memory-ui/dist/lib/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.js,libs/magic-memory-ui/dist/assets/star_cursor.png,libs/magic-memory-ui/dist/index.js,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.js,libs/magic-memory-ui/dist/lib/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/assets/fonts/Fredoka-SemiBold.ttf,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.d.ts,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.d.ts,libs/magic-memory-ui/dist/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/assets/numbers/number-8.png,libs/magic-memory-ui/dist/icons/PlayIcon.js,libs/magic-memory-ui/dist/lib/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.js,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/lib/assets/favicon.png,libs/magic-memory-ui/dist/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/lib/assets/animations/Confetti.json,libs/magic-memory-ui/dist/lib/assets/card-1.jpg,libs/magic-memory-ui/dist/assets/splash-icon.png,libs/magic-memory-ui/dist/lib/types/index.d.ts,libs/magic-memory-ui/dist/assets/numbers/number-12.png,libs/magic-memory-ui/dist/assets/play-button.png,libs/magic-memory-ui/dist/assets/favicon.png,libs/magic-memory-ui/dist/lib/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/lib/styles/global-styles.js,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg,libs/magic-memory-ui/dist/lib/assets/animations/success-animation.json,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.js,libs/magic-memory-ui/dist/lib/assets/numbers/number-6.png,libs/magic-memory-ui/dist/assets/Group1359.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/lib/layout/layout.js,libs/magic-memory-ui/dist/lib/assets/adjusted_background.svg,libs/magic-memory-ui/dist/lib/components/Confetti.js,libs/magic-memory-ui/dist/lib/components/CustomAlert.js,libs/magic-memory-ui/dist/assets/cardFace-4.jpg,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.js,libs/magic-memory-ui/dist/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg,libs/magic-memory-ui/dist/lib/assets/hourglass.png,libs/magic-memory-ui/dist/lib/magic-memory-ui.d.ts,libs/magic-memory-ui/dist/lib/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/lib/components/CanvasBackground.d.ts,libs/magic-memory-ui/dist/lib/components/Card.styles.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.styles.d.ts,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.js,libs/magic-memory-ui/dist/assets/animations/success-animation.json,libs/magic-memory-ui/dist/assets/Frame 7979.png,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/lib/contexts/SoundContext.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.d.ts,libs/magic-memory-ui/dist/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/lib/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/lib/utils/config.js,libs/magic-memory-ui/dist/lib/assets/animations/lights.json,libs/magic-memory-ui/dist/lib/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.js,libs/magic-memory-ui/dist/lib/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-SemiBold.ttf,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.js,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/assets/cardFace-6.jpg,libs/magic-memory-ui/dist/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/assets/playAgain.png,libs/magic-memory-ui/dist/assets/icon.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/assets/Stars.png,libs/magic-memory-ui/dist/assets/translation.png,libs/magic-memory-ui/dist/lib/components/Confetti.styles.js,libs/magic-memory-ui/dist/assets/back-button.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/lib/assets/cardFace-6.jpg,libs/magic-memory-ui/dist/lib/screens/SplashScreen.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.js,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/lib/screens/LevelSelect.d.ts,libs/magic-memory-ui/dist/lib/assets/splash-icon.png,libs/magic-memory-ui/dist/lib/components/Card.d.ts,libs/magic-memory-ui/dist/lib/styles/colors.js,libs/magic-memory-ui/dist/assets/animations/Confetti.json,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.js,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.d.ts,libs/magic-memory-ui/dist/lib/assets/star_cursor.png,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.d.ts,libs/magic-memory-ui/dist/lib/assets/cardFace-4.jpg,libs/magic-memory-ui/dist/assets/index.ts,libs/magic-memory-ui/dist/lib/i18n/index.d.ts,libs/magic-memory-ui/dist/lib/contexts/SoundContext.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.d.ts,libs/magic-memory-ui/dist/icons/BackIcon.js,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg,libs/magic-memory-ui/dist/assets/adjusted_background.svg,libs/magic-memory-ui/dist/assets/numbers/number-6.png,libs/magic-memory-ui/dist/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg,libs/magic-memory-ui/dist/assets/animations/lights.json,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/assets/Union.png,libs/magic-memory-ui/dist/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/lib/assets/Union.png,libs/magic-memory-ui/dist/lib/components/CustomAlert.d.ts,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/assets/Background.jpg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg,libs/magic-memory-ui/dist/assets/card-1.jpg,libs/magic-memory-ui/dist/lib/magic-memory-ui.js,libs/magic-memory-ui/dist/lib/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/lib/assets/numbers/number-4.png,libs/magic-memory-ui/dist/lib/assets/numbers/number-8.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/assets/faceSmile.png,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.d.ts,libs/magic-memory-ui/dist/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/lib/assets/Stars.png,libs/magic-memory-ui/dist/assets/hourglass.png,libs/magic-memory-ui/dist/assets/numbers/number-4.png,libs/magic-memory-ui/dist/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.d.ts,libs/magic-memory-ui/dist/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/lib/styles/components/containers.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.js,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.d.ts,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg,libs/magic-memory-ui/dist/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/assets/Frame 7978.png,libs/magic-memory-ui/dist/lib/assets/Background.jpg,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.js,libs/magic-memory-ui/dist/lib/styles/components/progressBar.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.js,libs/magic-memory-ui/dist/lib/assets/TitlFon.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg,libs/magic-memory-ui/dist/lib/types/props.js,libs/magic-memory-ui/dist/lib/styles/global-styles.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg,libs/magic-memory-ui/dist/icons/BackIcon.d.ts,libs/magic-memory-ui/dist/lib/components/Card.js,libs/magic-memory-ui/dist/lib/i18n/index.js,libs/magic-memory-ui/dist/lib/utils/imageMap.js,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/lib/assets/back-button.png,libs/magic-memory-ui/dist/lib/assets/Frame 7978.png,libs/magic-memory-ui/dist/lib/styles/components/buttons.d.ts,libs/magic-memory-ui/dist/lib/assets/numbers/number-10.png,libs/magic-memory-ui/dist/lib/assets/faceSmile.png,libs/magic-memory-ui/dist/lib/assets/index.ts,libs/magic-memory-ui/dist/assets/numbers/number-10.png,libs/magic-memory-ui/dist/lib/assets/playAgain.png,libs/magic-memory-ui/dist/icons/PlayIcon.d.ts,libs/magic-memory-ui/dist/lib/types/index.js,libs/magic-memory-ui/dist/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/assets/TitlFon.png,libs/magic-memory-ui/dist/lib/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/lib/assets/Group1359.png,libs/magic-memory-ui/dist/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/components/Card.styles.js,libs/magic-memory-ui/dist/lib/styles/components/containers.js,libs/magic-memory-ui/dist/lib/assets/play-button.png,libs/magic-memory-ui/dist/lib/styles/components/progressBar.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/lib/utils/config.d.ts,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/index.d.ts,libs/magic-memory-ui/dist/assets/animtest/facecard/tigr.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.614Z - Time taken for 'hash changed files from watcher' 0.3214169999992009ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.6330419999994774
+Time for 'nx/core/project-json:createNodes' 0.404500000000553
+Time for '@nx/expo/plugin:createNodes' 5.255624999999782
+Time for 'nx/core/package-json:createNodes' 2.901040999999168
+Time for '@nx/js/typescript:createNodes' 11.303249999999025
+Time for '@nx/playwright/plugin:createNodes' 6.488916000000245
+Time for '@nx/rollup/plugin:createNodes' 15.863666000001103
+Time for '@nx/react-native/plugin:createNodes' 18.607500000000073
+Time for '@nx/jest/plugin:createNodes' 18.62541699999929
+Time for '@nx/react/router-plugin:createNodes' 17.917709000001196
+Time for '@nx/eslint/plugin:createNodes' 22.952499999999418
+Time for '@nx/vite/plugin:createNodes' 14.127207999999882
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.640Z - Time taken for 'build-project-configs' 28.668750000000728ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.641Z - Time taken for '@nx/js/typescript:createDependencies' 0.9945410000000265ms
+Time for 'build typescript dependencies' 0.02320800000052259
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:12.644Z - Time taken for 'total execution time for createProjectGraph()' 2.730666999999812ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.045Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 0.9331249999995634
+Time for '@nx/jest/plugin:createNodes' 0.8384169999990263
+Time for '@nx/react-native/plugin:createNodes' 0.5205839999998716
+Time for '@nx/vite/plugin:createNodes' 0.7265000000006694
+Time for '@nx/react/router-plugin:createNodes' 1.6155419999995502
+Time for '@nx/playwright/plugin:createNodes' 0.4897080000009737
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.3512080000000424
+Time for '@nx/rollup/plugin:createNodes' 0.5812079999996058
+Time for 'nx/core/project-json:createNodes' 0.2917090000009921
+Time for '@nx/js/typescript:createNodes' 4.301541000000725
+Time for 'nx/core/package-json:createNodes' 2.4244999999991705
+Time for '@nx/eslint/plugin:createNodes' 6.474624999998923
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.061Z - Time taken for 'build-project-configs' 7.89600000000064ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.063Z - Time taken for '@nx/vite/plugin:createDependencies' 2.760874999999942ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.064Z - Time taken for '@nx/js/typescript:createDependencies' 3.390708999999333ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 55.89366599999994
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:13.122Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.123Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:13.123Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 77.72533400000066ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.219Z - [WATCHER]: 17 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.220Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.277Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.278Z - [WATCHER]: 38 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.322Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.322Z - [REQUEST]: libs/magic-memory-ui/dist/lib/styles/components/progressBar.js,libs/magic-memory-ui/dist/lib/styles/colors.d.ts,libs/magic-memory-ui/dist/lib/contexts/SoundContext.js,libs/magic-memory-ui/dist/icons/PlayIcon.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.d.ts,libs/magic-memory-ui/dist/lib/styles/components/containers.js,libs/magic-memory-ui/dist/lib/styles/global-styles.js,libs/magic-memory-ui/dist/lib/types/index.js,libs/magic-memory-ui/dist/lib/styles/components/containers.d.ts,libs/magic-memory-ui/dist/lib/styles/colors.js,libs/magic-memory-ui/dist/lib/contexts/SoundContext.d.ts,libs/magic-memory-ui/dist/lib/types/index.d.ts,libs/magic-memory-ui/dist/lib/styles/components/progressBar.d.ts,libs/magic-memory-ui/dist/icons/PlayIcon.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.js,libs/magic-memory-ui/dist/lib/styles/global-styles.d.ts,libs/magic-memory-ui/dist/icons/BackIcon.d.ts,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.d.ts,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.js,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.d.ts,libs/magic-memory-ui/dist/lib/components/Card.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/types/props.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.js,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/utils/config.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.js,libs/magic-memory-ui/dist/lib/components/Card.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.js,libs/magic-memory-ui/dist/lib/components/CustomAlert.d.ts,libs/magic-memory-ui/dist/lib/components/Card.styles.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.js,libs/magic-memory-ui/dist/icons/BackIcon.js,libs/magic-memory-ui/dist/lib/components/Confetti.js,libs/magic-memory-ui/dist/lib/components/CustomAlert.js,libs/magic-memory-ui/dist/lib/components/Confetti.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.js,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.js,libs/magic-memory-ui/dist/lib/utils/imageMap.d.ts,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.d.ts,libs/magic-memory-ui/dist/lib/utils/imageMap.js,libs/magic-memory-ui/dist/lib/types/props.d.ts,libs/magic-memory-ui/dist/lib/utils/config.js,libs/magic-memory-ui/dist/lib/screens/SplashScreen.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.js,libs/magic-memory-ui/dist/lib/components/Card.js,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.js
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.322Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.48937499999919964
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.327Z - Time taken for 'hash changed files from watcher' 0.7683749999996508ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.03691699999944831
+Time for '@nx/react-native/plugin:createNodes' 1.7231659999997646
+Time for '@nx/react/router-plugin:createNodes' 1.665458999999828
+Time for '@nx/jest/plugin:createNodes' 1.9295409999995172
+Time for '@nx/playwright/plugin:createNodes' 1.717332999998689
+Time for '@nx/rollup/plugin:createNodes' 1.3823330000013812
+Time for 'nx/core/project-json:createNodes' 0.23874999999861757
+Time for '@nx/js/typescript:createNodes' 3.6764579999999114
+Time for '@nx/vite/plugin:createNodes' 2.7900420000005397
+Time for 'nx/core/package-json:createNodes' 2.008458000000246
+Time for '@nx/eslint/plugin:createNodes' 5.615042000001267
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.334Z - Time taken for 'build-project-configs' 6.913000000000466ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.335Z - Time taken for '@nx/js/typescript:createDependencies' 1.3124580000003334ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.335Z - Time taken for '@nx/vite/plugin:createDependencies' 1.2229160000006232ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.348Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.349Z - [WATCHER]: 22 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+Time for 'build typescript dependencies' 16.77404099999876
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.356Z - Time taken for 'total execution time for createProjectGraph()' 20.469958000001498ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.406Z - [WATCHER]: 14 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.407Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.452Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.452Z - [REQUEST]: libs/magic-memory-ui/dist/lib/magic-memory-ui.d.ts,libs/magic-memory-ui/dist/lib/i18n/index.js,libs/magic-memory-ui/dist/lib/i18n/index.d.ts,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.js,libs/magic-memory-ui/dist/lib/layout/layout.js,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.js,libs/magic-memory-ui/dist/lib/layout/layout.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.styles.js,libs/magic-memory-ui/dist/lib/magic-memory-ui.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.js,libs/magic-memory-ui/dist/index.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.d.ts,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.js,libs/magic-memory-ui/dist/index.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.js,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.js,libs/magic-memory-ui/dist/lib/components/Confetti.styles.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.d.ts,libs/magic-memory-ui/dist/assets/Stars.png,libs/magic-memory-ui/dist/assets/TitlFon.png,libs/magic-memory-ui/dist/assets/Union.png,libs/magic-memory-ui/dist/assets/Frame 7979.png,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/assets/animations/Confetti.json,libs/magic-memory-ui/dist/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/assets/adjusted_background.svg,libs/magic-memory-ui/dist/assets/adaptive-icon.png,libs/magic-memory-ui/dist/assets/Background.jpg,libs/magic-memory-ui/dist/assets/Frame 7978.png,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/assets/Group1359.png,libs/magic-memory-ui/dist/assets/Exclude.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.452Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.2736249999998108
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.456Z - Time taken for 'hash changed files from watcher' 0.9222079999999551ms
+Time for '@nx/react-native/plugin:createNodes' 0.39250000000174623
+Time for '@nx/jest/plugin:createNodes' 0.6282499999997526
+Time for '@nx/playwright/plugin:createNodes' 0.6429589999988821
+Time for '@nx/react/router-plugin:createNodes' 0.7510419999998703
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09041700000125275
+Time for 'nx/core/project-json:createNodes' 0.06804200000078708
+Time for '@nx/vite/plugin:createNodes' 1.1120000000009895
+Time for '@nx/rollup/plugin:createNodes' 1.9868749999986903
+Time for 'nx/core/package-json:createNodes' 1.5923750000001746
+Time for '@nx/js/typescript:createNodes' 3.7530420000002778
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.460Z - [WATCHER]: 12 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.460Z - [WATCHER]: Processing file changes in outputs
+Time for '@nx/eslint/plugin:createNodes' 5.851125000001048
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.464Z - Time taken for 'build-project-configs' 6.987750000000233ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.464Z - Time taken for '@nx/js/typescript:createDependencies' 0.8404580000005808ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.464Z - Time taken for '@nx/vite/plugin:createDependencies' 0.717332999998689ms
+Time for 'build typescript dependencies' 8.752000000000407
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.475Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.475Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.476Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.476Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.476Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.476Z - Time taken for 'total execution time for createProjectGraph()' 10.445541999999477ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.512Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.512Z - [WATCHER]: 8 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.561Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.561Z - [REQUEST]: libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.561Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.46370800000113377
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.03495900000052643
+Time for '@nx/playwright/plugin:createNodes' 0.4166669999995065
+Time for 'nx/core/project-json:createNodes' 0.045792000000801636
+Time for '@nx/vite/plugin:createNodes' 0.934291999999914
+Time for '@nx/react-native/plugin:createNodes' 0.45425000000068394
+Time for '@nx/react/router-plugin:createNodes' 1.417791000001671
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.566Z - Time taken for 'hash changed files from watcher' 0.9682089999987511ms
+Time for '@nx/jest/plugin:createNodes' 1.5759579999994457
+Time for '@nx/rollup/plugin:createNodes' 2.2252499999995052
+Time for 'nx/core/package-json:createNodes' 1.017707999999402
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.568Z - [WATCHER]: 16 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+Time for '@nx/eslint/plugin:createNodes' 4.366500000000087
+Time for '@nx/js/typescript:createNodes' 4.8956249999992
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.570Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.571Z - Time taken for 'build-project-configs' 6.113957999999911ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.572Z - Time taken for '@nx/js/typescript:createDependencies' 0.805833000000348ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.572Z - Time taken for '@nx/vite/plugin:createDependencies' 0.7490419999994629ms
+Time for 'build typescript dependencies' 0.22520799999983865
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.574Z - Time taken for 'total execution time for createProjectGraph()' 1.7988330000007409ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.626Z - [WATCHER]: 16 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.626Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.672Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.672Z - [REQUEST]: libs/magic-memory-ui/dist/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/assets/numbers/number-10.png,libs/magic-memory-ui/dist/assets/favicon.png,libs/magic-memory-ui/dist/assets/numbers/number-12.png,libs/magic-memory-ui/dist/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/assets/play-button.png,libs/magic-memory-ui/dist/assets/icon.png,libs/magic-memory-ui/dist/assets/numbers/number-4.png,libs/magic-memory-ui/dist/assets/hourglass.png,libs/magic-memory-ui/dist/assets/numbers/number-6.png,libs/magic-memory-ui/dist/assets/numbers/number-8.png,libs/magic-memory-ui/dist/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/assets/faceSmile.png,libs/magic-memory-ui/dist/assets/playAgain.png,libs/magic-memory-ui/dist/assets/index.ts,libs/magic-memory-ui/dist/assets/fonts/Fredoka-SemiBold.ttf
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.672Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.9509170000001177
+Time for '@nx/react-native/plugin:createNodes' 0.4257500000003347
+Time for '@nx/jest/plugin:createNodes' 0.8489580000004935
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.038124999999126885
+Time for '@nx/playwright/plugin:createNodes' 0.9550840000010794
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.677Z - Time taken for 'hash changed files from watcher' 3.157333999999537ms
+Time for 'nx/core/project-json:createNodes' 0.06908300000031886
+Time for '@nx/rollup/plugin:createNodes' 1.3809170000004087
+Time for '@nx/react/router-plugin:createNodes' 1.174750000000131
+Time for '@nx/vite/plugin:createNodes' 1.4174169999987498
+Time for 'nx/core/package-json:createNodes' 1.3050830000011047
+Time for '@nx/js/typescript:createNodes' 3.865958000000319
+Time for '@nx/eslint/plugin:createNodes' 3.616958999999042
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.682Z - Time taken for 'build-project-configs' 4.816917000000103ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.683Z - Time taken for '@nx/vite/plugin:createDependencies' 0.839125000000422ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.683Z - Time taken for '@nx/js/typescript:createDependencies' 1.0827079999999114ms
+Time for 'build typescript dependencies' 0.38308300000062445
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:14.685Z - Time taken for 'total execution time for createProjectGraph()' 2.0458749999997963ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.158Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.169Z - [WATCHER]: 28 file(s) created or restored, 1 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.169Z - [WATCHER]: Processing file changes in outputs
+Time for '@nx/expo/plugin:createNodes' 0.5637909999986732
+Time for '@nx/playwright/plugin:createNodes' 0.49875000000065484
+Time for 'nx/core/project-json:createNodes' 0.6459580000009737
+Time for '@nx/rollup/plugin:createNodes' 1.901000000001659
+Time for '@nx/react-native/plugin:createNodes' 1.3644580000000133
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.08920899999975518
+Time for '@nx/jest/plugin:createNodes' 5.7757089999995515
+Time for '@nx/vite/plugin:createNodes' 3.4256660000010015
+Time for '@nx/react/router-plugin:createNodes' 3.5552500000012515
+Time for 'nx/core/package-json:createNodes' 6.439749999999549
+Time for '@nx/js/typescript:createNodes' 8.440875000000233
+Time for '@nx/eslint/plugin:createNodes' 9.734166000000187
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.183Z - Time taken for 'build-project-configs' 13.567541999998866ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.184Z - Time taken for '@nx/js/typescript:createDependencies' 2.030083999999988ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.184Z - Time taken for '@nx/vite/plugin:createDependencies' 1.8269579999996495ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.216Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.217Z - [WATCHER]: 23 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.283Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.283Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/lib/assets/Union.png,libs/magic-memory-ui/dist/lib/assets/adjusted_background.svg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/lib/assets/Frame 7978.png,libs/magic-memory-ui/dist/lib/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg,libs/magic-memory-ui/dist/lib/assets/Frame 7979.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg,libs/magic-memory-ui/dist/lib/assets/Stars.png,libs/magic-memory-ui/dist/lib/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/lib/assets/TitlFon.png,libs/magic-memory-ui/dist/lib/assets/animations/lights.json,libs/magic-memory-ui/dist/assets/splash-icon.png,libs/magic-memory-ui/dist/assets/star_cursor.png,libs/magic-memory-ui/dist/lib/assets/Background.jpg,libs/magic-memory-ui/dist/lib/assets/Exclude.png,libs/magic-memory-ui/dist/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/lib/assets/animations/success-animation.json,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg,libs/magic-memory-ui/dist/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/lib/assets/animations/Confetti.json,libs/magic-memory-ui/dist/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/Group1359.png,libs/magic-memory-ui/dist/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/lib/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-4.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/lib/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/lib/assets/back-button.png,libs/magic-memory-ui/dist/lib/assets/card-1.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/lib/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/puh.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.283Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.5589579999996204
+Time for '@nx/react-native/plugin:createNodes' 0.3728750000009313
+Time for '@nx/playwright/plugin:createNodes' 0.5511669999996229
+Time for '@nx/jest/plugin:createNodes' 1.2568749999991269
+Time for '@nx/vite/plugin:createNodes' 1.804374999999709
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.293Z - [WATCHER]: 18 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+Time for '@nx/react/router-plugin:createNodes' 0.7932920000002923
+Time for '@nx/rollup/plugin:createNodes' 2.3537500000002183
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.293Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.294Z - Time taken for 'hash changed files from watcher' 11.805500000000393ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4192089999996824
+Time for 'nx/core/project-json:createNodes' 0.8508750000000873
+Time for '@nx/js/typescript:createNodes' 6.167208999999275
+Time for 'nx/core/package-json:createNodes' 2.715916000001016
+Time for '@nx/eslint/plugin:createNodes' 6.897500000000946
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.300Z - Time taken for 'build-project-configs' 9.362208000000464ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.301Z - Time taken for '@nx/js/typescript:createDependencies' 2.056249999999636ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.301Z - Time taken for '@nx/vite/plugin:createDependencies' 1.9110829999990528ms
+Time for 'build typescript dependencies' 0.3513750000001892
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.304Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.304Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.304Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.304Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.304Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.305Z - Time taken for 'total execution time for createProjectGraph()' 3.2944159999988187ms
+Time for 'build typescript dependencies' 120.44929200000115
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:15.308Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.308Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.308Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 150.19150000000081ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.395Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.395Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.395Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.34891699999934644
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.399Z - Time taken for 'hash changed files from watcher' 0.23579100000097242ms
+Time for '@nx/playwright/plugin:createNodes' 0.841167000000496
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.09641600000031758
+Time for '@nx/rollup/plugin:createNodes' 0.9827089999998861
+Time for '@nx/jest/plugin:createNodes' 2.2705839999998716
+Time for '@nx/react-native/plugin:createNodes' 2.4077499999984866
+Time for 'nx/core/project-json:createNodes' 0.057332999998834566
+Time for '@nx/react/router-plugin:createNodes' 0.9419170000001031
+Time for '@nx/vite/plugin:createNodes' 1.6850409999988187
+Time for 'nx/core/package-json:createNodes' 3.286041999999725
+Time for '@nx/js/typescript:createNodes' 6.221290999999837
+Time for '@nx/eslint/plugin:createNodes' 6.788625000001048
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.407Z - Time taken for 'build-project-configs' 7.806334000000788ms
+Time for 'build typescript dependencies' 0.011375000000043656
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.408Z - Time taken for 'nx/js/dependencies-and-lockfile:createDependencies' 0.9643749999995634ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.410Z - Time taken for 'total execution time for createProjectGraph()' 2.034541999999419ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.433Z - [WATCHER]: 6 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.434Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.539Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.540Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/lib/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/lib/assets/splash-icon.png,libs/magic-memory-ui/dist/lib/assets/star_cursor.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.540Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.3388749999994616
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.544Z - Time taken for 'hash changed files from watcher' 5.510459000000992ms
+Time for '@nx/playwright/plugin:createNodes' 0.24295899999924586
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.12745800000084273
+Time for '@nx/rollup/plugin:createNodes' 0.6037079999987327
+Time for 'nx/core/project-json:createNodes' 0.11316599999918253
+Time for '@nx/jest/plugin:createNodes' 0.8100830000003043
+Time for '@nx/react-native/plugin:createNodes' 0.6848339999996824
+Time for 'nx/core/package-json:createNodes' 1.2485840000008466
+Time for '@nx/vite/plugin:createNodes' 1.774083000000246
+Time for '@nx/react/router-plugin:createNodes' 1.8715839999986201
+Time for '@nx/js/typescript:createNodes' 4.482625000000553
+Time for '@nx/eslint/plugin:createNodes' 4.768165999999837
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.552Z - Time taken for 'build-project-configs' 6.06604200000038ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.552Z - Time taken for '@nx/vite/plugin:createDependencies' 0.8201659999995172ms
+Time for 'build typescript dependencies' 0.22504200000003038
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.552Z - Time taken for 'nx/js/dependencies-and-lockfile:createDependencies' 0.8836250000003929ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:15.554Z - Time taken for 'total execution time for createProjectGraph()' 1.846625000000131ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.905Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for 'nx/core/project-json:createNodes' 0.044499999999970896
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.04054100000030303
+Time for '@nx/expo/plugin:createNodes' 2.658625000000029
+Time for '@nx/react-native/plugin:createNodes' 1.8525829999998678
+Time for '@nx/playwright/plugin:createNodes' 1.9198749999995925
+Time for '@nx/jest/plugin:createNodes' 5.58758399999715
+Time for '@nx/react/router-plugin:createNodes' 4.69404200000281
+Time for '@nx/vite/plugin:createNodes' 5.761167000000569
+Time for '@nx/rollup/plugin:createNodes' 2.211124999997992
+Time for '@nx/js/typescript:createNodes' 8.45024999999805
+Time for 'nx/core/package-json:createNodes' 7.576750000000175
+Time for '@nx/eslint/plugin:createNodes' 9.820415999998659
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.928Z - Time taken for 'build-project-configs' 12.833999999998923ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.929Z - Time taken for '@nx/vite/plugin:createDependencies' 1.627583000001323ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.929Z - Time taken for '@nx/js/typescript:createDependencies' 2.1397089999991294ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 53.95537499999955
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:16.985Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.986Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:16.986Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 81.11545800000022ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.512Z - [WATCHER]: libs/magic-memory-ui/dist was deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.512Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.713Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.713Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.713Z - [REQUEST]: libs/magic-memory-ui/dist
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.722Z - Time taken for 'hash changed files from watcher' 0.616042000001471ms
+Time for 'nx/core/project-json:createNodes' 1.405958000003011
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 3.1036669999994047
+Time for '@nx/playwright/plugin:createNodes' 7.642250000000786
+Time for '@nx/expo/plugin:createNodes' 9.213250000000698
+Time for '@nx/rollup/plugin:createNodes' 11.751166999998532
+Time for '@nx/jest/plugin:createNodes' 13.956291999998939
+Time for '@nx/js/typescript:createNodes' 21.324124999999185
+Time for '@nx/react-native/plugin:createNodes' 4.858458000002429
+Time for '@nx/vite/plugin:createNodes' 13.602749999998196
+Time for 'nx/core/package-json:createNodes' 12.845375000000786
+Time for '@nx/react/router-plugin:createNodes' 9.834749999998166
+Time for '@nx/eslint/plugin:createNodes' 18.275499999999738
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.758Z - Time taken for 'build-project-configs' 36.665916999998444ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.758Z - Time taken for '@nx/js/typescript:createDependencies' 1.2385839999988093ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.758Z - Time taken for '@nx/vite/plugin:createDependencies' 1.0457080000014685ms
+Time for 'build typescript dependencies' 0.01220899999680114
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:22.761Z - Time taken for 'total execution time for createProjectGraph()' 2.826499999999214ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:25.963Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 1.002874999998312
+Time for '@nx/playwright/plugin:createNodes' 0.7200420000008307
+Time for '@nx/react-native/plugin:createNodes' 0.7975839999999152
+Time for '@nx/rollup/plugin:createNodes' 1.1153749999975844
+Time for '@nx/jest/plugin:createNodes' 2.1017920000012964
+Time for '@nx/js/typescript:createNodes' 6.754292000001442
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.7655420000010054
+Time for '@nx/react/router-plugin:createNodes' 4.165999999997439
+Time for '@nx/vite/plugin:createNodes' 4.506499999999505
+Time for 'nx/core/project-json:createNodes' 0.6866249999984575
+Time for 'nx/core/package-json:createNodes' 3.810750000000553
+Time for '@nx/eslint/plugin:createNodes' 10.579874999999447
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:25.991Z - Time taken for 'build-project-configs' 13.295207999999548ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:25.992Z - Time taken for '@nx/js/typescript:createDependencies' 3.4517909999995027ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 57.82258399999773
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:05:26.053Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:26.053Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:26.053Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 90.11350000000311ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.542Z - Established a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.543Z - Established a connection. Number of open connections: 2
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.543Z - Closed a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.543Z - Established a connection. Number of open connections: 2
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.543Z - Closed a connection. Number of open connections: 1
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.546Z - [REQUEST]: Client Request for Project Graph Received
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.546Z - Reusing in-memory cached project graph because no files changed.
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.546Z - [REQUEST]: Responding to the client. project-graph
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.547Z - Time taken for 'total for creating and serializing project graph' 0.5048749999987194ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.552Z - Done responding to the client project-graph
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.552Z - Handled REQUEST_PROJECT_GRAPH. Handling time: 0. Response time: 6.
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.558Z - [REQUEST]: Responding to the client. handleContextFileData
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.559Z - Done responding to the client handleContextFileData
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.559Z - Handled GET_CONTEXT_FILE_DATA. Handling time: 0. Response time: 1.
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:33.561Z - Closed a connection. Number of open connections: 0
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:55.984Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:55.997Z - [WATCHER]: libs/magic-memory-ui/src/lib/screens/SplashScreen.tsx was modified
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.099Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.099Z - [REQUEST]: libs/magic-memory-ui/src/lib/screens/SplashScreen.tsx
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.099Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.105Z - Time taken for 'hash changed files from watcher' 0.368332999998529ms
+Time for '@nx/expo/plugin:createNodes' 5.850083999997878
+Time for 'nx/core/project-json:createNodes' 1.4795420000009472
+Time for '@nx/react-native/plugin:createNodes' 5.755417000000307
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 3.848666999998386
+Time for '@nx/playwright/plugin:createNodes' 6.173416999998153
+Time for '@nx/rollup/plugin:createNodes' 8.466457999995328
+Time for '@nx/jest/plugin:createNodes' 11.941624999999476
+Time for '@nx/js/typescript:createNodes' 16.75029199999699
+Time for '@nx/vite/plugin:createNodes' 11.312125000004016
+Time for '@nx/react/router-plugin:createNodes' 11.616084000001138
+Time for 'nx/core/package-json:createNodes' 8.731707999999344
+Time for '@nx/eslint/plugin:createNodes' 13.633041000000958
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.138Z - Time taken for 'build-project-configs' 25.76837499999965ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.140Z - Time taken for '@nx/vite/plugin:createDependencies' 2.2012919999979204ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.140Z - Time taken for '@nx/js/typescript:createDependencies' 3.2011659999989206ms
+Time for 'build typescript dependencies' 5.386583999999857
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:56.151Z - Time taken for 'total execution time for createProjectGraph()' 12.620042000002286ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:59.938Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:59.939Z - [WATCHER]: 17 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:59.996Z - [WATCHER]: 37 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:05:59.997Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.041Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.041Z - [REQUEST]: libs/magic-memory-ui/dist/lib/types/index.d.ts,libs/magic-memory-ui/dist/lib/styles/components/containers.js,libs/magic-memory-ui/dist/lib/styles/components/progressBar.d.ts,libs/magic-memory-ui/dist/lib/styles/components/progressBar.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.js,libs/magic-memory-ui/dist/lib/styles/components/containers.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.js,libs/magic-memory-ui/dist/lib/types/index.js,libs/magic-memory-ui/dist/lib/contexts/SoundContext.js,libs/magic-memory-ui/dist/icons/PlayIcon.js,libs/magic-memory-ui/dist/lib/styles/colors.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.d.ts,libs/magic-memory-ui/dist/lib/contexts/SoundContext.d.ts,libs/magic-memory-ui/dist/lib/styles/global-styles.d.ts,libs/magic-memory-ui/dist/lib/styles/global-styles.js,libs/magic-memory-ui/dist/lib/styles/colors.d.ts,libs/magic-memory-ui/dist/icons/PlayIcon.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.js,libs/magic-memory-ui/dist/icons/BackIcon.d.ts,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.js,libs/magic-memory-ui/dist/lib/components/CustomAlert.js,libs/magic-memory-ui/dist/lib/types/props.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.js,libs/magic-memory-ui/dist/lib/screens/SplashScreen.d.ts,libs/magic-memory-ui/dist/lib/components/Card.d.ts,libs/magic-memory-ui/dist/lib/components/Card.styles.js,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.js,libs/magic-memory-ui/dist/icons/BackIcon.js,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.js,libs/magic-memory-ui/dist/lib/utils/config.js,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.js,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.js,libs/magic-memory-ui/dist/lib/components/Card.js,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.d.ts,libs/magic-memory-ui/dist/lib/utils/imageMap.js,libs/magic-memory-ui/dist/lib/types/props.js,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.js,libs/magic-memory-ui/dist/lib/components/Card.styles.d.ts,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.js,libs/magic-memory-ui/dist/lib/utils/imageMap.d.ts,libs/magic-memory-ui/dist/lib/utils/config.d.ts,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.d.ts
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.042Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.049Z - Time taken for 'hash changed files from watcher' 1.3627080000005662ms
+Time for '@nx/expo/plugin:createNodes' 4.874084000002767
+Time for '@nx/playwright/plugin:createNodes' 2.947541999994428
+Time for '@nx/react-native/plugin:createNodes' 5.024166000002879
+Time for '@nx/vite/plugin:createNodes' 5.475666000005731
+Time for 'nx/core/project-json:createNodes' 0.24116700000013225
+Time for '@nx/rollup/plugin:createNodes' 4.501624999997148
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.5822500000067521
+Time for '@nx/jest/plugin:createNodes' 6.130917000002228
+Time for '@nx/react/router-plugin:createNodes' 4.5754999999990105
+Time for 'nx/core/package-json:createNodes' 3.4441250000018044
+Time for '@nx/js/typescript:createNodes' 10.285750000002736
+Time for '@nx/eslint/plugin:createNodes' 6.233124999998836
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.062Z - Time taken for 'build-project-configs' 14.285875000001397ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.062Z - [WATCHER]: 22 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.063Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.066Z - Time taken for '@nx/js/typescript:createDependencies' 5.274165999995603ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.066Z - Time taken for '@nx/vite/plugin:createDependencies' 5.099332999998296ms
+Time for 'build typescript dependencies' 3.8602499999979045
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.072Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.072Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.072Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.072Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.072Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.073Z - Time taken for 'total execution time for createProjectGraph()' 10.721999999994296ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.115Z - [WATCHER]: 18 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.115Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.164Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.164Z - [REQUEST]: libs/magic-memory-ui/dist/lib/navigation/AppNavigator.d.ts,libs/magic-memory-ui/dist/lib/magic-memory-ui.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.js,libs/magic-memory-ui/dist/lib/layout/layout.js,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.styles.js,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.js,libs/magic-memory-ui/dist/lib/i18n/index.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.js,libs/magic-memory-ui/dist/lib/i18n/index.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.d.ts,libs/magic-memory-ui/dist/index.d.ts,libs/magic-memory-ui/dist/lib/magic-memory-ui.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.d.ts,libs/magic-memory-ui/dist/index.js,libs/magic-memory-ui/dist/lib/components/Confetti.styles.d.ts,libs/magic-memory-ui/dist/lib/layout/layout.d.ts,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.js,libs/magic-memory-ui/dist/assets/Group1359.png,libs/magic-memory-ui/dist/assets/animations/success-animation.json,libs/magic-memory-ui/dist/assets/adjusted_background.svg,libs/magic-memory-ui/dist/assets/animations/lights.json,libs/magic-memory-ui/dist/assets/Frame 7978.png,libs/magic-memory-ui/dist/assets/Stars.png,libs/magic-memory-ui/dist/assets/Frame 7979.png,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/assets/TitlFon.png,libs/magic-memory-ui/dist/assets/Union.png,libs/magic-memory-ui/dist/assets/Exclude.png,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/assets/Background.jpg,libs/magic-memory-ui/dist/assets/animations/Confetti.json,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/assets/adaptive-icon.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.164Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.4461670000018785
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.050084000002243556
+Time for '@nx/react-native/plugin:createNodes' 0.35570800000277814
+Time for '@nx/playwright/plugin:createNodes' 0.591999999996915
+Time for '@nx/rollup/plugin:createNodes' 1.0964579999999842
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.169Z - Time taken for 'hash changed files from watcher' 1.171333999998751ms
+Time for '@nx/react/router-plugin:createNodes' 1.2623329999987618
+Time for '@nx/jest/plugin:createNodes' 1.565042000001995
+Time for '@nx/vite/plugin:createNodes' 1.5587089999971795
+Time for 'nx/core/project-json:createNodes' 0.13791700000001583
+Time for 'nx/core/package-json:createNodes' 0.8371659999975236
+Time for '@nx/js/typescript:createNodes' 2.5206250000046566
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.172Z - [WATCHER]: 11 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.172Z - [WATCHER]: Processing file changes in outputs
+Time for '@nx/eslint/plugin:createNodes' 5.295667000005778
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.175Z - Time taken for 'build-project-configs' 6.300333999999566ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.175Z - Time taken for '@nx/js/typescript:createDependencies' 0.9632080000010319ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.175Z - Time taken for '@nx/vite/plugin:createDependencies' 0.8132499999992433ms
+Time for 'build typescript dependencies' 0.21925000000192085
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.177Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.177Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.177Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.177Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.177Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.178Z - Time taken for 'total execution time for createProjectGraph()' 1.8985410000022966ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.225Z - [WATCHER]: 16 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.225Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.274Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.275Z - [REQUEST]: libs/magic-memory-ui/dist/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/assets/card-1.jpg,libs/magic-memory-ui/dist/assets/back-button.png,libs/magic-memory-ui/dist/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/assets/animtest/facecard/boy.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.275Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.3141669999968144
+Time for '@nx/playwright/plugin:createNodes' 0.5890419999996084
+Time for '@nx/react-native/plugin:createNodes' 0.5562080000017886
+Time for '@nx/react/router-plugin:createNodes' 0.6274159999957192
+Time for 'nx/core/project-json:createNodes' 0.03766699999687262
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.061083000000508036
+Time for '@nx/rollup/plugin:createNodes' 0.9683749999967404
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.279Z - Time taken for 'hash changed files from watcher' 0.8050839999996242ms
+Time for '@nx/vite/plugin:createNodes' 0.9717910000035772
+Time for '@nx/jest/plugin:createNodes' 1.218208999998751
+Time for '@nx/js/typescript:createNodes' 2.462166999997862
+Time for 'nx/core/package-json:createNodes' 0.8660000000018044
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.282Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.283Z - [WATCHER]: 20 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+Time for '@nx/eslint/plugin:createNodes' 5.119124999997439
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.285Z - Time taken for 'build-project-configs' 6.021415999995952ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.286Z - Time taken for '@nx/js/typescript:createDependencies' 1.388542000000598ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.286Z - Time taken for '@nx/vite/plugin:createDependencies' 1.2315830000006827ms
+Time for 'build typescript dependencies' 0.18883400000049733
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.287Z - Time taken for 'total execution time for createProjectGraph()' 2.211834000001545ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.384Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.384Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.384Z - [REQUEST]: 
+Time for '@nx/playwright/plugin:createNodes' 0.3641250000000582
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.388Z - Time taken for 'hash changed files from watcher' 0.1845000000030268ms
+Time for '@nx/react-native/plugin:createNodes' 0.2639590000035241
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.03500000000349246
+Time for '@nx/expo/plugin:createNodes' 0.984415999999328
+Time for '@nx/jest/plugin:createNodes' 0.9092919999966398
+Time for 'nx/core/project-json:createNodes' 0.08124999999563443
+Time for '@nx/vite/plugin:createNodes' 0.7098750000004657
+Time for '@nx/rollup/plugin:createNodes' 1.1307080000042333
+Time for 'nx/core/package-json:createNodes' 0.8605830000014976
+Time for '@nx/react/router-plugin:createNodes' 1.6075420000051963
+Time for '@nx/js/typescript:createNodes' 2.6499170000024606
+Time for '@nx/eslint/plugin:createNodes' 3.631999999997788
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.393Z - Time taken for 'build-project-configs' 4.418916999995417ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.394Z - Time taken for '@nx/vite/plugin:createDependencies' 0.681124999995518ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.394Z - Time taken for '@nx/js/typescript:createDependencies' 0.9252919999998994ms
+Time for 'build typescript dependencies' 0.006915999998454936
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.395Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.395Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.396Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.396Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.396Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.396Z - Time taken for 'total execution time for createProjectGraph()' 1.5741670000061276ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.506Z - [WATCHER]: 13 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.506Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.554Z - [WATCHER]: 11 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.554Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.614Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.614Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/Frame 7978.png,libs/magic-memory-ui/dist/lib/assets/Background.jpg,libs/magic-memory-ui/dist/lib/assets/Frame 7979.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/Group1359.png,libs/magic-memory-ui/dist/assets/splash-icon.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/assets/star_cursor.png,libs/magic-memory-ui/dist/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/Exclude.png,libs/magic-memory-ui/dist/lib/assets/adjusted_background.svg,libs/magic-memory-ui/dist/lib/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/lib/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/lib/assets/TitlFon.png,libs/magic-memory-ui/dist/lib/assets/Stars.png,libs/magic-memory-ui/dist/lib/assets/animations/Confetti.json,libs/magic-memory-ui/dist/lib/assets/animations/lights.json,libs/magic-memory-ui/dist/lib/assets/animations/success-animation.json,libs/magic-memory-ui/dist/lib/assets/Union.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.614Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.7000840000036987
+Time for '@nx/playwright/plugin:createNodes' 0.23649999999906868
+Time for '@nx/react-native/plugin:createNodes' 0.2641659999935655
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.0349999999962165
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.620Z - [WATCHER]: 11 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+Time for '@nx/rollup/plugin:createNodes' 0.8855420000036247
+Time for '@nx/react/router-plugin:createNodes' 1.28125
+Time for 'nx/core/project-json:createNodes' 0.029792000001179986
+Time for '@nx/vite/plugin:createNodes' 0.6001659999965341
+Time for '@nx/jest/plugin:createNodes' 1.9938330000004498
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.621Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.621Z - Time taken for 'hash changed files from watcher' 6.6773749999993015ms
+Time for 'nx/core/package-json:createNodes' 1.8856249999953434
+Time for '@nx/js/typescript:createNodes' 5.59004200000345
+Time for '@nx/eslint/plugin:createNodes' 5.730415999998513
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.628Z - Time taken for 'build-project-configs' 6.819250000000466ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.629Z - Time taken for '@nx/js/typescript:createDependencies' 1.173291999999492ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.629Z - Time taken for '@nx/vite/plugin:createDependencies' 0.9832910000041011ms
+Time for 'build typescript dependencies' 0.036082999999052845
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.632Z - Time taken for 'total execution time for createProjectGraph()' 2.178124999998545ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.675Z - [WATCHER]: 24 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.675Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.725Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.725Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-SemiBold.ttf,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-6.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/lib/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/lib/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/lib/assets/favicon.png,libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/lib/assets/card-1.jpg,libs/magic-memory-ui/dist/lib/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/lib/assets/back-button.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/lib/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/lib/assets/faceSmile.png,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/lib/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-4.jpg
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.725Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.4714170000006561
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.734Z - [WATCHER]: 12 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.734Z - [WATCHER]: Processing file changes in outputs
+Time for '@nx/playwright/plugin:createNodes' 0.37912499999947613
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.033167000001412816
+Time for '@nx/react-native/plugin:createNodes' 0.7477079999953276
+Time for '@nx/rollup/plugin:createNodes' 0.5875420000011218
+Time for 'nx/core/project-json:createNodes' 0.0738340000025346
+Time for '@nx/vite/plugin:createNodes' 0.8521669999972801
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.735Z - Time taken for 'hash changed files from watcher' 3.5674590000053286ms
+Time for '@nx/jest/plugin:createNodes' 3.019333000003826
+Time for 'nx/core/package-json:createNodes' 1.7851250000021537
+Time for '@nx/react/router-plugin:createNodes' 2.417083000000275
+Time for '@nx/js/typescript:createNodes' 4.912749999995867
+Time for '@nx/eslint/plugin:createNodes' 7.260667000002286
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.744Z - Time taken for 'build-project-configs' 9.53045800000109ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.745Z - Time taken for '@nx/js/typescript:createDependencies' 2.0088749999995343ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.745Z - Time taken for '@nx/vite/plugin:createDependencies' 1.7188749999986612ms
+Time for 'build typescript dependencies' 0.22254099999554455
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.748Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.748Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.749Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.749Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.749Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.749Z - Time taken for 'total execution time for createProjectGraph()' 4.105582999996841ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.835Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.836Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.836Z - [REQUEST]: 
+Time for '@nx/playwright/plugin:createNodes' 0.4999580000003334
+Time for '@nx/react-native/plugin:createNodes' 0.46824999999807915
+Time for '@nx/rollup/plugin:createNodes' 0.5091669999965234
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.03149999999732245
+Time for 'nx/core/project-json:createNodes' 0.03012499999749707
+Time for '@nx/vite/plugin:createNodes' 0.5682920000035665
+Time for '@nx/react/router-plugin:createNodes' 1.335957999996026
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.849Z - Time taken for 'hash changed files from watcher' 0.2712500000052387ms
+Time for '@nx/expo/plugin:createNodes' 2.335833000004641
+Time for 'nx/core/package-json:createNodes' 0.7411670000001322
+Time for '@nx/jest/plugin:createNodes' 2.3642089999993914
+Time for '@nx/js/typescript:createNodes' 4.801749999998719
+Time for '@nx/eslint/plugin:createNodes' 7.573958000000857
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.857Z - Time taken for 'build-project-configs' 9.790124999999534ms
+Time for 'build typescript dependencies' 0.009166000003460795
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.862Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.862Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.862Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.862Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.862Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.863Z - Time taken for 'total execution time for createProjectGraph()' 4.284666999999899ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.953Z - [WATCHER]: 6 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:00.953Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.061Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.061Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/splash-icon.png,libs/magic-memory-ui/dist/lib/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/lib/assets/star_cursor.png,libs/magic-memory-ui/dist/lib/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/sounds/success-fanfare-trumpets.mp3
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.061Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.3802080000023125
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.065Z - Time taken for 'hash changed files from watcher' 6.078041000000667ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.0370420000035665
+Time for '@nx/playwright/plugin:createNodes' 0.5568329999950947
+Time for '@nx/rollup/plugin:createNodes' 0.6578330000047572
+Time for '@nx/react-native/plugin:createNodes' 0.6945839999971213
+Time for 'nx/core/project-json:createNodes' 0.0305000000007567
+Time for '@nx/react/router-plugin:createNodes' 1.0489999999990687
+Time for '@nx/vite/plugin:createNodes' 1.1326669999980368
+Time for '@nx/jest/plugin:createNodes' 1.4316249999974389
+Time for 'nx/core/package-json:createNodes' 1.241083000000799
+Time for '@nx/js/typescript:createNodes' 2.46524999999383
+Time for '@nx/eslint/plugin:createNodes' 4.190707999994629
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.071Z - Time taken for 'build-project-configs' 5.080583000002662ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.072Z - Time taken for '@nx/js/typescript:createDependencies' 0.9482910000006086ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.072Z - Time taken for '@nx/vite/plugin:createDependencies' 0.7969999999986612ms
+Time for 'build typescript dependencies' 0.006999999997788109
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:01.073Z - Time taken for 'total execution time for createProjectGraph()' 1.7005000000062864ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.553Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 0.7885830000013812
+Time for '@nx/playwright/plugin:createNodes' 0.45816699999704724
+Time for '@nx/react-native/plugin:createNodes' 0.7669169999935548
+Time for '@nx/rollup/plugin:createNodes' 0.7674159999951371
+Time for '@nx/jest/plugin:createNodes' 1.3237499999959255
+Time for '@nx/vite/plugin:createNodes' 1.4083749999990687
+Time for '@nx/react/router-plugin:createNodes' 1.3513330000059796
+Time for '@nx/js/typescript:createNodes' 4.227208000003884
+Time for 'nx/core/project-json:createNodes' 0.31437499999447027
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.4039589999956661
+Time for '@nx/eslint/plugin:createNodes' 7.3449170000021695
+Time for 'nx/core/package-json:createNodes' 7.2474159999983385
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.580Z - Time taken for 'build-project-configs' 13.755457999999635ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.582Z - Time taken for '@nx/js/typescript:createDependencies' 3.278333999995084ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.582Z - Time taken for '@nx/vite/plugin:createDependencies' 2.820292000003974ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 83.2624580000047
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:06:02.668Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.669Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:02.669Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 116.0694169999988ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.118Z - [WATCHER]: libs/magic-memory-ui/dist was deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.118Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.319Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.319Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.319Z - [REQUEST]: libs/magic-memory-ui/dist
+Time for '@nx/expo/plugin:createNodes' 2.4133750000037253
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.330Z - Time taken for 'hash changed files from watcher' 0.7767920000042068ms
+Time for 'nx/core/package-json:createNodes' 2.8093750000116415
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.18733400000201073
+Time for 'nx/core/project-json:createNodes' 0.14387499999429565
+Time for '@nx/playwright/plugin:createNodes' 4.151042000012239
+Time for '@nx/react-native/plugin:createNodes' 2.6224999999976717
+Time for '@nx/jest/plugin:createNodes' 4.27424999998766
+Time for '@nx/rollup/plugin:createNodes' 1.6270000000076834
+Time for '@nx/react/router-plugin:createNodes' 2.359167000002344
+Time for '@nx/vite/plugin:createNodes' 4.275957999998354
+Time for '@nx/eslint/plugin:createNodes' 8.725625000006403
+Time for '@nx/js/typescript:createNodes' 10.56491700001061
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.345Z - Time taken for 'build-project-configs' 14.007540999999037ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.345Z - Time taken for '@nx/js/typescript:createDependencies' 1.7064580000005662ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.345Z - Time taken for '@nx/vite/plugin:createDependencies' 1.3770409999997355ms
+Time for 'build typescript dependencies' 0.012541000003693625
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:06.349Z - Time taken for 'total execution time for createProjectGraph()' 3.4512919999979204ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.736Z - [WATCHER]: 18 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.737Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.789Z - [WATCHER]: 37 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.790Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.839Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.839Z - [REQUEST]: libs/magic-memory-ui/dist/lib/types/index.d.ts,libs/magic-memory-ui/dist/lib/styles/components/containers.d.ts,libs/magic-memory-ui/dist/lib/styles/global-styles.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.d.ts,libs/magic-memory-ui/dist/lib/styles/colors.d.ts,libs/magic-memory-ui/dist/lib/styles/components/progressBar.d.ts,libs/magic-memory-ui/dist/icons/PlayIcon.d.ts,libs/magic-memory-ui/dist/lib/styles/colors.js,libs/magic-memory-ui/dist/lib/styles/components/buttons.js,libs/magic-memory-ui/dist/icons/PlayIcon.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.d.ts,libs/magic-memory-ui/dist/lib/contexts/SoundContext.d.ts,libs/magic-memory-ui/dist/lib/styles/components/progressBar.js,libs/magic-memory-ui/dist/lib/styles/global-styles.d.ts,libs/magic-memory-ui/dist/lib/contexts/SoundContext.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.js,libs/magic-memory-ui/dist/lib/styles/components/containers.js,libs/magic-memory-ui/dist/lib/types/index.js,libs/magic-memory-ui/dist/lib/components/Confetti.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.js,libs/magic-memory-ui/dist/lib/components/Card.styles.js,libs/magic-memory-ui/dist/icons/BackIcon.js,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.js,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.d.ts,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.js,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.d.ts,libs/magic-memory-ui/dist/lib/utils/imageMap.js,libs/magic-memory-ui/dist/lib/utils/imageMap.d.ts,libs/magic-memory-ui/dist/lib/utils/config.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.js,libs/magic-memory-ui/dist/lib/utils/config.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.js,libs/magic-memory-ui/dist/lib/components/Card.js,libs/magic-memory-ui/dist/lib/types/props.d.ts,libs/magic-memory-ui/dist/lib/contexts/LanguageContext.d.ts,libs/magic-memory-ui/dist/lib/components/Card.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.styles.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/LevelSelect.js,libs/magic-memory-ui/dist/lib/types/props.js,libs/magic-memory-ui/dist/lib/screens/LevelSelect.styles.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.js,libs/magic-memory-ui/dist/lib/components/Card.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.js,libs/magic-memory-ui/dist/lib/contexts/PropConfigContext.js,libs/magic-memory-ui/dist/lib/screens/SplashScreen.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.styles.d.ts,libs/magic-memory-ui/dist/lib/screens/LoadingScreen.styles.d.ts,libs/magic-memory-ui/dist/icons/BackIcon.d.ts,libs/magic-memory-ui/dist/lib/components/CustomAlert.d.ts,libs/magic-memory-ui/dist/lib/screens/SplashScreen.d.ts
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.839Z - [REQUEST]: 
+Time for '@nx/react-native/plugin:createNodes' 0.34087499999441206
+Time for '@nx/expo/plugin:createNodes' 0.3864579999935813
+Time for '@nx/playwright/plugin:createNodes' 0.715582999997423
+Time for '@nx/js/typescript:createNodes' 2.1239999999961583
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.04425000000628643
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.844Z - Time taken for 'hash changed files from watcher' 0.7106250000069849ms
+Time for '@nx/rollup/plugin:createNodes' 0.9975410000042757
+Time for '@nx/react/router-plugin:createNodes' 1.141708999988623
+Time for '@nx/vite/plugin:createNodes' 0.676208000004408
+Time for 'nx/core/project-json:createNodes' 0.05762500000128057
+Time for '@nx/jest/plugin:createNodes' 0.6262089999945601
+Time for 'nx/core/package-json:createNodes' 1.3864159999939147
+Time for '@nx/eslint/plugin:createNodes' 5.041458000006969
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.849Z - Time taken for 'build-project-configs' 6.331958000009763ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.850Z - Time taken for '@nx/vite/plugin:createDependencies' 0.8137920000008307ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.850Z - Time taken for '@nx/js/typescript:createDependencies' 1.3569580000039423ms
+Time for 'build typescript dependencies' 0.007124999989173375
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.851Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.851Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.851Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.851Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.852Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.852Z - Time taken for 'total execution time for createProjectGraph()' 2.2025419999990845ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.852Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.853Z - [WATCHER]: 25 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.914Z - [WATCHER]: 36 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.914Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.955Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.955Z - [REQUEST]: libs/magic-memory-ui/dist/lib/magic-memory-ui.js,libs/magic-memory-ui/dist/lib/screens/GameScreen.d.ts,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.d.ts,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.js,libs/magic-memory-ui/dist/assets/Exclude.png,libs/magic-memory-ui/dist/lib/layout/layout.d.ts,libs/magic-memory-ui/dist/lib/magic-memory-ui.d.ts,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.styles.js,libs/magic-memory-ui/dist/lib/components/Confetti.styles.js,libs/magic-memory-ui/dist/assets/Background.jpg,libs/magic-memory-ui/dist/index.js,libs/magic-memory-ui/dist/lib/layout/layout.js,libs/magic-memory-ui/dist/lib/components/BackgroundWrapper.styles.d.ts,libs/magic-memory-ui/dist/index.d.ts,libs/magic-memory-ui/dist/lib/components/Confetti.styles.d.ts,libs/magic-memory-ui/dist/lib/components/CanvasBackground.js,libs/magic-memory-ui/dist/lib/layout/layout-asdasdasdasdasd.d.ts,libs/magic-memory-ui/dist/lib/i18n/index.d.ts,libs/magic-memory-ui/dist/lib/i18n/index.js,libs/magic-memory-ui/dist/lib/components/CanvasBackground.d.ts,libs/magic-memory-ui/dist/lib/navigation/AppNavigator.d.ts,libs/magic-memory-ui/dist/lib/screens/GameScreen.js,libs/magic-memory-ui/dist/assets/Frame 7978.png,libs/magic-memory-ui/dist/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/assets/Frame 7979.png,libs/magic-memory-ui/dist/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/assets/animations/Confetti.json,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/assets/TitlFon.png,libs/magic-memory-ui/dist/assets/adjusted_background.svg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/assets/Group1359.png,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg,libs/magic-memory-ui/dist/assets/animations/lights.json,libs/magic-memory-ui/dist/assets/Union.png,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg,libs/magic-memory-ui/dist/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/assets/Stars.png,libs/magic-memory-ui/dist/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg,libs/magic-memory-ui/dist/assets/animations/success-animation.json,libs/magic-memory-ui/dist/assets/adaptive-icon.png,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.956Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.38429200000246055
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.959Z - Time taken for 'hash changed files from watcher' 1.8392500000045402ms
+Time for '@nx/jest/plugin:createNodes' 0.5202920000010636
+Time for '@nx/react-native/plugin:createNodes' 0.2705839999980526
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.04487499999231659
+Time for '@nx/rollup/plugin:createNodes' 0.5489169999927981
+Time for 'nx/core/project-json:createNodes' 0.11525000000256114
+Time for '@nx/vite/plugin:createNodes' 0.7894590000069002
+Time for '@nx/playwright/plugin:createNodes' 0.9711249999963911
+Time for 'nx/core/package-json:createNodes' 0.9077499999984866
+Time for '@nx/react/router-plugin:createNodes' 1.786500000001979
+Time for '@nx/js/typescript:createNodes' 3.2433750000054715
+Time for '@nx/eslint/plugin:createNodes' 4.722249999991618
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.966Z - Time taken for 'build-project-configs' 5.526416999986395ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.966Z - [WATCHER]: 24 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.966Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.967Z - Time taken for '@nx/js/typescript:createDependencies' 1.585665999999037ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.967Z - Time taken for '@nx/vite/plugin:createDependencies' 1.446457999991253ms
+Time for 'build typescript dependencies' 0.41495799999393057
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:09.969Z - Time taken for 'total execution time for createProjectGraph()' 3.1583339999924647ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.075Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.075Z - [REQUEST]: libs/magic-memory-ui/dist/assets/index.ts,libs/magic-memory-ui/dist/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/assets/icon.png,libs/magic-memory-ui/dist/assets/fonts/Fredoka-SemiBold.ttf,libs/magic-memory-ui/dist/assets/numbers/number-12.png,libs/magic-memory-ui/dist/assets/cardFace-6.jpg,libs/magic-memory-ui/dist/assets/numbers/number-8.png,libs/magic-memory-ui/dist/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/assets/back-button.png,libs/magic-memory-ui/dist/assets/faceSmile.png,libs/magic-memory-ui/dist/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/assets/numbers/number-10.png,libs/magic-memory-ui/dist/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/assets/card-1.jpg,libs/magic-memory-ui/dist/assets/cardFace-4.jpg,libs/magic-memory-ui/dist/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/assets/hourglass.png,libs/magic-memory-ui/dist/assets/favicon.png,libs/magic-memory-ui/dist/assets/numbers/number-4.png,libs/magic-memory-ui/dist/assets/numbers/number-6.png,libs/magic-memory-ui/dist/assets/play-button.png,libs/magic-memory-ui/dist/assets/playAgain.png,libs/magic-memory-ui/dist/assets/sounds/background-music.wav
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.075Z - [REQUEST]: 
+Time for '@nx/playwright/plugin:createNodes' 0.5203750000073342
+Time for '@nx/react-native/plugin:createNodes' 0.4621659999975236
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.038749999992433004
+Time for '@nx/expo/plugin:createNodes' 0.39341600000625476
+Time for 'nx/core/project-json:createNodes' 0.028124999997089617
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.079Z - Time taken for 'hash changed files from watcher' 7.851999999998952ms
+Time for '@nx/react/router-plugin:createNodes' 1.1011250000010477
+Time for '@nx/rollup/plugin:createNodes' 0.9249579999886919
+Time for '@nx/vite/plugin:createNodes' 0.8242499999905704
+Time for '@nx/jest/plugin:createNodes' 1.6901660000003176
+Time for 'nx/core/package-json:createNodes' 1.0189580000005662
+Time for '@nx/js/typescript:createNodes' 3.2510000000038417
+Time for '@nx/eslint/plugin:createNodes' 4.436041999986628
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.084Z - Time taken for 'build-project-configs' 5.267959000004339ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.085Z - Time taken for '@nx/vite/plugin:createDependencies' 0.8093340000050375ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.085Z - Time taken for '@nx/js/typescript:createDependencies' 1.111917000001995ms
+Time for 'build typescript dependencies' 0.19137500000942964
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.086Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.086Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.086Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.087Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.087Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.087Z - Time taken for 'total execution time for createProjectGraph()' 1.7755829999950947ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.188Z - [WATCHER]: 10 file(s) created or restored, 1 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.188Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.272Z - [WATCHER]: 8 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.272Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.295Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.295Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/Frame 7978.png,libs/magic-memory-ui/dist/assets/star_cursor.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor.png,libs/magic-memory-ui/dist/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/Background.jpg,libs/magic-memory-ui/dist/lib/assets/Exclude.png,libs/magic-memory-ui/dist/assets/splash-icon.png,libs/magic-memory-ui/dist/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/lib/assets/Frame 7979.png,libs/magic-memory-ui/dist/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/MagicMemory.jpg,libs/magic-memory-ui/dist/lib/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/assets/Union.png,libs/magic-memory-ui/dist/lib/assets/TitlFon.png,libs/magic-memory-ui/dist/lib/assets/Group1359.png,libs/magic-memory-ui/dist/lib/assets/Frame_Type3_03_Decor1.png,libs/magic-memory-ui/dist/lib/assets/Stars.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.295Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.300Z - Time taken for 'hash changed files from watcher' 6.294374999997672ms
+Time for '@nx/expo/plugin:createNodes' 1.5826249999954598
+Time for '@nx/playwright/plugin:createNodes' 0.5543750000069849
+Time for '@nx/react-native/plugin:createNodes' 0.90916599999764
+Time for '@nx/react/router-plugin:createNodes' 0.7112909999996191
+Time for '@nx/rollup/plugin:createNodes' 0.5418330000102287
+Time for '@nx/js/typescript:createNodes' 2.7767909999965923
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.032250000003841706
+Time for 'nx/core/project-json:createNodes' 0.03158300000359304
+Time for '@nx/jest/plugin:createNodes' 2.895457999999053
+Time for '@nx/vite/plugin:createNodes' 1.6935000000084983
+Time for 'nx/core/package-json:createNodes' 1.4576660000020638
+Time for '@nx/eslint/plugin:createNodes' 7.658832999994047
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.309Z - Time taken for 'build-project-configs' 9.27508300000045ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.310Z - Time taken for '@nx/js/typescript:createDependencies' 1.004624999986845ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.310Z - Time taken for '@nx/vite/plugin:createDependencies' 1.2378329999919515ms
+Time for 'build typescript dependencies' 0.2292499999894062
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.312Z - Time taken for 'total execution time for createProjectGraph()' 2.164541999998619ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.320Z - [WATCHER]: 28 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.322Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.372Z - [WATCHER]: 24 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.381Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.429Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.429Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/animtest/facecard/tigr.png,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/donkey.png,libs/magic-memory-ui/dist/lib/assets/back-button.png,libs/magic-memory-ui/dist/lib/assets/animations/success-animation.json,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/boy.png,libs/magic-memory-ui/dist/lib/assets/animations/Confetti.json,libs/magic-memory-ui/dist/lib/assets/adjusted_background.svg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/kengoo.png,libs/magic-memory-ui/dist/lib/assets/adaptive-icon.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg,libs/magic-memory-ui/dist/lib/assets/animations/lights.json,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/girl.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/owl.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/pig.png,libs/magic-memory-ui/dist/lib/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/facecard/puh.png,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg,libs/magic-memory-ui/dist/lib/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg,libs/magic-memory-ui/dist/lib/assets/numbers/number-6.png,libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-SemiBold.ttf,libs/magic-memory-ui/dist/lib/assets/play-button.png,libs/magic-memory-ui/dist/lib/assets/favicon.png,libs/magic-memory-ui/dist/lib/assets/numbers/number-4.png,libs/magic-memory-ui/dist/lib/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/cardFace-5.jpg,libs/magic-memory-ui/dist/lib/assets/numbers/number-10.png,libs/magic-memory-ui/dist/lib/assets/icon.png,libs/magic-memory-ui/dist/lib/assets/numbers/number-12.png,libs/magic-memory-ui/dist/lib/assets/playAgain.png,libs/magic-memory-ui/dist/lib/assets/hourglass.png,libs/magic-memory-ui/dist/lib/assets/fonts/Bangers-Regular.ttf,libs/magic-memory-ui/dist/lib/assets/cardFace-6.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-1.jpg,libs/magic-memory-ui/dist/lib/assets/numbers/number-8.png,libs/magic-memory-ui/dist/lib/assets/index.ts,libs/magic-memory-ui/dist/lib/assets/cardFace-4.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-2.jpg,libs/magic-memory-ui/dist/lib/assets/cardFace-3.jpg,libs/magic-memory-ui/dist/lib/assets/fonts/Fredoka-Regular.ttf,libs/magic-memory-ui/dist/lib/assets/faceSmile.png,libs/magic-memory-ui/dist/lib/assets/card-1.jpg
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.429Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.31683300000440795
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.438Z - Time taken for 'hash changed files from watcher' 6.480416999998852ms
+Time for '@nx/playwright/plugin:createNodes' 0.26129100000252947
+Time for '@nx/react-native/plugin:createNodes' 0.3050829999992857
+Time for '@nx/react/router-plugin:createNodes' 0.6485420000099111
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.06429099998786114
+Time for '@nx/jest/plugin:createNodes' 1.3455839999951422
+Time for 'nx/core/project-json:createNodes' 0.07687499999883585
+Time for '@nx/vite/plugin:createNodes' 0.5971250000002328
+Time for '@nx/rollup/plugin:createNodes' 0.43475000000034925
+Time for 'nx/core/package-json:createNodes' 0.663749999992433
+Time for '@nx/js/typescript:createNodes' 2.521290999997291
+Time for '@nx/eslint/plugin:createNodes' 10.633750000008149
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.451Z - Time taken for 'build-project-configs' 11.586834000001545ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.452Z - Time taken for '@nx/vite/plugin:createDependencies' 1.2499580000003334ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.452Z - Time taken for '@nx/js/typescript:createDependencies' 1.595707999993465ms
+Time for 'build typescript dependencies' 0.4299580000079004
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.454Z - Time taken for 'total execution time for createProjectGraph()' 2.928249999997206ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.468Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.468Z - [WATCHER]: 6 file(s) created or restored, 0 file(s) modified, 0 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.576Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.576Z - [REQUEST]: libs/magic-memory-ui/dist/lib/assets/star_cursor.png,libs/magic-memory-ui/dist/lib/assets/translation.png,libs/magic-memory-ui/dist/lib/assets/sounds/notification-sound-effect.mp3,libs/magic-memory-ui/dist/lib/assets/sounds/background-music.wav,libs/magic-memory-ui/dist/lib/assets/sounds/success-fanfare-trumpets.mp3,libs/magic-memory-ui/dist/lib/assets/splash-icon.png
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.576Z - [REQUEST]: 
+Time for '@nx/expo/plugin:createNodes' 0.41916700000001583
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.581Z - Time taken for 'hash changed files from watcher' 6.060833999988972ms
+Time for '@nx/playwright/plugin:createNodes' 0.2520829999994021
+Time for '@nx/react-native/plugin:createNodes' 0.3730829999985872
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.03604200000700075
+Time for 'nx/core/project-json:createNodes' 0.03858300000138115
+Time for '@nx/rollup/plugin:createNodes' 0.871207999996841
+Time for '@nx/vite/plugin:createNodes' 0.8937500000029104
+Time for '@nx/react/router-plugin:createNodes' 1.3352909999957774
+Time for '@nx/jest/plugin:createNodes' 1.6049170000042068
+Time for 'nx/core/package-json:createNodes' 1.4252080000005662
+Time for '@nx/js/typescript:createNodes' 3.1324160000076517
+Time for '@nx/eslint/plugin:createNodes' 5.0740419999929145
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.588Z - Time taken for 'build-project-configs' 6.1162919999915175ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.588Z - Time taken for '@nx/js/typescript:createDependencies' 1.0224170000001322ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.588Z - Time taken for '@nx/vite/plugin:createDependencies' 0.8984159999963595ms
+Time for 'build typescript dependencies' 0.008207999999285676
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:10.590Z - Time taken for 'total execution time for createProjectGraph()' 1.6716670000023441ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.750Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 0.8071250000066357
+Time for '@nx/react-native/plugin:createNodes' 0.8089160000090487
+Time for '@nx/jest/plugin:createNodes' 1.3539999999920838
+Time for '@nx/playwright/plugin:createNodes' 1.5371659999946132
+Time for '@nx/react/router-plugin:createNodes' 1.5611659999995027
+Time for '@nx/rollup/plugin:createNodes' 1.0810419999907026
+Time for '@nx/vite/plugin:createNodes' 2.6090000000112923
+Time for '@nx/js/typescript:createNodes' 7.066957999995793
+Time for 'nx/core/project-json:createNodes' 0.43162499999743886
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 1.0971250000002328
+Time for '@nx/eslint/plugin:createNodes' 9.53320900000108
+Time for 'nx/core/package-json:createNodes' 4.535709000003408
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.776Z - Time taken for 'build-project-configs' 12.785250000000815ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.777Z - Time taken for '@nx/js/typescript:createDependencies' 3.9812090000050375ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.777Z - Time taken for '@nx/vite/plugin:createDependencies' 4.2384170000004815ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 72.27145899999596
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:06:12.853Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.854Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:06:12.854Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 103.81545800001186ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.783Z - [WATCHER]: Archive.zip was modified
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.784Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.987Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.987Z - [REQUEST]: Archive.zip
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.988Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:27.996Z - Time taken for 'hash changed files from watcher' 1.222208999999566ms
+Time for '@nx/expo/plugin:createNodes' 3.2122920000110753
+Time for '@nx/playwright/plugin:createNodes' 3.433167000010144
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.6138750000100117
+Time for 'nx/core/project-json:createNodes' 0.7783329999947455
+Time for '@nx/rollup/plugin:createNodes' 4.839249999989988
+Time for '@nx/react-native/plugin:createNodes' 3.3509590000030585
+Time for '@nx/vite/plugin:createNodes' 6.775875000021188
+Time for '@nx/react/router-plugin:createNodes' 8.408125000016298
+Time for '@nx/js/typescript:createNodes' 14.32141600002069
+Time for '@nx/eslint/plugin:createNodes' 12.814958999981172
+Time for 'nx/core/package-json:createNodes' 34.48379199998453
+Time for '@nx/jest/plugin:createNodes' 39.6541670000006
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.040Z - Time taken for 'build-project-configs' 44.35104099998716ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.041Z - Time taken for '@nx/js/typescript:createDependencies' 2.01066699999501ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.041Z - Time taken for '@nx/vite/plugin:createDependencies' 1.8248749999911524ms
+Time for 'build typescript dependencies' 0.5662090000114404
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.045Z - Time taken for 'total execution time for createProjectGraph()' 4.075834000017494ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:28.574Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:33.600Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.446Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 0.9777499999909196
+Time for '@nx/jest/plugin:createNodes' 0.592583999998169
+Time for '@nx/react-native/plugin:createNodes' 0.26441699999850243
+Time for '@nx/playwright/plugin:createNodes' 0.6992080000054557
+Time for '@nx/rollup/plugin:createNodes' 0.4772919999959413
+Time for '@nx/js/typescript:createNodes' 3.5092920000024606
+Time for '@nx/vite/plugin:createNodes' 1.2830839999951422
+Time for '@nx/react/router-plugin:createNodes' 1.5886250000039581
+Time for 'nx/core/project-json:createNodes' 0.22454200001084246
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.6129999999830034
+Time for 'nx/core/package-json:createNodes' 1.9733330000017304
+Time for '@nx/eslint/plugin:createNodes' 6.9672499999869615
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.467Z - Time taken for 'build-project-configs' 9.49900000001071ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.468Z - Time taken for '@nx/js/typescript:createDependencies' 2.10733299999265ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.468Z - Time taken for '@nx/vite/plugin:createDependencies' 1.463292000000365ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 89.01675000000978
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:07:34.561Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.562Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:34.562Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 115.64816700000665ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:38.875Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:41.901Z - [WATCHER]: Archive.zip was modified
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:41.902Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.639Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.639Z - [REQUEST]: Archive.zip
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.639Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.644Z - Time taken for 'hash changed files from watcher' 336.96275000000605ms
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.30675000001792796
+Time for '@nx/expo/plugin:createNodes' 4.0981250000186265
+Time for 'nx/core/project-json:createNodes' 0.41741699998965487
+Time for '@nx/playwright/plugin:createNodes' 2.9007500000006985
+Time for '@nx/rollup/plugin:createNodes' 3.4077919999836013
+Time for '@nx/react-native/plugin:createNodes' 2.578542000002926
+Time for 'nx/core/package-json:createNodes' 2.899541999999201
+Time for '@nx/vite/plugin:createNodes' 4.288500000024214
+Time for '@nx/jest/plugin:createNodes' 5.885500000003958
+Time for '@nx/react/router-plugin:createNodes' 4.278374999994412
+Time for '@nx/js/typescript:createNodes' 6.263707999984035
+Time for '@nx/eslint/plugin:createNodes' 9.111999999993714
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.657Z - Time taken for 'build-project-configs' 12.078417000011541ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.657Z - Time taken for '@nx/vite/plugin:createDependencies' 0.815082999994047ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.657Z - Time taken for '@nx/js/typescript:createDependencies' 1.1157919999968726ms
+Time for 'build typescript dependencies' 0.5299579999991693
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:42.661Z - Time taken for 'total execution time for createProjectGraph()' 3.354749999998603ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:43.886Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.062Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 3.7508750000270084
+Time for '@nx/react-native/plugin:createNodes' 10.325666999997338
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 3.5645409999997355
+Time for '@nx/playwright/plugin:createNodes' 19.19816699999501
+Time for '@nx/js/typescript:createNodes' 25.627832999976818
+Time for 'nx/core/project-json:createNodes' 1.3556669999961741
+Time for '@nx/vite/plugin:createNodes' 15.517415999987861
+Time for '@nx/rollup/plugin:createNodes' 16.819541999982903
+Time for '@nx/jest/plugin:createNodes' 21.191875000018626
+Time for '@nx/react/router-plugin:createNodes' 21.205000000016298
+Time for '@nx/eslint/plugin:createNodes' 30.077041999989888
+Time for 'nx/core/package-json:createNodes' 5.351708000001963
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.121Z - Time taken for 'build-project-configs' 35.9572090000147ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.123Z - Time taken for '@nx/vite/plugin:createDependencies' 2.6342920000024606ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.123Z - Time taken for '@nx/js/typescript:createDependencies' 3.3208340000128374ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 100.76591699998244
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:07:49.227Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.227Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:49.227Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 163.18183300000965ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:50.721Z - [WATCHER]: 0 file(s) created or restored, 1 file(s) modified, 1 file(s) deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:50.721Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.749Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.750Z - [REQUEST]: videojuego25.zip
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.750Z - [REQUEST]: Archive.zip
+Time for '@nx/expo/plugin:createNodes' 0.4510000000009313
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.754Z - Time taken for 'hash changed files from watcher' 227.44020800001454ms
+Time for '@nx/react-native/plugin:createNodes' 0.8187080000061542
+Time for '@nx/rollup/plugin:createNodes' 0.658584000018891
+Time for '@nx/playwright/plugin:createNodes' 1.0785409999953117
+Time for '@nx/react/router-plugin:createNodes' 1.1103750000183936
+Time for '@nx/jest/plugin:createNodes' 1.0598749999771826
+Time for '@nx/vite/plugin:createNodes' 1.4544999999925494
+Time for '@nx/js/typescript:createNodes' 2.9641669999982696
+Time for 'nx/core/project-json:createNodes' 0.19925000000512227
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.2834580000198912
+Time for 'nx/core/package-json:createNodes' 1.8880000000062864
+Time for '@nx/eslint/plugin:createNodes' 5.54179099999601
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.762Z - Time taken for 'build-project-configs' 6.991290999983903ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.763Z - Time taken for '@nx/js/typescript:createDependencies' 1.3198750000155997ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.763Z - Time taken for '@nx/vite/plugin:createDependencies' 1.1935840000223834ms
+Time for 'build typescript dependencies' 0.3965840000018943
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:51.765Z - Time taken for 'total execution time for createProjectGraph()' 2.8758749999979045ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.166Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 0.6489580000052229
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 0.050832999986596406
+Time for '@nx/playwright/plugin:createNodes' 0.7179999999934807
+Time for 'nx/core/project-json:createNodes' 0.08799999998882413
+Time for '@nx/react-native/plugin:createNodes' 1.3744169999845326
+Time for '@nx/jest/plugin:createNodes' 1.3690829999977723
+Time for 'nx/core/package-json:createNodes' 1.4484159999992698
+Time for '@nx/vite/plugin:createNodes' 1.8481250000186265
+Time for '@nx/rollup/plugin:createNodes' 2.392792000027839
+Time for '@nx/js/typescript:createNodes' 3.61370800001896
+Time for '@nx/react/router-plugin:createNodes' 2.590874999994412
+Time for '@nx/eslint/plugin:createNodes' 5.529125000000931
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.182Z - Time taken for 'build-project-configs' 6.780790999997407ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.182Z - Time taken for '@nx/js/typescript:createDependencies' 1.9616669999959413ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.182Z - Time taken for '@nx/vite/plugin:createDependencies' 1.5944580000068527ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 76.59174999999232
+[NX v21.4.1 Daemon Server] - 2025-09-17T17:07:58.261Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.262Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T17:07:58.262Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 95.5211249999993ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:31.851Z - [WATCHER]: videojuego25.zip was deleted
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:31.869Z - [WATCHER]: Processing file changes in outputs
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.463Z - [REQUEST]: Updated workspace context based on watched changes, recomputing project graph...
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.463Z - [REQUEST]: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.463Z - [REQUEST]: videojuego25.zip
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.473Z - Time taken for 'hash changed files from watcher' 0.9232089994475245ms
+Time for 'nx/core/project-json:createNodes' 3.5977089991793036
+Time for '@nx/playwright/plugin:createNodes' 10.0258749993518
+Time for 'nx/core/package-json:createNodes' 20.70325000025332
+Time for '@nx/react-native/plugin:createNodes' 5.265625
+Time for '@nx/expo/plugin:createNodes' 3.9796670004725456
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 1.031084000132978
+Time for '@nx/js/typescript:createNodes' 16.82629199977964
+Time for '@nx/jest/plugin:createNodes' 11.03683300036937
+Time for '@nx/react/router-plugin:createNodes' 16.159792000427842
+Time for '@nx/vite/plugin:createNodes' 18.873790999874473
+Time for '@nx/eslint/plugin:createNodes' 18.715499999932945
+Time for '@nx/rollup/plugin:createNodes' 11.78762499988079
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.524Z - Time taken for 'build-project-configs' 49.680500000715256ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.525Z - Time taken for '@nx/vite/plugin:createDependencies' 1.0629170006141067ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.525Z - Time taken for '@nx/js/typescript:createDependencies' 1.8811250003054738ms
+Time for 'build typescript dependencies' 0.03683400060981512
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - [SYNC]: collect registered sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - [SYNC]: project graph hash is the same, not collecting task sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - [SYNC]: nx.json hash is the same, not collecting global sync generators
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - [SYNC]: scheduling: ["@nx/js:typescript-sync"]
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:33.535Z - Time taken for 'total execution time for createProjectGraph()' 9.020624999888241ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:39.936Z - [SYNC]: running scheduled generator @nx/js:typescript-sync
+Time for '@nx/expo/plugin:createNodes' 1.1313339993357658
+Time for '@nx/playwright/plugin:createNodes' 0.4941250002011657
+Time for '@nx/react-native/plugin:createNodes' 1.7861660001799464
+Time for '@nx/rollup/plugin:createNodes' 1.5768750002607703
+Time for '@nx/react/router-plugin:createNodes' 2.2292090002447367
+Time for '@nx/jest/plugin:createNodes' 2.8949170000851154
+Time for '@nx/vite/plugin:createNodes' 2.1710829995572567
+Time for 'nx/core/project-json:createNodes' 0.4044580003246665
+Time for '@nx/js/typescript:createNodes' 8.631125000305474
+Time for '@nx/eslint/plugin:createNodes' 9.608708000741899
+Time for 'nx/core/package-json:createNodes' 6.894125000573695
+Time for 'nx/js/dependencies-and-lockfile:createNodes' 3.6412499994039536
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:40.002Z - Time taken for 'build-project-configs' 33.476541000418365ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:40.003Z - Time taken for '@nx/vite/plugin:createDependencies' 1.7938750004395843ms
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:40.004Z - Time taken for '@nx/js/typescript:createDependencies' 3.6012920001521707ms
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:48:38 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:52:56 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:67:21 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:75:47 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+DEBUG nx::native::plugins::js::ts_import_locators: /Users/andrew/Documents/CodeProjects/videojuego25/libs/magic-memory-ui/src/lib/screens/GameScreen.tsx:84:23 Unexpected token. Did you mean `{'>'}` or `&gt;`?
+Time for 'build typescript dependencies' 103.9692919999361
+[NX v21.4.1 Daemon Server] - 2025-09-17T19:07:40.114Z - Wrote project graph cache to /Users/andrew/Documents/CodeProjects/videojuego25/.nx/workspace-data/project-graph.json
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:40.115Z - [SYNC]: @nx/js:typescript-sync changes: 
+[NX v21.5.2 Daemon Server] - 2025-09-17T19:07:40.115Z - Time taken for 'run-sync-generator:@nx/js:typescript-sync' 177.91979200020432ms

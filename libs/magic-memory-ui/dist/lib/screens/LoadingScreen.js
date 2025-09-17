@@ -47,13 +47,15 @@ const BackgroundWrapper_1 = __importDefault(require("../components/BackgroundWra
 const BackIcon_1 = __importDefault(require("../../icons/BackIcon"));
 const global_styles_1 = __importDefault(require("../styles/global-styles"));
 const LoadingScreen_styles_1 = __importDefault(require("./LoadingScreen.styles"));
+const LevelSelect_1 = require("./LevelSelect");
 const LoadingScreen = () => {
     const navigation = (0, native_1.useNavigation)();
     const width = (0, react_native_reanimated_1.useSharedValue)(0);
     const rotation = (0, react_native_reanimated_1.useSharedValue)(0);
     // Чистая функция перехода
     const goToLevelSelect = () => {
-        navigation.replace("LevelSelect");
+        // navigation.replace("LevelSelect");
+        navigation.replace('MagicMemoryGameScreen', { age: LevelSelect_1.GAME_LEVELS[0].cards });
     };
     (0, react_1.useEffect)(() => {
         // Запуск анимации прогресса
@@ -69,6 +71,6 @@ const LoadingScreen = () => {
     const hourglassRotationStyle = (0, react_native_reanimated_1.useAnimatedStyle)(() => ({
         transform: [{ rotate: `${rotation.value}deg` }],
     }));
-    return ((0, jsx_runtime_1.jsxs)(BackgroundWrapper_1.default, { children: [(0, jsx_runtime_1.jsx)(expo_status_bar_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: () => navigation.replace("SplashScreen"), style: [global_styles_1.default.roundButton.topLeft, LoadingScreen_styles_1.default.customBackPosition], children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, { style: { alignSelf: "center" } }) }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: LoadingScreen_styles_1.default.progressContainer, children: [(0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#e2dce7ff", "#7500D1"], start: { x: 1, y: 0 }, end: { x: 0, y: 0 }, style: LoadingScreen_styles_1.default.gradientBorder, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: LoadingScreen_styles_1.default.innerBackground, children: (0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [LoadingScreen_styles_1.default.progressFill, animatedStyle] }) }) }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: LoadingScreen_styles_1.default.loadingTextWrapper, children: [(0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.Image, { source: require("../../assets/hourglass.png"), style: [LoadingScreen_styles_1.default.hourglass, hourglassRotationStyle], resizeMode: "contain" }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: LoadingScreen_styles_1.default.loadingText, children: "Loading ..." })] })] })] }));
+    return ((0, jsx_runtime_1.jsxs)(BackgroundWrapper_1.default, { children: [(0, jsx_runtime_1.jsx)(expo_status_bar_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: () => navigation.replace('MagicMemorySplashScreen'), style: [global_styles_1.default.roundButton.topLeft, LoadingScreen_styles_1.default.customBackPosition], children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, { style: { alignSelf: "center" } }) }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: LoadingScreen_styles_1.default.progressContainer, children: [(0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#e2dce7ff", "#7500D1"], start: { x: 1, y: 0 }, end: { x: 0, y: 0 }, style: LoadingScreen_styles_1.default.gradientBorder, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: LoadingScreen_styles_1.default.innerBackground, children: (0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [LoadingScreen_styles_1.default.progressFill, animatedStyle] }) }) }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: LoadingScreen_styles_1.default.loadingTextWrapper, children: [(0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.Image, { source: require("../../assets/hourglass.png"), style: [LoadingScreen_styles_1.default.hourglass, hourglassRotationStyle], resizeMode: "contain" }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: LoadingScreen_styles_1.default.loadingText, children: "Loading ..." })] })] })] }));
 };
 exports.default = LoadingScreen;

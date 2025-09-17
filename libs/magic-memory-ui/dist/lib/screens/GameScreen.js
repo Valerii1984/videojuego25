@@ -49,7 +49,6 @@ const CustomAlert_1 = __importDefault(require("../components/CustomAlert"));
 const Card_1 = __importDefault(require("../components/Card"));
 const config_1 = require("../utils/config");
 const global_styles_1 = __importDefault(require("../styles/global-styles"));
-const BackIcon_1 = __importDefault(require("../../icons/BackIcon"));
 const GameScreen_styles_1 = __importDefault(require("./GameScreen.styles"));
 const react_native_reanimated_1 = __importStar(require("react-native-reanimated"));
 const react_native_svg_1 = __importStar(require("react-native-svg"));
@@ -557,7 +556,7 @@ const GameScreen = () => {
                         } })] }), (0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [
                     global_styles_1.default.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
-                ], children: [!showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.backButton, backAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleBackPress, activeOpacity: 0.7, hitSlop: { top: 20, bottom: 20, left: 20, right: 20 }, children: (0, jsx_runtime_1.jsx)(BackIcon_1.default, {}) }) })), !showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.hintButton, hintAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleHint, onPressIn: handleHintPressIn, onPressOut: handleHintPressOut, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintGlow, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintBorder, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#FFB380", "#D16C00"], style: GameScreen_styles_1.default.hintButtonInner, children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: GameScreen_styles_1.default.hintText, children: "?" }) }) }) }) }) })), gridLevel >= 8 && ((0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [
+                ], children: [!showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.hintButton, hintAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleHint, onPressIn: handleHintPressIn, onPressOut: handleHintPressOut, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintGlow, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintBorder, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#FFB380", "#D16C00"], style: GameScreen_styles_1.default.hintButtonInner, children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: GameScreen_styles_1.default.hintText, children: "?" }) }) }) }) }) })), gridLevel >= 8 && ((0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [
                             GameScreen_styles_1.default.statsPanel,
                             statsAnimatedStyle,
                             { zIndex: 20, opacity: 1 },
@@ -614,7 +613,7 @@ const GameScreen = () => {
                                     : "Increase difficulty?" }), onYes: () => {
                                 setShowUpgradePrompt(false);
                                 const nextAge = age + 2;
-                                navigation.replace("GameScreen", { age: nextAge });
+                                navigation.replace("MagicMemoryGameScreen", { age: nextAge });
                                 setRoundsCompleted(0);
                                 setMatchedCards([]);
                                 setTime(0);

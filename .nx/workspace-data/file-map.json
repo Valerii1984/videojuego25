@@ -1,0 +1,938 @@
+{
+  "version": "6.0",
+  "nxVersion": "21.5.2",
+  "pathMappings": {},
+  "nxJsonPlugins": [
+    {
+      "name": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json",
+          "buildDepsName": "build-deps",
+          "watchDepsName": "watch-deps"
+        }
+      }
+    },
+    {
+      "name": "@nx/expo/plugin",
+      "options": {
+        "startTargetName": "start",
+        "buildTargetName": "build",
+        "prebuildTargetName": "prebuild",
+        "serveTargetName": "serve",
+        "installTargetName": "install",
+        "exportTargetName": "export",
+        "submitTargetName": "submit",
+        "runIosTargetName": "run-ios",
+        "runAndroidTargetName": "run-android",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "name": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "name": "@nx/jest/plugin",
+      "options": {
+        "targetName": "test"
+      }
+    },
+    {
+      "name": "@nx/playwright/plugin",
+      "options": {
+        "targetName": "e2e"
+      }
+    },
+    {
+      "name": "@nx/react-native/plugin",
+      "options": {
+        "startTargetName": "start",
+        "upgradeTargetName": "update",
+        "bundleTargetName": "bundle",
+        "podInstallTargetName": "pod-install",
+        "runIosTargetName": "run-ios",
+        "runAndroidTargetName": "run-android",
+        "buildIosTargetName": "build-ios",
+        "buildAndroidTargetName": "build-android",
+        "syncDepsTargetName": "sync-deps"
+      }
+    },
+    {
+      "name": "@nx/react/router-plugin",
+      "options": {
+        "buildTargetName": "build",
+        "devTargetName": "dev",
+        "startTargetName": "start",
+        "watchDepsTargetName": "watch-deps",
+        "buildDepsTargetName": "build-deps",
+        "typecheckTargetName": "typecheck"
+      }
+    },
+    {
+      "name": "@nx/rollup/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    },
+    {
+      "name": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "testTargetName": "test",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    }
+  ],
+  "fileMap": {
+    "projectFileMap": {
+      "@valerii1984/tik-tack-toe-ui": [
+        {
+          "file": "libs/tik-tack-toe-ui/package.json",
+          "hash": "5709977736344553615"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/scripts/copy-assets.cjs",
+          "hash": "8326952896002979337"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/6.png",
+          "hash": "1000485403827510255"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/81.png",
+          "hash": "3206918668390513890"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/82.png",
+          "hash": "7477765090134701023"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/9.png",
+          "hash": "1277850792514908066"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/WTP_BGS_ALL_0048.png",
+          "hash": "13140055258809443058"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/adaptive-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/animations/Confetti.json",
+          "hash": "11730146504865559441"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/animations/lights.json",
+          "hash": "13058851588236058166"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/animations/success-animation.json",
+          "hash": "11777891021451333427"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/back.png",
+          "hash": "3648205785040964776"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/back_board.png",
+          "hash": "3489481042846255654"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/bg.png",
+          "hash": "5229454869928736351"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/bg_player.png",
+          "hash": "7563532933706397904"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/bg_player2.png",
+          "hash": "6299487583733249638"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/bg_title1.png",
+          "hash": "11909565846524827752"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/bg_title2.png",
+          "hash": "7019412236082221346"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/border_player.png",
+          "hash": "9422157369209413103"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/cinfetti.gif",
+          "hash": "17748670036531007940"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/clock.png",
+          "hash": "597009476549361973"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/ellipse.png",
+          "hash": "16140084308275190635"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/favicon.png",
+          "hash": "10556792184362654649"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/fonts/Bangers-Regular.ttf",
+          "hash": "10404695100578156336"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/fonts/fredoka-one.dingbats.ttf",
+          "hash": "721435228559844540"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/fonts/fredoka-one.one-regular.ttf",
+          "hash": "3549492386770332789"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/horizontal_line.png",
+          "hash": "15982932669653573851"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/icon.png",
+          "hash": "14252482080276080187"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/photo1.jpg",
+          "hash": "1642698165627710424"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/photo2.jpg",
+          "hash": "11924351622373322536"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/play.png",
+          "hash": "7851970525054811809"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/quest.png",
+          "hash": "7235532889885644552"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/sounds/background-music.mp3",
+          "hash": "4869803574266446132"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/sounds/notification-sound-effect.mp3",
+          "hash": "10600295090947785251"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/sounds/sad-game.mp3",
+          "hash": "18135152115131682545"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/sounds/success-fanfare-trumpets.mp3",
+          "hash": "4232454828985718780"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/splash-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/back-icon.tsx",
+          "hash": "9046464897049583943"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/play-icon.tsx",
+          "hash": "8562159527725312989"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/star-advise.tsx",
+          "hash": "249969643173585065"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/star.tsx",
+          "hash": "3652278847998784121"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/store-icon.tsx",
+          "hash": "7404433588237763848"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/assets/svg/whiteStart.tsx",
+          "hash": "1928707292798843489"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe.tsx",
+          "hash": "13978396466211246592"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/Animation.tsx",
+          "hash": "8859554576571779485"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/GameBoard.tsx",
+          "hash": "17346177904205549780"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/GameOverScreen.tsx",
+          "hash": "4036465894225112216"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/PlayerAvatar.tsx",
+          "hash": "5587620942992844404"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/StartScreen.tsx",
+          "hash": "5115515648019825471"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/litlecomponent/BackgroundWrapper.tsx",
+          "hash": "160966719224216486"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/components/TicTacToe/litlecomponent/Confeti.tsx",
+          "hash": "15269489150172316736"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/contexts/PropConfigContext.tsx",
+          "hash": "17910592051699701504"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/hooks/useSound.ts",
+          "hash": "7232410798097418079"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/hooks/useTicTacToeAnimations.tsx",
+          "hash": "14064105118524935979"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/hooks/useTicTacToeGame.tsx",
+          "hash": "15420199053787336011"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/index.ts",
+          "hash": "5260602759607008127"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/styles/colors.ts",
+          "hash": "11049325975355739815"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/styles/components/buttons.ts",
+          "hash": "321583244639248203"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/styles/components/containers.ts",
+          "hash": "18257735534504312283"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/styles/components/progressBar.ts",
+          "hash": "17606088224704024611"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/styles/global-styles.ts",
+          "hash": "7147123062219275552"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/types/props.ts",
+          "hash": "16453064955299170970"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/lib/types/tic-tac-toe.ts",
+          "hash": "1234642099529834132"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/src/svg.d.ts",
+          "hash": "3141342509709221444"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/tsconfig.json",
+          "hash": "11923577385107913726"
+        },
+        {
+          "file": "libs/tik-tack-toe-ui/tsconfig.lib.json",
+          "hash": "16658153347139963379"
+        }
+      ],
+      "@valerii1984/magic-memory-ui": [
+        {
+          "file": "libs/magic-memory-ui/.babelrc.js",
+          "hash": "1902959935354740141"
+        },
+        {
+          "file": "libs/magic-memory-ui/README.md",
+          "hash": "7095452747924413508"
+        },
+        {
+          "file": "libs/magic-memory-ui/package.json",
+          "hash": "10275077022541415400"
+        },
+        {
+          "file": "libs/magic-memory-ui/scripts/copy-assets.cjs",
+          "hash": "5480343135374190710"
+        },
+        {
+          "file": "libs/magic-memory-ui/scripts/postbuild.cjs",
+          "hash": "11803996608274676773"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Background.jpg",
+          "hash": "5234837485522624265"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Exclude.png",
+          "hash": "8278666522422642906"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame 7978.png",
+          "hash": "5219223260438861970"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame 7979.png",
+          "hash": "14563135213312892343"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame_Type3_03_Decor.png",
+          "hash": "2942955465924652437"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Frame_Type3_03_Decor1.png",
+          "hash": "14374189118160400740"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Group1359.png",
+          "hash": "4134032281410537720"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/MagicMemory.jpg",
+          "hash": "1044193365801572718"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Stars.png",
+          "hash": "13854863647942208594"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/TitlFon.png",
+          "hash": "11770415568964574188"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/Union.png",
+          "hash": "9448090647168818608"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/adaptive-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/adjusted_background.svg",
+          "hash": "271910058557672764"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/Confetti.json",
+          "hash": "11730146504865559441"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/lights.json",
+          "hash": "13058851588236058166"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animations/success-animation.json",
+          "hash": "11777891021451333427"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0000.jpg",
+          "hash": "14461346665339024262"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0001.jpg",
+          "hash": "2933801299383708345"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0002.jpg",
+          "hash": "6127201285510885084"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0003.jpg",
+          "hash": "12555206434825708980"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0004.jpg",
+          "hash": "1960565181143130733"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0005.jpg",
+          "hash": "14850669909483429258"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0006.jpg",
+          "hash": "1150157565779310440"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backcard/SJ_GAMES_WTP_CARDS_v01_0007.jpg",
+          "hash": "10928489749860466482"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0023.jpg",
+          "hash": "6672125985757744591"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0025.jpg",
+          "hash": "13010323594188282631"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0048.jpg",
+          "hash": "16893300470470694058"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0051.jpg",
+          "hash": "393042389947635413"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0058.jpg",
+          "hash": "1702968923373693796"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/backgroundtest/WTP_BGS_ALL_0076.jpg",
+          "hash": "17522545384196983480"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/boy.png",
+          "hash": "1000485403827510255"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/donkey.png",
+          "hash": "800100990681421789"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/girl.png",
+          "hash": "1743947371739258452"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/kengoo.png",
+          "hash": "14403984085665542845"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/owl.png",
+          "hash": "12641091918653362582"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/pig.png",
+          "hash": "9479446811132398471"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/puh.png",
+          "hash": "3206918668390513890"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/animtest/facecard/tigr.png",
+          "hash": "17063252413453423831"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/back-button.png",
+          "hash": "18098901060027490572"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/card-1.jpg",
+          "hash": "15257370265405974855"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-1.jpg",
+          "hash": "11821005963811251909"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-2.jpg",
+          "hash": "1642698165627710424"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-3.jpg",
+          "hash": "4445323530113752528"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-4.jpg",
+          "hash": "11924351622373322536"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-5.jpg",
+          "hash": "1016790049197834942"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/cardFace-6.jpg",
+          "hash": "1200740973645419122"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/faceSmile.png",
+          "hash": "12604944083821613466"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/favicon.png",
+          "hash": "10556792184362654649"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Bangers-Regular.ttf",
+          "hash": "10404695100578156336"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Fredoka-Regular.ttf",
+          "hash": "8694215525695573015"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/fonts/Fredoka-SemiBold.ttf",
+          "hash": "18008733331016310832"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/hourglass.png",
+          "hash": "6987858129986864473"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/icon.png",
+          "hash": "14252482080276080187"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/index.ts",
+          "hash": "13399288453513720518"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-10.png",
+          "hash": "1911750846910992566"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-12.png",
+          "hash": "3117532985540682279"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-4.png",
+          "hash": "12738528059085928862"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-6.png",
+          "hash": "2941808095832436238"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/numbers/number-8.png",
+          "hash": "17953474052698322166"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/play-button.png",
+          "hash": "7869020435122310710"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/playAgain.png",
+          "hash": "7851970525054811809"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/background-music.wav",
+          "hash": "11058583065054758179"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/notification-sound-effect.mp3",
+          "hash": "10600295090947785251"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/sounds/success-fanfare-trumpets.mp3",
+          "hash": "4232454828985718780"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/splash-icon.png",
+          "hash": "16102135492459408350"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/star_cursor.png",
+          "hash": "10971533835194998603"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/assets/translation.png",
+          "hash": "9410583140955025359"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/icons/BackIcon.tsx",
+          "hash": "878620674774364387"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/icons/PlayIcon.tsx",
+          "hash": "8606075189229147295"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/index.js",
+          "hash": "7769073126477990648"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/index.ts",
+          "hash": "13709968996437613012"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/BackgroundWrapper.styles.ts",
+          "hash": "2564188980218482470"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/BackgroundWrapper.tsx",
+          "hash": "14026790973188528193"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CanvasBackground.styles.ts",
+          "hash": "5078567804432976719"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CanvasBackground.tsx",
+          "hash": "6347687416361125397"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Card.styles.ts",
+          "hash": "11600562771769374386"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Card.tsx",
+          "hash": "17022292363627252855"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Confetti.styles.ts",
+          "hash": "9882839685008168244"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/Confetti.tsx",
+          "hash": "15269489150172316736"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CustomAlert.styles.ts",
+          "hash": "4458695231543740558"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/components/CustomAlert.tsx",
+          "hash": "1608932071354635255"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/contexts/LanguageContext.tsx",
+          "hash": "18327524769825397373"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/contexts/PropConfigContext.tsx",
+          "hash": "6298900472933468447"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/contexts/SoundContext.tsx",
+          "hash": "1650466207468035198"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/i18n/index.js",
+          "hash": "9349801422003077869"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/i18n/index.ts",
+          "hash": "13731153072075022854"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout-asdasdasdasdasd.spec.tsx",
+          "hash": "10084040216924765402"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout-asdasdasdasdasd.tsx",
+          "hash": "2303570910818874664"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout.spec.tsx",
+          "hash": "2704358056103924538"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/layout/layout.tsx",
+          "hash": "13092171945843456378"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/magic-memory-ui.tsx",
+          "hash": "7013895967013393844"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/navigation/AppNavigator.tsx",
+          "hash": "15847827298339789782"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/GameScreen.styles.ts",
+          "hash": "2207209745149563300"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/GameScreen.tsx",
+          "hash": "6815173579297130299"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LevelSelect.styles.ts",
+          "hash": "17080832413938875566"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LevelSelect.tsx",
+          "hash": "15786468919290536518"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LoadingScreen.styles.ts",
+          "hash": "1618695119156375362"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/LoadingScreen.tsx",
+          "hash": "9239219534660829034"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/SplashScreen.styles.ts",
+          "hash": "5062434134670337053"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/screens/SplashScreen.tsx",
+          "hash": "7348545201550040615"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/colors.ts",
+          "hash": "11049325975355739815"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/buttons.ts",
+          "hash": "14164731250704649548"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/containers.ts",
+          "hash": "12345339799835146716"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/components/progressBar.ts",
+          "hash": "17606088224704024611"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/styles/global-styles.ts",
+          "hash": "14797378283353556709"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/assets.d.ts",
+          "hash": "6279578024934536657"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/index.ts",
+          "hash": "11035147047373669216"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/props.ts",
+          "hash": "15209274255777901175"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/react-native-immersive-bars.d.ts",
+          "hash": "9498297696787691864"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/types/react-native-immersive.d.ts",
+          "hash": "194629692655143405"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/utils/config.ts",
+          "hash": "6949796337937791991"
+        },
+        {
+          "file": "libs/magic-memory-ui/src/lib/utils/imageMap.ts",
+          "hash": "15317432073913703384"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.build.json",
+          "hash": "13723949946134223829"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.build.tsbuildinfo",
+          "hash": "123688893038679351"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.json",
+          "hash": "17565692181666887414"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.lib.json",
+          "hash": "13674180723131213165"
+        },
+        {
+          "file": "libs/magic-memory-ui/tsconfig.lib.tsbuildinfo",
+          "hash": "15743179554122234919"
+        }
+      ],
+      "@org/source-monorepo": [
+        {
+          "file": ".changeset/README.md",
+          "hash": "4888845876018830777"
+        },
+        {
+          "file": ".changeset/config.json",
+          "hash": "6878007938558061715"
+        },
+        {
+          "file": ".gitignore",
+          "hash": "11515503207382217230"
+        },
+        {
+          "file": ".npmrc",
+          "hash": "6508090565772154048"
+        },
+        {
+          "file": ".verdaccio/config.yml",
+          "hash": "300035921567345902"
+        },
+        {
+          "file": "README.md",
+          "hash": "8804971060047656406"
+        },
+        {
+          "file": "babel.config.js",
+          "hash": "13432768675001416931"
+        },
+        {
+          "file": "eas.json",
+          "hash": "13553811667868592784"
+        },
+        {
+          "file": "error.log",
+          "hash": "6478211540438152663"
+        },
+        {
+          "file": "eslint.config.mjs",
+          "hash": "15591043712951025339"
+        },
+        {
+          "file": "jest.config.ts",
+          "hash": "6870352021923392442"
+        },
+        {
+          "file": "jest.preset.js",
+          "hash": "9430166341120122740"
+        },
+        {
+          "file": "metro.config.js",
+          "hash": "7914286415231254841"
+        },
+        {
+          "file": "nx.json",
+          "hash": "8355725379813453868"
+        },
+        {
+          "file": "package.json",
+          "hash": "11792534209270778085"
+        },
+        {
+          "file": "tools/scripts/eas-build-post-install.mjs",
+          "hash": "18390423807559123090"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "17979133421287381702"
+        },
+        {
+          "file": "tsconfig.json",
+          "hash": "1853073350017292343"
+        }
+      ]
+    },
+    "nonProjectFiles": []
+  },
+  "externalNodesHash": "3244421341483603138"
+}

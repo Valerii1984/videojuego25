@@ -27,10 +27,10 @@ export type CardValue =
   | "tigr";
 
 export type RootParamList = {
-  SplashScreen: undefined;
-  LoadingScreen: undefined;
+  MagicMemorySplashScreen: undefined;
+  MagicMemoryLoadingScreen: undefined;
   LevelSelect: undefined;
-  GameScreen: { age: number };
+  MagicMemoryGameScreen: { age: number };
 };
 
 export type Language =

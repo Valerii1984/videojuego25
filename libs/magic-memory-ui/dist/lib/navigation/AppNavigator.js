@@ -44,7 +44,6 @@ const native_1 = require("@react-navigation/native");
 const native_stack_1 = require("@react-navigation/native-stack");
 const SplashScreen_1 = __importDefault(require("../screens/SplashScreen"));
 const LoadingScreen_1 = __importDefault(require("../screens/LoadingScreen"));
-const LevelSelect_1 = __importDefault(require("../screens/LevelSelect"));
 const LanguageContext_1 = require("../contexts/LanguageContext");
 const SoundContext_1 = require("../contexts/SoundContext");
 const Font = __importStar(require("expo-font"));
@@ -116,7 +115,7 @@ const InnerNavigator = () => {
             heavy: { fontFamily: "FredokaSemiBold", fontWeight: "800" },
         },
     };
-    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, independent: true, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsxs)(Stack.Navigator, { initialRouteName: "SplashScreen", screenOptions: {
+    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, independent: true, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsxs)(Stack.Navigator, { initialRouteName: "MagicMemorySplashScreen", screenOptions: {
                         headerShown: false,
                         contentStyle: { backgroundColor: "#16103E" },
                         animation: "none",
@@ -127,7 +126,7 @@ const InnerNavigator = () => {
                             statusBarTranslucent: true,
                             statusBarColor: "#16103E",
                         }),
-                    }, children: [(0, jsx_runtime_1.jsx)(Stack.Screen, { name: "SplashScreen", children: () => (0, jsx_runtime_1.jsx)(SplashScreen_1.default, { fontsLoaded: fontsLoaded }) }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "LoadingScreen", component: LoadingScreen_1.default, options: { gestureEnabled: false } }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "LevelSelect", component: LevelSelect_1.default }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "GameScreen", component: GameScreen_1.default })] })] }) }));
+                    }, children: [(0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemorySplashScreen", children: () => (0, jsx_runtime_1.jsx)(SplashScreen_1.default, { fontsLoaded: fontsLoaded }) }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemoryLoadingScreen", component: LoadingScreen_1.default, options: { gestureEnabled: false } }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemoryGameScreen", component: GameScreen_1.default })] })] }) }));
 };
 function AppNavigator() {
     return ((0, jsx_runtime_1.jsx)(LanguageContext_1.LanguageProvider, { children: (0, jsx_runtime_1.jsx)(SoundContext_1.SoundProvider, { children: (0, jsx_runtime_1.jsx)(InnerNavigator, {}) }) }));
