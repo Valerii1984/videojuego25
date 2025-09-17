@@ -24,6 +24,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+export const GAME_LEVELS = [
+  { cards: 4, difficulty: "Very Easy" },
+  { cards: 6, difficulty: "Easy" },
+  { cards: 8, difficulty: "Normal" },
+  { cards: 10, difficulty: "Hard" },
+  { cards: 12, difficulty: "Very Hard" },
+];
+
 // ================= LevelCard =================
 const LevelCard = ({
   cards,
@@ -131,18 +139,12 @@ const LevelSelectScreen = () => {
   const { width } = useWindowDimensions();
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
-  const levels = [
-    { cards: 4, difficulty: "Very Easy" },
-    { cards: 6, difficulty: "Easy" },
-    { cards: 8, difficulty: "Normal" },
-    { cards: 10, difficulty: "Hard" },
-    { cards: 12, difficulty: "Very Hard" },
-  ];
+  const levels = GAME_LEVELS;
 
   const handleLevelSelect = (index: number) => {
     const level = levels[index];
     setSelectedLevel(index);
-    navigation.navigate("GameScreen", { age: level.cards });
+    navigation.navigate("MagicMemoryGameScreen", { age: level.cards });
   };
 
   // Размер карточек
@@ -185,7 +187,7 @@ const LevelSelectScreen = () => {
 
       {/* Кнопка назад */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("SplashScreen")}
+        onPress={() => navigation.navigate('MagicMemorySplashScreen')}
         style={[globalStyles.roundButton.topLeft, styles.backButton]}
       >
         <BackIcon style={{ alignSelf: "center" }} />

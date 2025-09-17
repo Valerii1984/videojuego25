@@ -46,8 +46,11 @@ declare const styles: {
         justifyContent: "center";
         alignItems: "center";
         zIndex: number;
-        top: number;
+        top: "50%";
         right: number;
+        transform: {
+            translateY: number;
+        }[];
     };
     hintGlow: {
         width: number;

@@ -50,8 +50,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
-    top: 34,
+    top: "50%",
     right: 30,
+    transform: [{ translateY: -22.5 }], 
   },
   hintGlow: {
     width: 70,

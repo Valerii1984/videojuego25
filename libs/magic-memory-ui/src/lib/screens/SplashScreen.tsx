@@ -121,7 +121,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
                 onPressOut={() => (pressAnimation.value = 1)}
                 onPress={() => {
                   playNotificationSound();
-                  navigation.navigate("LoadingScreen");
+                  navigation.replace('MagicMemoryLoadingScreen');
                 }}
               >
                 <LinearGradient

@@ -765,7 +765,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {!showPlayAgain && (
+        {/*!showPlayAgain && (
           <Animated.View style={[styles.backButton, backAnimatedStyle]}>
             <TouchableOpacity
               onPress={handleBackPress}
@@ -775,7 +775,7 @@ const GameScreen = () => {
               <BackIcon />
             </TouchableOpacity>
           </Animated.View>
-        )}
+        )*/}
 
         {!showPlayAgain && (
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
@@ -976,7 +976,7 @@ const GameScreen = () => {
             onYes={() => {
               setShowUpgradePrompt(false);
               const nextAge = age + 2;
-              navigation.replace("GameScreen", { age: nextAge });
+              navigation.replace("MagicMemoryGameScreen", { age: nextAge });
               setRoundsCompleted(0);
               setMatchedCards([]);
               setTime(0);

@@ -87,7 +87,7 @@ const SplashScreen = ({ fontsLoaded }) => {
                                         elevation: 10,
                                     }, children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { activeOpacity: 0.8, onPressIn: () => (pressAnimation.value = 0.95), onPressOut: () => (pressAnimation.value = 1), onPress: () => {
                                             playNotificationSound();
-                                            navigation.navigate("LoadingScreen");
+                                            navigation.replace('MagicMemoryLoadingScreen');
                                         }, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: [
                                                 "rgba(199, 128, 255, 0.9)",
                                                 "rgba(117, 0, 209, 0.9)",

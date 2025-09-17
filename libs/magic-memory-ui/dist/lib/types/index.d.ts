@@ -10,10 +10,10 @@ export interface Card {
 }
 export type CardValue = "cardFace-1" | "cardFace-2" | "cardFace-3" | "cardFace-4" | "cardFace-5" | "cardFace-6" | "boy" | "donkey" | "girl" | "kengoo" | "owl" | "pig" | "puh" | "tigr";
 export type RootParamList = {
-    SplashScreen: undefined;
-    LoadingScreen: undefined;
+    MagicMemorySplashScreen: undefined;
+    MagicMemoryLoadingScreen: undefined;
     LevelSelect: undefined;
-    GameScreen: {
+    MagicMemoryGameScreen: {
         age: number;
     };
 };
