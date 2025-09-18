@@ -4,10 +4,14 @@
 export { MagicMemory } from "./lib/magic-memory-ui";
 export type { MagicMemoryProps } from "./lib/magic-memory-ui";
 
-// Типы пропсов наружу (экспортим из types/props.ts)
+// Типы пропсов наружу
 export type { MagicMemoryPropConfig, LevelKey } from "./lib/types/props";
 
-// Если нужно оставить и старые экспорты:
+// Навигация и i18n
 export { AppNavigator } from "./lib/navigation/AppNavigator";
 export * from "./lib/navigation/AppNavigator";
 export * from "./lib/i18n";
+
+// ⬇️ ДОБАВЛЕНО: ассеты робота, чтобы удобно импортировать в приложении
+export const heroRobot = require("./lib/assets/hero/hero.webp");
+export const heroRobotSound = require("./lib/assets/hero/hero.m4a");

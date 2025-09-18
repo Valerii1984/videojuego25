@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const react_native_1 = require("react-native");
+const expo_image_1 = require("expo-image"); // ✅ для анимированного WebP
 const expo_linear_gradient_1 = require("expo-linear-gradient");
 const native_1 = require("@react-navigation/native");
 const LanguageContext_1 = require("../contexts/LanguageContext");
@@ -70,6 +71,9 @@ const toGridLevel = (age) => {
 };
 // Кнопка Play Again — іконка з ассетів
 const PlayIcon = () => ((0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/playAgain.png"), style: GameScreen_styles_1.default.playIcon }));
+// Анимированный робот (Animated WebP) — локальный ассет
+// путь от src/lib/screens к src/assets/hero/hero.webp
+const heroRobot = require("../../assets/hero/hero.webp");
 // Витягнути джерело лицьової картинки з локального поля
 const getSrc = (c) => {
     const anyCard = c;
@@ -474,19 +478,21 @@ const GameScreen = () => {
                         shadowRadius: 15,
                         elevation: 2,
                         zIndex: 1,
-                    }, pointerEvents: "none" })), !item.isHidden && ((0, jsx_runtime_1.jsx)(Card_1.default, { item: item, onPress: handleCardPress, getCardSize: getCardSize, disabled: isShowingCards || selectedCards.length >= 2, isHinted: hintActive.includes(item.id) || selectedCards.includes(item.id), style: { opacity: 1, zIndex: 0 }, backImage: selectedBack, frontImage: faceSource })), smileVisible === item.id && ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
-                        position: "absolute",
-                        left: 46,
-                        top: -49,
-                        zIndex: 9999,
-                        elevation: 50,
-                    }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/faceSmile.png"), style: {
-                            width: 32,
-                            height: 32,
-                            opacity: 1,
-                            transform: [{ rotate: "0deg" }],
-                            resizeMode: "contain",
-                        } }) }))] }));
+                    }, pointerEvents: "none" })), !item.isHidden && ((0, jsx_runtime_1.jsx)(Card_1.default, { item: item, onPress: handleCardPress, getCardSize: getCardSize, disabled: isShowingCards || selectedCards.length >= 2, isHinted: hintActive.includes(item.id) || selectedCards.includes(item.id), style: { opacity: 1, zIndex: 0 }, backImage: selectedBack, frontImage: faceSource })), smileVisible === item.id &&
+                    (() => {
+                        const size = Math.round(getCardSize() * 0.34);
+                        const left = (getCardSize() - size) / 2;
+                        const top = -size - 12;
+                        return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
+                                position: "absolute",
+                                left,
+                                top,
+                                width: size,
+                                height: size,
+                                zIndex: 9999,
+                                elevation: 50,
+                            }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: (0, jsx_runtime_1.jsx)(expo_image_1.Image, { source: heroRobot, style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
+                    })()] }));
     };
     const handleHintPressIn = () => {
         hintScale.value = 1.1;

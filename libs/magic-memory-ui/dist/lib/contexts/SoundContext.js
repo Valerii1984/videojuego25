@@ -4,6 +4,7 @@ exports.useSound = exports.SoundProvider = void 0;
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const expo_av_1 = require("expo-av");
+const expo_asset_1 = require("expo-asset"); // ★
 const react_native_1 = require("react-native");
 const SoundContext = (0, react_1.createContext)({
     playNotificationSound: async () => { },
@@ -26,39 +27,66 @@ const SoundProvider = ({ children, }) => {
         const loadSounds = async () => {
             try {
                 console.log(`Loading sounds on platform: ${react_native_1.Platform.OS}`);
-                const notificationPath = require("../../assets/sounds/notification-sound-effect.mp3");
-                const successPath = require("../../assets/sounds/success-fanfare-trumpets.mp3");
-                const backgroundPath = require("../../assets/sounds/background-music.wav");
-                console.log("Success sound path:", successPath);
+                // Пути ассетов
+                const heroNotificationModule = require("../../assets/hero/hero.m4a"); // ★
+                const fallbackNotificationModule = require("../../assets/sounds/notification-sound-effect.mp3");
+                const successModule = require("../../assets/sounds/success-fanfare-trumpets.mp3");
+                const backgroundModule = require("../../assets/sounds/background-music.wav");
                 await expo_av_1.Audio.setAudioModeAsync({
                     allowsRecordingIOS: false,
                     staysActiveInBackground: false,
                     playsInSilentModeIOS: true,
                     shouldDuckAndroid: true,
                     playThroughEarpieceAndroid: false,
+                    // Можно добавить/поиграть режимами прерываний при желании:
+                    // interruptionModeAndroid: 1, // DO_NOT_MIX
+                    // interruptionModeIOS: 2,     // DUCK_OTHERS
                 });
-                const { sound: notification } = await expo_av_1.Audio.Sound.createAsync(notificationPath, { shouldPlay: false });
-                const { sound: success } = await expo_av_1.Audio.Sound.createAsync(successPath, {
-                    shouldPlay: false,
-                });
-                const { sound: background } = await expo_av_1.Audio.Sound.createAsync(backgroundPath, { shouldPlay: false, isLooping: true });
-                if (isMounted) {
-                    setNotificationSound(notification);
-                    setSuccessSound(success);
-                    backgroundMusicRef.current = background;
-                    const successStatus = await success.getStatusAsync();
-                    console.log("Success sound loaded:", successStatus.isLoaded);
-                    if (backgroundMusicRef.current) {
-                        await backgroundMusicRef.current.setVolumeAsync(0.5);
-                        await backgroundMusicRef.current.playAsync();
-                        const status = await backgroundMusicRef.current.getStatusAsync();
-                        if (status.isLoaded && status.isPlaying) {
-                            setIsBackgroundPlaying(true);
-                            console.log("Background music loaded and playing");
-                        }
-                        else {
-                            console.log("Background music failed to play, status:", status);
-                        }
+                // --- Notification (hero.m4a с предзагрузкой, fallback на mp3)
+                let notif = null;
+                try {
+                    const heroAsset = expo_asset_1.Asset.fromModule(heroNotificationModule);
+                    await heroAsset.downloadAsync(); // гарантируем локальную доступность
+                    const uri = heroAsset.localUri ?? heroAsset.uri;
+                    const res = await expo_av_1.Audio.Sound.createAsync({ uri }, { shouldPlay: false });
+                    notif = res.sound;
+                    await notif.setVolumeAsync(1.0);
+                    console.log("Hero notification loaded from URI:", uri);
+                }
+                catch (err) {
+                    console.warn("Hero m4a load failed, fallback to mp3:", err);
+                    const fbAsset = expo_asset_1.Asset.fromModule(fallbackNotificationModule);
+                    await fbAsset.downloadAsync();
+                    const uri = fbAsset.localUri ?? fbAsset.uri;
+                    const res = await expo_av_1.Audio.Sound.createAsync({ uri }, { shouldPlay: false });
+                    notif = res.sound;
+                    await notif.setVolumeAsync(1.0);
+                    console.log("Fallback notification loaded from URI:", uri);
+                }
+                // --- Success
+                const successAsset = expo_asset_1.Asset.fromModule(successModule);
+                await successAsset.downloadAsync();
+                const { sound: success } = await expo_av_1.Audio.Sound.createAsync({ uri: successAsset.localUri ?? successAsset.uri }, { shouldPlay: false });
+                await success.setVolumeAsync(1.0);
+                // --- Background (loop)
+                const bgAsset = expo_asset_1.Asset.fromModule(backgroundModule);
+                await bgAsset.downloadAsync();
+                const { sound: background } = await expo_av_1.Audio.Sound.createAsync({ uri: bgAsset.localUri ?? bgAsset.uri }, { shouldPlay: false, isLooping: true });
+                if (!isMounted)
+                    return;
+                setNotificationSound(notif);
+                setSuccessSound(success);
+                backgroundMusicRef.current = background;
+                if (backgroundMusicRef.current) {
+                    await backgroundMusicRef.current.setVolumeAsync(0.5);
+                    await backgroundMusicRef.current.playAsync();
+                    const status = await backgroundMusicRef.current.getStatusAsync();
+                    if (status.isLoaded && status.isPlaying) {
+                        setIsBackgroundPlaying(true);
+                        console.log("Background music loaded and playing");
+                    }
+                    else {
+                        console.log("Background music failed to play, status:", status);
                     }
                 }
             }
@@ -67,7 +95,7 @@ const SoundProvider = ({ children, }) => {
             }
         };
         loadSounds();
-        // Обработчик AppState
+        // AppState
         const handleAppStateChange = (nextAppState) => {
             console.log(`AppState changed: ${nextAppState} on platform: ${react_native_1.Platform.OS}`);
             if (appState.current === "active" &&
@@ -87,9 +115,7 @@ const SoundProvider = ({ children, }) => {
                     });
                     backgroundMusicRef.current
                         .setVolumeAsync(0.5)
-                        .catch((err) => {
-                        console.error("Error setting volume:", err);
-                    });
+                        .catch((err) => console.error("Error setting volume:", err));
                     setIsBackgroundPlaying(true);
                     console.log("Background music resumed due to app state");
                 }
@@ -117,10 +143,37 @@ const SoundProvider = ({ children, }) => {
             }
         };
     }, [soundEnabled]);
+    // Временный duckинг фона на период нотификации
+    const duckBackgroundTemporarily = async (ms = 700) => {
+        if (!backgroundMusicRef.current)
+            return;
+        try {
+            await backgroundMusicRef.current.setVolumeAsync(0.25);
+            setTimeout(() => {
+                backgroundMusicRef.current
+                    ?.setVolumeAsync(0.5)
+                    .catch((e) => console.warn("Restore bg volume error:", e));
+            }, ms);
+        }
+        catch (e) {
+            console.warn("Duck bg error:", e);
+        }
+    };
     const playNotificationSound = async () => {
         if (soundEnabled && notificationSound) {
-            await notificationSound.replayAsync();
-            console.log("Notification sound played");
+            try {
+                await duckBackgroundTemporarily(800);
+                await notificationSound.setPositionAsync(0);
+                await notificationSound.setVolumeAsync(1.0);
+                await notificationSound.replayAsync();
+                console.log("Notification sound played");
+            }
+            catch (e) {
+                console.error("Error playing notification sound:", e);
+            }
+        }
+        else {
+            console.log("Notification not played: soundEnabled or sound missing");
         }
     };
     const playSuccessSound = async () => {
@@ -128,27 +181,38 @@ const SoundProvider = ({ children, }) => {
             try {
                 console.log("Attempting to play success sound");
                 if (!successSound) {
-                    console.log("Success sound not loaded, attempting to load");
-                    const { sound: newSuccessSound } = await expo_av_1.Audio.Sound.createAsync(require("../../assets/sounds/success-fanfare-trumpets.mp3"), { shouldPlay: false });
+                    const mod = require("../../assets/sounds/success-fanfare-trumpets.mp3");
+                    const asset = expo_asset_1.Asset.fromModule(mod);
+                    await asset.downloadAsync();
+                    const { sound: newSuccessSound } = await expo_av_1.Audio.Sound.createAsync({ uri: asset.localUri ?? asset.uri }, { shouldPlay: false });
+                    await newSuccessSound.setVolumeAsync(1.0);
                     setSuccessSound(newSuccessSound);
-                    console.log("Success sound loaded:", !!newSuccessSound);
+                    await duckBackgroundTemporarily(1200);
+                    await newSuccessSound.setPositionAsync(0);
                     await newSuccessSound.replayAsync();
                     console.log("Success sound played after reload");
                 }
                 else {
                     const status = await successSound.getStatusAsync();
                     console.log("Success sound status before play:", status);
+                    await duckBackgroundTemporarily(1200);
                     if (status.isLoaded) {
+                        await successSound.setPositionAsync(0);
+                        await successSound.setVolumeAsync(1.0);
                         await successSound.replayAsync();
                         console.log("Success sound played");
                     }
                     else {
-                        console.log("Success sound not loaded, attempting to reload");
                         await successSound
                             .unloadAsync()
-                            .catch((err) => console.error("Error unloading success sound before reload:", err));
-                        const { sound: newSuccessSound } = await expo_av_1.Audio.Sound.createAsync(require("../../assets/sounds/success-fanfare-trumpets.mp3"), { shouldPlay: false });
+                            .catch((e) => console.error("Unload success before reload:", e));
+                        const mod = require("../../assets/sounds/success-fanfare-trumpets.mp3");
+                        const asset = expo_asset_1.Asset.fromModule(mod);
+                        await asset.downloadAsync();
+                        const { sound: newSuccessSound } = await expo_av_1.Audio.Sound.createAsync({ uri: asset.localUri ?? asset.uri }, { shouldPlay: false });
+                        await newSuccessSound.setVolumeAsync(1.0);
                         setSuccessSound(newSuccessSound);
+                        await newSuccessSound.setPositionAsync(0);
                         await newSuccessSound.replayAsync();
                         console.log("Success sound played after reload");
                     }
@@ -171,16 +235,10 @@ const SoundProvider = ({ children, }) => {
                     await successSound.stopAsync();
                     console.log("Success sound stopped successfully");
                 }
-                else {
-                    console.log("Success sound not playing or not loaded:", status);
-                }
             }
             catch (error) {
                 console.error("Error stopping success sound:", error);
             }
-        }
-        else {
-            console.log("Success sound not stopped: soundEnabled=", soundEnabled, "successSound=", !!successSound);
         }
     };
     const playBackgroundMusic = async () => {
@@ -198,11 +256,12 @@ const SoundProvider = ({ children, }) => {
                     }
                 }
                 else {
-                    console.log("Background music not loaded, reloading");
-                    const { sound: background } = await expo_av_1.Audio.Sound.createAsync(require("../../assets/sounds/background-music.wav"), { shouldPlay: true, isLooping: true });
+                    const mod = require("../../assets/sounds/background-music.wav");
+                    const asset = expo_asset_1.Asset.fromModule(mod);
+                    await asset.downloadAsync();
+                    const { sound: background } = await expo_av_1.Audio.Sound.createAsync({ uri: asset.localUri ?? asset.uri }, { shouldPlay: true, isLooping: true });
                     backgroundMusicRef.current = background;
                     await backgroundMusicRef.current.setVolumeAsync(0.5);
-                    await backgroundMusicRef.current.playAsync();
                     setIsBackgroundPlaying(true);
                     console.log("Background music reloaded and playing");
                 }

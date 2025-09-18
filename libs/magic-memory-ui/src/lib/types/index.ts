@@ -1,6 +1,9 @@
 import { ViewStyle } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 
+/** -----------------------------
+ *  Карточки (игровые типы)
+ * ----------------------------- */
 export interface Card {
   id: number;
   value: CardValue;
@@ -26,6 +29,9 @@ export type CardValue =
   | "puh"
   | "tigr";
 
+/** -----------------------------
+ *  Навигация
+ * ----------------------------- */
 export type RootParamList = {
   MagicMemorySplashScreen: undefined;
   MagicMemoryLoadingScreen: undefined;
@@ -33,6 +39,19 @@ export type RootParamList = {
   MagicMemoryGameScreen: { age: number };
 };
 
+export type ScreenProps<T extends keyof RootParamList> = {
+  navigation: any;
+  route: RouteProp<RootParamList, T>;
+};
+
+/** -----------------------------
+ *  Языки
+ * ----------------------------- */
+
+/**
+ * Полный (исторический) список BCP-47 тэгов, если где-то нужен.
+ * Оставляем для совместимости с существующим кодом i18n.
+ */
 export type Language =
   | "en-US"
   | "de-DE"
@@ -43,6 +62,16 @@ export type Language =
   | "it-IT"
   | "pt-BR";
 
+/**
+ * НОВЫЙ строгий список коротких кодов языка,
+ * который используем в пропсах внешней конфигурации.
+ * При необходимости маппим его на BCP-47 внутри провайдера i18n.
+ */
+export type SupportedLang = "en" | "es" | "uk";
+
+/** -----------------------------
+ *  i18n переводы
+ * ----------------------------- */
 export interface Translation {
   loading: string;
   level4: string;
@@ -58,11 +87,9 @@ export interface Translation {
   no: string;
 }
 
-export type ScreenProps<T extends keyof RootParamList> = {
-  navigation: any;
-  route: RouteProp<RootParamList, T>;
-};
-
+/** -----------------------------
+ *  Пропсы компонентов
+ * ----------------------------- */
 export interface CardProps {
   item: Card;
   onPress: (id: number) => void;

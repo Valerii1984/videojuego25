@@ -1,8 +1,8 @@
-// libs/magic-memory-ui/src/lib/types/props.ts
+import type { SupportedLang } from "./index";
 
 /**
- * ВНЕШНИЕ пропсы, которые приходят в библиотеку.
- * Только URL, никаких ассетов.
+ * ВНЕШНИЕ пропсы, приходящие в библиотеку Magic Memory.
+ * Только URL — никаких ассетов.
  *
  * Теперь ориентируемся на age (число).
  * Пары = Math.floor(age / 2).
@@ -13,14 +13,14 @@ export interface MagicMemoryPropConfig {
   /** Возраст/размер колоды, число. Пары = Math.floor(age / 2). */
   age: number;
 
-  /** Язык интерфейса, например 'es' | 'en' */
-  lang: string;
+  /** Язык интерфейса — строго из поддерживаемых коротких кодов. */
+  lang: SupportedLang;
 
-  /** Фон: одиночный URL ИЛИ массив URL (на каждый старт берём случайный) */
-  background: string;
+  /** Фон: одиночный URL ИЛИ массив URL (на каждый старт выбираем случайный). */
+  background: string | string[];
 
-  /** Рубашка: одиночный URL ИЛИ массив URL (на каждый старт берём случайный) */
-  backCardSide: string;
+  /** Рубашка: одиночный URL ИЛИ массив URL (на каждый старт выбираем случайный). */
+  backCardSide: string | string[];
 
   /**
    * Лица карт: массив URL.

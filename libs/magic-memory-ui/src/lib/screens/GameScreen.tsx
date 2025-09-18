@@ -12,6 +12,7 @@ import {
   StyleProp,
   ViewStyle,
 } from "react-native";
+import { Image as ExpoImage } from "expo-image"; // ✅ для анимированного WebP
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -70,6 +71,10 @@ const PlayIcon = () => (
     style={styles.playIcon}
   />
 );
+
+// Анимированный робот (Animated WebP) — локальный ассет
+// путь от src/lib/screens к src/assets/hero/hero.webp
+const heroRobot = require("../../assets/hero/hero.webp") as any;
 
 // Витягнути джерело лицьової картинки з локального поля
 const getSrc = (c?: Card): string | undefined => {
@@ -578,33 +583,37 @@ const GameScreen = () => {
           />
         )}
 
-        {/* 😄 смайл */}
-        {smileVisible === item.id && (
-          <View
-            style={{
-              position: "absolute",
-              left: 46,
-              top: -49,
-              zIndex: 9999,
-              elevation: 50,
-            }}
-            pointerEvents="none"
-            collapsable={false}
-            renderToHardwareTextureAndroid
-            needsOffscreenAlphaCompositing
-          >
-            <Image
-              source={require("../../assets/faceSmile.png")}
-              style={{
-                width: 32,
-                height: 32,
-                opacity: 1,
-                transform: [{ rotate: "0deg" }],
-                resizeMode: "contain",
-              }}
-            />
-          </View>
-        )}
+        {/* 🤖 робот вместо смайла */}
+        {smileVisible === item.id &&
+          (() => {
+            const size = Math.round(getCardSize() * 0.34);
+            const left = (getCardSize() - size) / 2;
+            const top = -size - 12;
+
+            return (
+              <View
+                style={{
+                  position: "absolute",
+                  left,
+                  top,
+                  width: size,
+                  height: size,
+                  zIndex: 9999,
+                  elevation: 50,
+                }}
+                pointerEvents="none"
+                collapsable={false}
+                renderToHardwareTextureAndroid
+                needsOffscreenAlphaCompositing
+              >
+                <ExpoImage
+                  source={heroRobot}
+                  style={{ width: "100%", height: "100%" }}
+                  contentFit="contain"
+                />
+              </View>
+            );
+          })()}
       </View>
     );
   };

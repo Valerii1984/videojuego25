@@ -41,7 +41,7 @@ const resolveImage = (src?: string | ImageSourcePropType) =>
 const TicTacToe: React.FC<TicTacToeProps> = (props) => {
   const {
     // новый внешний конфиг
-    lang = DEFAULTS.lang,
+    lang = "en",
     background,
     userAvatar,
     enemyCard,

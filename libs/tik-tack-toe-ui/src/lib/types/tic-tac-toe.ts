@@ -1,44 +1,28 @@
-// ТИПЫ ДЛЯ TIC-TAC-TOE
+// libs/tik-tack-toe-ui/src/lib/types/tic-tac-toe.ts
+import type { ImageSourcePropType } from "react-native";
+import type { TicTacToePropConfig, Language } from "./props";
 
+// Основные типы игры
 export type Player = "X" | "O" | null;
 export type Board = Player[][];
 export type Cell = Player;
 
-export interface TicTacToeProps {
-  /**
-   * Язык интерфейса (пока опционально — для совместимости).
-   * Пример: "en" | "es" | "uk" и т.д.
-   */
-  lang?: string;
-
-  /**
-   * Фон как URL. Если задан — имеет приоритет над backgroundImage.
-   */
-  background?: string;
-
-  /**
-   * Аватар игрока (X) — URL.
-   * Если не задан — берём photo1 (ниже) или дефолт из ассетов.
-   */
-  userAvatar?: string;
-
-  /**
-   * «Карточка»/аватар соперника (O) — URL.
-   * Если не задан — берём photo2 (ниже) или дефолт из ассетов.
-   */
-  enemyCard?: string;
-
-  /**
-   * СТАРЫЕ ПОЛЯ для совместимости (можно удалять позже).
-   * Могут быть require(...) или URL (string).
-   */
-  backgroundImage?: any;
+/**
+ * Пропсы для компонента TicTacToe.
+ * Совмещаем новый внешний конфиг и старые поля (для обратной совместимости).
+ */
+export interface TicTacToeProps extends Partial<TicTacToePropConfig> {
+  /** fallback для ассетов и старых интеграций */
+  backgroundImage?: ImageSourcePropType;
   name1?: string;
   name2?: string;
-  photo1?: any;
-  photo2?: any;
+  photo1?: ImageSourcePropType;
+  photo2?: ImageSourcePropType;
   backendUrl?: string;
-  winGif?: any;
+  winGif?: ImageSourcePropType;
+
+  /** для совместимости можно явно указать язык */
+  lang?: Language;
 }
 
 export interface GameState {
