@@ -115,11 +115,13 @@ const HeroSticker: React.FC<{
   hero: HeroKey;
   size?: number;
   opacity?: number;
-}> = ({ hero, size, opacity = 1 }) => {
+  onReady?: () => void; // <- сообщаем, когда картинка реально загрузилась
+}> = ({ hero, size, opacity = 1, onReady }) => {
   const source = HERO[hero].anim;
   const base = Math.min(width, height) * 0.55;
   const clamped = Math.max(320, Math.min(base, 460));
   const finalSize = size ?? clamped;
+
   return (
     <ExpoImage
       source={source}
@@ -130,8 +132,7 @@ const HeroSticker: React.FC<{
         opacity,
       }}
       contentFit="contain"
-      transition={0}
-      cachePolicy="none"
+      onLoadEnd={onReady}
     />
   );
 };
@@ -152,6 +153,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const [showContent, setShowContent] = useState(false);
   const [showHero, setShowHero] = useState(false);
   const [heroKey, setHeroKey] = useState<HeroKey | null>(null);
+  const [heroReady, setHeroReady] = useState(false); // <- флаг готовности изображения
 
   const contentScale = useRef(new Animated.Value(0)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -160,7 +162,8 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const runIdRef = useRef(0);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const ROBOT_MS = 2800; // при необходимости увеличь до 3200–3600
+  // сколько держим героя на экране до появления поздравления
+  const ROBOT_MS = 2800;
 
   const chooseHero = useMemo<HeroKey | null>(() => {
     if (!gameComplete || winner == null) return null;
@@ -186,6 +189,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     }
   };
 
+  // Основной цикл показа: показать героя -> (подождать ROBOT_MS) -> показать контент/конфетти
   useEffect(() => {
     if (!gameComplete) {
       clearTimersAndSound();
@@ -193,6 +197,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
       setShowContent(false);
       setShowHero(false);
       setHeroKey(null);
+      setHeroReady(false);
       contentScale.setValue(0);
       return;
     }
@@ -203,28 +208,15 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
     onPauseBackground?.();
     setShowHero(true);
+    setHeroReady(false); // ждем фактическую загрузку кадра
 
-    const voiceTimer = setTimeout(async () => {
-      if (runIdRef.current !== myRunId || !chooseHero) return;
-      try {
-        await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-        const { sound } = await Audio.Sound.createAsync(
-          HERO[chooseHero].voice,
-          {
-            shouldPlay: true,
-            volume: 1.0,
-          }
-        );
-        if (runIdRef.current !== myRunId) {
-          await sound.unloadAsync();
-          return;
-        }
-        soundRef.current = sound;
-        await sound.playAsync();
-      } catch {}
-    }, 120);
-    timersRef.current.push(voiceTimer);
+    // Фолбэк: если по какой-то причине onLoadEnd не пришел — не зависаем
+    const readyFallback = setTimeout(() => {
+      setHeroReady((prev) => prev || true);
+    }, 800);
+    timersRef.current.push(readyFallback);
 
+    // Через ROBOT_MS скрываем героя и показываем финальный экран/конфетти
     const contentTimer = setTimeout(() => {
       if (runIdRef.current !== myRunId) return;
       setShowHero(false);
@@ -246,6 +238,37 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameComplete, chooseHero]);
 
+  // 🔊 Старт голоса — только после того, как герой реально загрузился и показан
+  useEffect(() => {
+    if (!gameComplete || !chooseHero || !showHero || !heroReady) return;
+
+    const myRunId = runIdRef.current;
+    const voiceTimer = setTimeout(async () => {
+      if (runIdRef.current !== myRunId) return;
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          HERO[chooseHero].voice,
+          {
+            shouldPlay: true,
+            volume: 1.0,
+          }
+        );
+        if (runIdRef.current !== myRunId) {
+          await sound.unloadAsync();
+          return;
+        }
+        soundRef.current = sound;
+        await sound.playAsync();
+      } catch {}
+    }, 120); // маленькая пауза после onLoadEnd, чтобы кадр гарантированно оказался на экране
+    timersRef.current.push(voiceTimer);
+
+    return () => {
+      // очищаемся в общем clearTimersAndSound
+    };
+  }, [gameComplete, chooseHero, showHero, heroReady]);
+
+  // Пульсация кнопки
   useEffect(() => {
     if (gameComplete) {
       Animated.loop(
@@ -274,14 +297,14 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
       style={[styles.container, animatedStyle]}
       pointerEvents="box-none"
     >
-      {/* Робот — без перехвата тачей, принудительно новый инстанс по раунду */}
+      {/* Робот — слой без перехвата тачей */}
       {showHero && heroKey && (
         <View style={styles.heroWrap} pointerEvents="none">
-          <HeroSticker key={`${heroKey}-${runIdRef.current}`} hero={heroKey} />
+          <HeroSticker hero={heroKey} onReady={() => setHeroReady(true)} />
         </View>
       )}
 
-      {/* Конфетти — под контентом */}
+      {/* Конфетти */}
       {showVictoryEffects && (
         <View style={styles.confettiWrap} pointerEvents="none">
           <Confetti level={1} isActive={true} />

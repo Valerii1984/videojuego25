@@ -286,7 +286,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           source={
             isFirstPlayer
               ? require("../../assets/bg_player.png")
-              : require("../../assets/bg_player2.png") // ← исправлен путь
+              : require("../../assets/bg_player2.png")
           }
           style={styles.bgImage}
         />
@@ -302,6 +302,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
       </Animated.View>
     );
   };
+
+  const hintCell = getHintCell();
+  const currentPlayer: Exclude<Player, null> = countMoves % 2 === 0 ? "X" : "O";
+  const hintVisible = showHint && hintCell !== null && currentPlayer === "X";
 
   const renderCell = (row: number, col: number) => {
     const cell = board[row][col];
@@ -402,10 +406,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
     );
   };
 
-  const currentPlayer: Exclude<Player, null> = countMoves % 2 === 0 ? "X" : "O";
-  const hintCell = getHintCell();
-  const hintVisible = showHint && hintCell !== null && currentPlayer === "X";
-
   useEffect(() => {
     if (countMoves === 1) {
       Animated.timing(cellBackgroundOpacity, {
@@ -442,7 +442,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
       {[1, 2].map((i: number) => (
         <Image
           key={`h-${i}`}
-          source={require("../../assets/horizontal_line.png")} // ← исправлен путь
+          source={require("../../assets/horizontal_line.png")}
           style={{
             position: "absolute",
             top: i * cellSize - 1,
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   timerContainer: {
     position: "absolute",
     top: 0,
-    left: "-100%",
+    left: -1000,
     right: 0,
     zIndex: 10,
     alignItems: "flex-start",
