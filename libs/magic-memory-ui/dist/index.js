@@ -19,11 +19,10 @@ exports.heroRobotSound = exports.heroRobot = exports.AppNavigator = exports.Magi
 // Внешняя точка входа
 var magic_memory_ui_1 = require("./lib/magic-memory-ui");
 Object.defineProperty(exports, "MagicMemory", { enumerable: true, get: function () { return magic_memory_ui_1.MagicMemory; } });
-// Навигация и i18n
+// Навигация
 var AppNavigator_1 = require("./lib/navigation/AppNavigator");
 Object.defineProperty(exports, "AppNavigator", { enumerable: true, get: function () { return AppNavigator_1.AppNavigator; } });
 __exportStar(require("./lib/navigation/AppNavigator"), exports);
-__exportStar(require("./lib/i18n"), exports);
-// ⬇️ ДОБАВЛЕНО: ассеты робота, чтобы удобно импортировать в приложении
+// ⬇️ Ассеты робота, чтобы удобно импортировать в приложении
 exports.heroRobot = require("./lib/assets/hero/hero.webp");
 exports.heroRobotSound = require("./lib/assets/hero/hero.m4a");

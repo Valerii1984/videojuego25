@@ -39,12 +39,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const jsx_runtime_1 = require("react/jsx-runtime");
 const react_1 = require("react");
 const react_native_1 = require("react-native");
-const expo_image_1 = require("expo-image"); // ✅ для анимированного WebP
+const expo_image_1 = require("expo-image");
 const expo_linear_gradient_1 = require("expo-linear-gradient");
 const native_1 = require("@react-navigation/native");
 const LanguageContext_1 = require("../contexts/LanguageContext");
 const SoundContext_1 = require("../contexts/SoundContext");
 const ScreenOrientation = __importStar(require("expo-screen-orientation"));
+const expo_av_1 = require("expo-av");
+const expo_asset_1 = require("expo-asset");
 const Confetti_1 = __importDefault(require("../components/Confetti"));
 const CustomAlert_1 = __importDefault(require("../components/CustomAlert"));
 const Card_1 = __importDefault(require("../components/Card"));
@@ -61,19 +63,41 @@ const asArray = (val) => {
     return Array.isArray(val) ? val : [val];
 };
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
-// Нормалізуємо age у “бакет” для сітки/розмірів (4,6,8,10,12)
+const shuffle = (arr) => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+};
+// Нормалізуємо age у "бакет" для сітки/розмірів (4,6,8,10,12)
 const toGridLevel = (age) => {
-    const even = age - (age % 2); // робимо парним
-    const clamped = Math.min(12, Math.max(4, even)); // у діапазон
+    const even = age - (age % 2);
+    const clamped = Math.min(12, Math.max(4, even));
     return (clamped === 4 || clamped === 6 || clamped === 8 || clamped === 10
         ? clamped
         : 12);
 };
-// Кнопка Play Again — іконка з ассетів
+// Иконка PlayAgain (не используем в авто-прогрессе, но пусть будет)
 const PlayIcon = () => ((0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/playAgain.png"), style: GameScreen_styles_1.default.playIcon }));
-// Анимированный робот (Animated WebP) — локальный ассет
-// путь от src/lib/screens к src/assets/hero/hero.webp
-const heroRobot = require("../../assets/hero/hero.webp");
+// ---- РОБОТЫ (анимация + голос) ----
+const ROBOT_SPRITES = [
+    require("../../assets/hero/hero1/anim.webp"),
+    require("../../assets/hero/hero2/anim.webp"),
+    require("../../assets/hero/hero3/anim.webp"),
+    require("../../assets/hero/hero4/anim.webp"),
+    require("../../assets/hero/hero5/anim.webp"),
+    require("../../assets/hero/hero6/anim.webp"),
+];
+const ROBOT_VOICES = [
+    require("../../assets/hero/hero1/hero.m4a"),
+    require("../../assets/hero/hero2/hero.m4a"),
+    require("../../assets/hero/hero3/hero.m4a"),
+    require("../../assets/hero/hero4/hero.m4a"),
+    require("../../assets/hero/hero5/hero.m4a"),
+    require("../../assets/hero/hero6/hero.m4a"),
+];
 // Витягнути джерело лицьової картинки з локального поля
 const getSrc = (c) => {
     const anyCard = c;
@@ -83,10 +107,12 @@ const getSrc = (c) => {
         ? anyCard.__source
         : anyCard.__source.uri;
 };
-// ───────────────────────── component ─────────────────────────
 const GameScreen = () => {
     const { language } = (0, LanguageContext_1.useLanguage)();
-    const { playNotificationSound, playSuccessSound, playBackgroundMusic, stopSuccessSound, } = (0, SoundContext_1.useSound)();
+    const { playNotificationSound, playSuccessSound, playBackgroundMusic, stopSuccessSound,
+    // pauseBackgroundMusic, // не используем, музыку не останавливаем
+    // resumeBackgroundMusic,
+     } = (0, SoundContext_1.useSound)();
     const navigation = (0, native_1.useNavigation)();
     const route = (0, native_1.useRoute)();
     const cfg = (0, PropConfigContext_1.usePropConfig)();
@@ -96,11 +122,10 @@ const GameScreen = () => {
                 { justifyContent: "center", alignItems: "center", padding: 24 },
             ], children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { color: "#fff", textAlign: "center" }, children: "Missing configuration. Pass props into \"MagicMemory\" component." }) }));
     }
-    // ✅ age замість level
     const incomingAge = route.params?.age;
     const age = (0, react_1.useMemo)(() => Math.max(2, incomingAge ?? cfg.age), [incomingAge, cfg.age]);
-    const gridLevel = (0, react_1.useMemo)(() => toGridLevel(age), [age]); // 4|6|8|10|12 для UI
-    const pairsNeeded = (0, react_1.useMemo)(() => Math.floor(age / 2), [age]); // скільки пар треба
+    const gridLevel = (0, react_1.useMemo)(() => toGridLevel(age), [age]); // 4|6|8|10|12
+    const pairsNeeded = (0, react_1.useMemo)(() => Math.floor(age / 2), [age]);
     const [cards, setCards] = (0, react_1.useState)([]);
     const [selectedCards, setSelectedCards] = (0, react_1.useState)([]);
     const [time, setTime] = (0, react_1.useState)(0);
@@ -120,6 +145,21 @@ const GameScreen = () => {
     const [showCongrats, setShowCongrats] = (0, react_1.useState)(false);
     const [showPlayAgain, setShowPlayAgain] = (0, react_1.useState)(false);
     const [isGameActive, setIsGameActive] = (0, react_1.useState)(true);
+    // Дуга — полностью контролируем видимость флагом
+    const [arcVisible, setArcVisible] = (0, react_1.useState)(false);
+    // Робот текущего совпадения + очередь роботов на раунд
+    const [activeRobotIndex, setActiveRobotIndex] = (0, react_1.useState)(0);
+    const robotsOrderRef = (0, react_1.useRef)([]);
+    // Предзагруженные URI голосов роботов
+    const robotVoiceUrisRef = (0, react_1.useRef)([
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+    ]);
+    const { width, height } = react_native_1.Dimensions.get("window");
     const arcOffsetY = (0, react_native_reanimated_1.useSharedValue)(0);
     const arcOpacity = (0, react_native_reanimated_1.useSharedValue)(1);
     const statsOffsetY = (0, react_native_reanimated_1.useSharedValue)(0);
@@ -127,13 +167,11 @@ const GameScreen = () => {
     const playAgainScale = (0, react_native_reanimated_1.useSharedValue)(1);
     const playAgainOpacity = (0, react_native_reanimated_1.useSharedValue)(1);
     const hintScale = (0, react_native_reanimated_1.useSharedValue)(1);
-    const backScale = (0, react_native_reanimated_1.useSharedValue)(1);
     const congratsPulse = (0, react_native_reanimated_1.useSharedValue)(1.05);
-    const { width, height } = react_native_1.Dimensions.get("window");
     const PLAY_AGAIN_OFFSET = 110;
     const PLAY_AGAIN_CAP = 0.78;
     const playAgainTop = Math.min(height * PLAY_AGAIN_CAP, height * 0.6 + PLAY_AGAIN_OFFSET);
-    // ───────────── фон/рубашка/лиця — тільки з пропсів ─────────────
+    // ───────────── фон/рубашка/лиця — только из пропсов ─────────────
     const selectedBackground = (0, react_1.useMemo)(() => {
         const candidates = asArray(cfg.background);
         const uri = candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
@@ -164,19 +202,30 @@ const GameScreen = () => {
         transform: [{ scale: (0, react_native_reanimated_1.withTiming)(hintScale.value, { duration: 100 }) }],
         opacity: 1,
     }));
-    const backAnimatedStyle = (0, react_native_reanimated_1.useAnimatedStyle)(() => ({
-        transform: [{ scale: (0, react_native_reanimated_1.withTiming)(backScale.value, { duration: 200 }) }],
-        opacity: 1,
-    }));
     const congratsAnimatedStyle = (0, react_native_reanimated_1.useAnimatedStyle)(() => ({
         transform: [{ scale: (0, react_native_reanimated_1.withTiming)(congratsPulse.value, { duration: 2000 }) }],
         opacity: 1,
     }));
-    // ───────────── життєвий цикл ─────────────
+    // ───────────── жизненный цикл ─────────────
     (0, react_1.useEffect)(() => {
         if (!config_1.isWeb) {
-            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+            ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => { });
         }
+        // Предзагружаем голоса роботов (надёжное воспроизведение на Android)
+        (async () => {
+            try {
+                const assets = await Promise.all(ROBOT_VOICES.map(async (mod) => {
+                    const a = expo_asset_1.Asset.fromModule(mod);
+                    await a.downloadAsync();
+                    return a.localUri ?? a.uri ?? null;
+                }));
+                robotVoiceUrisRef.current = assets;
+            }
+            catch {
+                // если что — fallback потом на notificationSound
+                robotVoiceUrisRef.current = [null, null, null, null, null, null];
+            }
+        })();
         if (!isInitialized) {
             generateCards();
             setIsInitialized(true);
@@ -185,7 +234,6 @@ const GameScreen = () => {
             clearInterval(timer.current);
             timer.current = null;
         }
-        // Статистика/таймер — для “доросліших” значень: коли gridLevel >= 8
         if (gridLevel >= 8) {
             playBackgroundMusic().catch(() => { });
             timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
@@ -200,7 +248,31 @@ const GameScreen = () => {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gridLevel, isInitialized, showCongrats, isGameActive]);
-    // ───────────── генерація колоди ─────────────
+    // ───────────── проиграть голос робота (через предзагруженный URI) ─────────────
+    const playRobotVoice = async (idx) => {
+        try {
+            const uri = robotVoiceUrisRef.current[idx];
+            if (!uri)
+                throw new Error("no-uri");
+            // гарантируем режим (миксуется с фоном)
+            await expo_av_1.Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                staysActiveInBackground: false,
+                playsInSilentModeIOS: true,
+                shouldDuckAndroid: true,
+                playThroughEarpieceAndroid: false,
+            });
+            const { sound } = await expo_av_1.Audio.Sound.createAsync({ uri });
+            await sound.setVolumeAsync(1.0);
+            await sound.playAsync();
+            setTimeout(() => sound.unloadAsync().catch(() => { }), 2500);
+        }
+        catch {
+            // запасной вариант
+            playNotificationSound().catch(() => { });
+        }
+    };
+    // ───────────── генерация колоды ─────────────
     const generateCards = () => {
         if (timer.current) {
             clearInterval(timer.current);
@@ -215,19 +287,20 @@ const GameScreen = () => {
             setCards([]);
             return;
         }
-        // Скидання анімацій
-        arcOffsetY.value = height;
-        arcOpacity.value = 0;
+        // Скидываем статистику
         statsOffsetY.value = -100;
         statsOpacity.value = 0;
-        // Обираємо потрібну кількість лиць і розвертаємо в пари
+        // Очерёдность роботов без повторов (если пар больше 6 — зациклим)
+        const base = [0, 1, 2, 3, 4, 5];
+        robotsOrderRef.current = shuffle(base);
+        // Выбор лиц и разворот в пары
         const chosen = uniqFront
             .slice()
             .sort(() => Math.random() - 0.5)
             .slice(0, pairs)
             .map((u) => ({ source: { uri: u } }));
         const selectedValues = chosen.flatMap((x) => [x, x]);
-        // Карточки (value — муляж, рендер по __source)
+        // Карточки
         const cardPairs = selectedValues
             .map((val, index) => ({
             id: index,
@@ -251,12 +324,18 @@ const GameScreen = () => {
         setShowPlayAgain(false);
         setShowUpgradePrompt(false);
         setIsGameActive(true);
-        // Вхідні анімації
+        // Показ дуги (вход) — без лишних тёмных оверлеев
+        // ПЕРЕДВИНУЛИ setArcVisible В КОНЕЦ АНИМАЦИИ
+        arcOffsetY.value = height;
+        arcOpacity.value = 0;
         arcOffsetY.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 500 });
-        arcOpacity.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 500 });
+        arcOpacity.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 500 }, (finished) => {
+            if (finished)
+                (0, react_native_reanimated_1.runOnJS)(setArcVisible)(true); // Включаем дугу только ПОСЛЕ анимации
+        });
         statsOffsetY.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 500 });
         statsOpacity.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 500 });
-        // Показ для “легкого” бакету 4
+        // Автопоказ для 2x2
         if (gridLevel === 4) {
             setIsShowingCards(true);
             const showTimer = setTimeout(() => {
@@ -276,7 +355,7 @@ const GameScreen = () => {
             timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
         }
     };
-    // Зірки — орієнтуємось на бакет (аналог колишніх рівнів)
+    // Звёзды — по бакету
     const getStars = (lvlBucket, t, m) => {
         if (lvlBucket < 8)
             return 0;
@@ -319,7 +398,15 @@ const GameScreen = () => {
                 const matchDelay = setTimeout(() => {
                     if (!isGameActive)
                         return;
-                    playNotificationSound().catch(() => { });
+                    // Выбор робота по порядку совпадений
+                    const matchIndex = Math.floor((matchedCards.length + 2) / 2) - 1; // 0-based
+                    const order = robotsOrderRef.current.length
+                        ? robotsOrderRef.current
+                        : [0, 1, 2, 3, 4, 5];
+                    const robotIdx = order[matchIndex % order.length];
+                    setActiveRobotIndex(robotIdx);
+                    // Голос робота (не останавливая фон)
+                    playRobotVoice(robotIdx).catch(() => { });
                     const newMatched = [...matchedCards, firstId, secondId];
                     setMatchedCards(newMatched);
                     setCards((prev) => prev.map((card) => newMatched.includes(card.id)
@@ -339,15 +426,13 @@ const GameScreen = () => {
                             setRoundsCompleted(newRounds);
                             const starsEarned = getStars(gridLevel, time, moves);
                             setTotalStars((prev) => prev + starsEarned);
-                            const animTimer = setTimeout(() => {
-                                if (!isGameActive)
-                                    return;
-                                arcOffsetY.value = (0, react_native_reanimated_1.withTiming)(height, { duration: 700 });
-                                arcOpacity.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 700 });
-                                statsOffsetY.value = (0, react_native_reanimated_1.withTiming)(height, { duration: 700 });
-                                statsOpacity.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 700 });
-                            }, 0);
-                            completionTimers.current.push(animTimer);
+                            // Уводим дугу вниз и полностью скрываем до следующего уровня (без вспышек)
+                            // УБРАЛИ setTimeout — достаточно анимации
+                            arcOffsetY.value = (0, react_native_reanimated_1.withTiming)(height, { duration: 700 }, (finished) => finished && (0, react_native_reanimated_1.runOnJS)(setArcVisible)(false));
+                            arcOpacity.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 700 });
+                            statsOffsetY.value = (0, react_native_reanimated_1.withTiming)(height, { duration: 700 });
+                            statsOpacity.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 700 });
+                            // Убрали: setTimeout(() => setArcVisible(false), 750);
                             const congratsTimer = setTimeout(() => {
                                 if (!isGameActive)
                                     return;
@@ -355,14 +440,18 @@ const GameScreen = () => {
                                 setShowConfetti(true);
                             }, 900);
                             completionTimers.current.push(congratsTimer);
-                            const playAgainTimer = setTimeout(() => {
+                            // Переход на следующий уровень
+                            const nextTimer = setTimeout(() => {
                                 if (!isGameActive)
                                     return;
-                                setShowPlayAgain(true);
-                                if (newRounds >= 5)
-                                    setShowUpgradePrompt(true);
+                                setShowPlayAgain(false);
+                                const nextAge = age + 2;
+                                const goTimer = setTimeout(() => {
+                                    navigation.replace("MagicMemoryGameScreen", { age: nextAge });
+                                }, 400);
+                                completionTimers.current.push(goTimer);
                             }, 2100);
-                            completionTimers.current.push(playAgainTimer);
+                            completionTimers.current.push(nextTimer);
                         }
                         else {
                             setIsFlipping(false);
@@ -491,36 +580,11 @@ const GameScreen = () => {
                                 height: size,
                                 zIndex: 9999,
                                 elevation: 50,
-                            }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: (0, jsx_runtime_1.jsx)(expo_image_1.Image, { source: heroRobot, style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
+                            }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: (0, jsx_runtime_1.jsx)(expo_image_1.Image, { source: ROBOT_SPRITES[activeRobotIndex], style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
                     })()] }));
     };
-    const handleHintPressIn = () => {
-        hintScale.value = 1.1;
-    };
-    const handleHintPressOut = () => {
-        hintScale.value = 1;
-    };
-    const handleBackPress = async () => {
-        backScale.value = (0, react_native_reanimated_1.withTiming)(1.1, { duration: 200 }, () => {
-            backScale.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 200 });
-        });
-        try {
-            setIsGameActive(false);
-            if (timer.current) {
-                clearInterval(timer.current);
-                timer.current = null;
-            }
-            completionTimers.current.forEach((t) => clearTimeout(t));
-            completionTimers.current = [];
-            setTotalStars(0);
-            await stopSuccessSound();
-            await new Promise((resolve) => setTimeout(() => resolve(), 100));
-            navigation.goBack();
-        }
-        catch {
-            navigation.goBack();
-        }
-    };
+    const handleHintPressIn = () => (hintScale.value = 1.1);
+    const handleHintPressOut = () => (hintScale.value = 1);
     const handlePlayAgainPressIn = () => {
         playAgainScale.value = 1.1;
         playAgainOpacity.value = 0.8;
@@ -528,9 +592,7 @@ const GameScreen = () => {
     const handlePlayAgainPressOut = () => {
         playAgainScale.value = 1;
         playAgainOpacity.value = 1;
-        const t = setTimeout(() => {
-            handlePlayAgain();
-        }, 300);
+        const t = setTimeout(() => handlePlayAgain(), 300);
         completionTimers.current.push(t);
     };
     const handlePlayAgain = () => {
@@ -549,17 +611,11 @@ const GameScreen = () => {
                 { padding: 24, justifyContent: "center" },
             ], children: [(0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { color: "#fff", fontSize: 16, marginBottom: 8 }, children: "Invalid props. Expected:" }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 background: at least one image URL" }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 backCardSide: at least one image URL" }), (0, jsx_runtime_1.jsxs)(react_native_1.Text, { style: { color: "#ccc" }, children: ["\u2022 frontCardSide: at least ", pairsNeeded, " unique image URLs"] })] }));
     }
+    const { width: W, height: H } = react_native_1.Dimensions.get("window");
     return ((0, jsx_runtime_1.jsxs)(react_native_1.View, { style: { flex: 1, width: "100%", height: "100%" }, children: [(0, jsx_runtime_1.jsx)(react_native_1.ImageBackground, { source: selectedBackground.source, style: [
                     react_native_1.StyleSheet.absoluteFillObject,
                     { width: "100%", height: "100%", zIndex: 0 },
-                ], resizeMode: "cover" }), (0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: height, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${width} ${height}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.Defs, { children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), (0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 ${height} L0 100 Q${width / 2} 60 ${width} 100 L${width} ${height} Z`, fill: "url(#arcGrad)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 100 Q${width / 2} 60 ${width} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: {
-                            height: height * 0.4,
-                            position: "absolute",
-                            bottom: 0,
-                            width: "100%",
-                            opacity: 0.5,
-                            zIndex: 4,
-                        } })] }), (0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [
+                ], resizeMode: "cover" }), arcVisible && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: (0, jsx_runtime_1.jsxs)(react_native_svg_1.default, { height: H, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.Defs, { children: [(0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), (0, jsx_runtime_1.jsxs)(react_native_svg_1.LinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", gradientUnits: "objectBoundingBox", children: [(0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`, fill: "url(#arcGrad)" }), (0, jsx_runtime_1.jsx)(react_native_svg_1.Path, { d: `M0 100 Q${W / 2} 60 ${W} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }) })), (0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: true }), (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [
                     global_styles_1.default.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
                 ], children: [!showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [GameScreen_styles_1.default.hintButton, hintAnimatedStyle], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPress: handleHint, onPressIn: handleHintPressIn, onPressOut: handleHintPressOut, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintGlow, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: GameScreen_styles_1.default.hintBorder, children: (0, jsx_runtime_1.jsx)(expo_linear_gradient_1.LinearGradient, { colors: ["#FFB380", "#D16C00"], style: GameScreen_styles_1.default.hintButtonInner, children: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: GameScreen_styles_1.default.hintText, children: "?" }) }) }) }) }) })), gridLevel >= 8 && ((0, jsx_runtime_1.jsxs)(react_native_reanimated_1.default.View, { style: [
@@ -603,7 +659,17 @@ const GameScreen = () => {
                                         resizeMode: "contain",
                                         opacity: 1,
                                         zIndex: 2,
-                                    } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/TitlFon.png"), style: [GameScreen_styles_1.default.congratsFon, { opacity: 1 }] }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.congratsText, { zIndex: 10 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: language === "es" ? "¡Felicidades!" : "Congratulations!" })] })), showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [
+                                    } }) }), (0, jsx_runtime_1.jsx)(react_native_1.Image, { source: require("../../assets/TitlFon.png"), style: [GameScreen_styles_1.default.congratsFon, { opacity: 1 }] }), (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.congratsText, { zIndex: 10 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: language === "es"
+                                    ? "¡Felicidades!"
+                                    : language === "pt"
+                                        ? "Parabéns!"
+                                        : language === "pl"
+                                            ? "Gratulacje!"
+                                            : language === "uk"
+                                                ? "Вітаємо!"
+                                                : language === "ru"
+                                                    ? "Поздравляем!"
+                                                    : "Congratulations!" })] })), showPlayAgain && ((0, jsx_runtime_1.jsx)(react_native_reanimated_1.default.View, { style: [
                             GameScreen_styles_1.default.playAgainButton,
                             playAgainAnimatedStyle,
                             {
@@ -614,24 +680,6 @@ const GameScreen = () => {
                                 position: "absolute",
                                 alignSelf: "center",
                             },
-                        ], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPressIn: handlePlayAgainPressIn, onPressOut: handlePlayAgainPressOut, activeOpacity: 1, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainGradient, { opacity: 1 }], children: (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainContent, { opacity: 1 }], children: [(0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.playAgainText, { opacity: 1 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: "Play Game Again" }), (0, jsx_runtime_1.jsx)(PlayIcon, {})] }) }) }) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { position: "relative", zIndex: 3000 }, children: (0, jsx_runtime_1.jsx)(CustomAlert_1.default, { visible: showUpgradePrompt, onClose: () => setShowUpgradePrompt(false), title: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: language === "es" ? "¡Coincidencia!" : "Match!" }), message: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 16, color: "#FFF" }, children: language === "es"
-                                    ? "¿Subir a un nivel más difícil?"
-                                    : "Increase difficulty?" }), onYes: () => {
-                                setShowUpgradePrompt(false);
-                                const nextAge = age + 2;
-                                navigation.replace("MagicMemoryGameScreen", { age: nextAge });
-                                setRoundsCompleted(0);
-                                setMatchedCards([]);
-                                setTime(0);
-                                setMoves(0);
-                                setTotalStars(0);
-                                arcOffsetY.value = height;
-                                arcOpacity.value = 0;
-                                arcOffsetY.value = (0, react_native_reanimated_1.withTiming)(0, { duration: 500 });
-                                arcOpacity.value = (0, react_native_reanimated_1.withTiming)(1, { duration: 500 });
-                            }, onNo: () => {
-                                setShowUpgradePrompt(false);
-                                generateCards();
-                            } }) })] })] }));
+                        ], children: (0, jsx_runtime_1.jsx)(react_native_1.TouchableOpacity, { onPressIn: handlePlayAgainPressIn, onPressOut: handlePlayAgainPressOut, activeOpacity: 1, children: (0, jsx_runtime_1.jsx)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainGradient, { opacity: 1 }], children: (0, jsx_runtime_1.jsxs)(react_native_1.View, { style: [GameScreen_styles_1.default.playAgainContent, { opacity: 1 }], children: [(0, jsx_runtime_1.jsx)(react_native_1.Text, { style: [GameScreen_styles_1.default.playAgainText, { opacity: 1 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: "Play Game Again" }), (0, jsx_runtime_1.jsx)(PlayIcon, {})] }) }) }) })), (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { position: "relative", zIndex: 3000 }, children: (0, jsx_runtime_1.jsx)(CustomAlert_1.default, { visible: false, onClose: () => { }, title: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: "Match!" }), message: (0, jsx_runtime_1.jsx)(react_native_1.Text, { style: { fontSize: 16, color: "#FFF" }, children: "Increase difficulty?" }), onYes: () => { }, onNo: () => { } }) })] })] }));
 };
 exports.default = GameScreen;

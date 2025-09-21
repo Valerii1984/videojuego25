@@ -1,35 +1,15 @@
-import type { SupportedLang } from "./index";
+export type LevelKey = "2x2" | "3x3" | "4x4" | "5x5" | "6x6"; // если ещё используется где-то
 
-/**
- * ВНЕШНИЕ пропсы, приходящие в библиотеку Magic Memory.
- * Только URL — никаких ассетов.
- *
- * Теперь ориентируемся на age (число).
- * Пары = Math.floor(age / 2).
- */
-export type LevelKey = number;
-
-export interface MagicMemoryPropConfig {
-  /** Возраст/размер колоды, число. Пары = Math.floor(age / 2). */
+export type MagicMemoryPropConfig = {
+  // главное — возраст/сложность. Мы сразу заходим в игру и растём: 2x2 → 3x3 → … → 6x6
   age: number;
 
-  /** Язык интерфейса — строго из поддерживаемых коротких кодов. */
-  lang: SupportedLang;
+  // язык: клиент у себя просто укажет lang в пропсах или положится на язык устройства
+  lang?: string; // "en" | "es" | "pt" | "pl" | ...
+  language?: string; // альтернативное имя поля (на всякий случай)
 
-  /** Фон: одиночный URL ИЛИ массив URL (на каждый старт выбираем случайный). */
+  // фон и картинки карточек
   background: string | string[];
-
-  /** Рубашка: одиночный URL ИЛИ массив URL (на каждый старт выбираем случайный). */
   backCardSide: string | string[];
-
-  /**
-   * Лица карт: массив URL.
-   * Должно быть минимум Math.floor(age / 2) УНИКАЛЬНЫХ URL.
-   */
-  frontCardSide: string[];
-}
-
-/** Пропсы обёртки-компонента MagicMemory */
-export interface MagicMemoryProps {
-  props: MagicMemoryPropConfig;
-}
+  frontCardSide: string[]; // список url лицевых сторон (уникальные)
+};

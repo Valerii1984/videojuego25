@@ -3,7 +3,7 @@ export declare const SoundProvider: React.FC<{
     children: React.ReactNode;
 }>;
 export declare const useSound: () => {
-    playNotificationSound: () => Promise<void>;
+    playNotificationSound: (heroIndex?: number) => Promise<void>;
     playSuccessSound: () => Promise<void>;
     playBackgroundMusic: () => Promise<void>;
     stopBackgroundMusic: () => Promise<void>;

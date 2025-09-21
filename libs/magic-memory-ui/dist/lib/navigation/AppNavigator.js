@@ -38,61 +38,87 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppNavigator = AppNavigator;
 const jsx_runtime_1 = require("react/jsx-runtime");
-// libs/magic-memory-ui/src/lib/navigation/AppNavigator.tsx
 const react_1 = require("react");
 const native_1 = require("@react-navigation/native");
 const native_stack_1 = require("@react-navigation/native-stack");
-const SplashScreen_1 = __importDefault(require("../screens/SplashScreen"));
-const LoadingScreen_1 = __importDefault(require("../screens/LoadingScreen"));
 const LanguageContext_1 = require("../contexts/LanguageContext");
 const SoundContext_1 = require("../contexts/SoundContext");
 const Font = __importStar(require("expo-font"));
 const react_native_1 = require("react-native");
 const ScreenOrientation = __importStar(require("expo-screen-orientation"));
-const config_1 = require("../utils/config");
+const NavigationBar = __importStar(require("expo-navigation-bar"));
 const react_native_screens_1 = require("react-native-screens");
 const GameScreen_1 = __importDefault(require("../screens/GameScreen"));
-const NavigationBar = __importStar(require("expo-navigation-bar"));
 (0, react_native_screens_1.enableScreens)();
 const Stack = (0, native_stack_1.createNativeStackNavigator)();
 const InnerNavigator = () => {
     const [fontsLoaded, setFontsLoaded] = (0, react_1.useState)(false);
     const { playBackgroundMusic } = (0, SoundContext_1.useSound)();
+    const lockLandscape = async () => {
+        try {
+            if (react_native_1.Platform.OS === "android" || react_native_1.Platform.OS === "ios") {
+                await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+            }
+        }
+        catch { }
+    };
+    const applyImmersive = async () => {
+        if (react_native_1.Platform.OS !== "android")
+            return;
+        try {
+            await NavigationBar.setBackgroundColorAsync("#16103E");
+            await NavigationBar.setVisibilityAsync("hidden");
+            await NavigationBar.setBehaviorAsync("overlay-swipe");
+        }
+        catch { }
+    };
     (0, react_1.useEffect)(() => {
         const prepare = async () => {
             try {
-                const fonts = {
+                await Font.loadAsync({
                     Bangers: require("../../assets/fonts/Bangers-Regular.ttf"),
                     Fredoka: require("../../assets/fonts/Fredoka-Regular.ttf"),
                     FredokaSemiBold: require("../../assets/fonts/Fredoka-SemiBold.ttf"),
-                };
-                await Font.loadAsync(fonts);
-                if (!config_1.isWeb) {
-                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-                }
-                if (react_native_1.Platform.OS === "android") {
-                    try {
-                        await NavigationBar.setBackgroundColorAsync("#16103E");
-                        await NavigationBar.setVisibilityAsync("hidden");
-                        await NavigationBar.setBehaviorAsync("inset-swipe");
-                    }
-                    catch (err) {
-                        console.warn("NavigationBar error:", err);
-                    }
-                }
+                });
+                await lockLandscape();
+                await applyImmersive();
                 setFontsLoaded(true);
             }
             catch (e) {
-                console.error("Font loading error:", e);
+                console.error("App init error:", e);
+                setFontsLoaded(true);
             }
         };
         prepare();
     }, []);
     (0, react_1.useEffect)(() => {
+        if (react_native_1.Platform.OS !== "android" && react_native_1.Platform.OS !== "ios")
+            return;
+        const appSub = react_native_1.AppState.addEventListener("change", (s) => {
+            if (s === "active") {
+                lockLandscape();
+                applyImmersive();
+            }
+        });
+        const kbShow = react_native_1.Keyboard.addListener("keyboardDidShow", applyImmersive);
+        const kbHide = react_native_1.Keyboard.addListener("keyboardDidHide", applyImmersive);
+        const dimSub = react_native_1.Dimensions.addEventListener("change", () => {
+            lockLandscape();
+            applyImmersive();
+        });
+        return () => {
+            appSub.remove();
+            kbShow.remove();
+            kbHide.remove();
+            dimSub.remove();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    (0, react_1.useEffect)(() => {
         if (fontsLoaded) {
             playBackgroundMusic().catch(() => { });
         }
-    }, [fontsLoaded]);
+    }, [fontsLoaded, playBackgroundMusic]);
     if (!fontsLoaded) {
         return (0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" } });
     }
@@ -115,7 +141,7 @@ const InnerNavigator = () => {
             heavy: { fontFamily: "FredokaSemiBold", fontWeight: "800" },
         },
     };
-    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, independent: true, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsxs)(Stack.Navigator, { initialRouteName: "MagicMemorySplashScreen", screenOptions: {
+    return ((0, jsx_runtime_1.jsx)(react_native_1.View, { style: { flex: 1, backgroundColor: "#16103E" }, children: (0, jsx_runtime_1.jsxs)(native_1.NavigationContainer, { theme: theme, independent: true, children: [(0, jsx_runtime_1.jsx)(react_native_1.StatusBar, { hidden: react_native_1.Platform.OS !== "web", translucent: react_native_1.Platform.OS === "android", backgroundColor: "#16103E" }), (0, jsx_runtime_1.jsx)(Stack.Navigator, { initialRouteName: "MagicMemoryGameScreen", screenOptions: {
                         headerShown: false,
                         contentStyle: { backgroundColor: "#16103E" },
                         animation: "none",
@@ -126,7 +152,7 @@ const InnerNavigator = () => {
                             statusBarTranslucent: true,
                             statusBarColor: "#16103E",
                         }),
-                    }, children: [(0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemorySplashScreen", children: () => (0, jsx_runtime_1.jsx)(SplashScreen_1.default, { fontsLoaded: fontsLoaded }) }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemoryLoadingScreen", component: LoadingScreen_1.default, options: { gestureEnabled: false } }), (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemoryGameScreen", component: GameScreen_1.default })] })] }) }));
+                    }, children: (0, jsx_runtime_1.jsx)(Stack.Screen, { name: "MagicMemoryGameScreen", component: GameScreen_1.default, options: { gestureEnabled: false }, initialParams: { age: 4 } }) })] }) }));
 };
 function AppNavigator() {
     return ((0, jsx_runtime_1.jsx)(LanguageContext_1.LanguageProvider, { children: (0, jsx_runtime_1.jsx)(SoundContext_1.SoundProvider, { children: (0, jsx_runtime_1.jsx)(InnerNavigator, {}) }) }));

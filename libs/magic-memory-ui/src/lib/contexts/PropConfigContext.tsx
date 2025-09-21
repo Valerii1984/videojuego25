@@ -1,4 +1,3 @@
-// libs/magic-memory-ui/src/lib/contexts/PropConfigContext.tsx
 import React, { createContext, useContext } from "react";
 import type { MagicMemoryPropConfig } from "../types/props";
 
