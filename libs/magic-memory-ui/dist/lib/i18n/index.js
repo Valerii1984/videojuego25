@@ -1,10 +1,5 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const i18next_1 = __importDefault(require("i18next"));
-const react_i18next_1 = require("react-i18next");
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
 const resources = {
     en: {
         translation: {
@@ -39,10 +34,10 @@ const resources = {
         },
     },
 };
-i18next_1.default.use(react_i18next_1.initReactI18next).init({
+i18n.use(initReactI18next).init({
     resources,
     lng: 'en-US',
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
 });
-exports.default = i18next_1.default;
+export default i18n;

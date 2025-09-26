@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_native_1 = require("react-native");
-const styles = react_native_1.StyleSheet.create({
+import { StyleSheet } from 'react-native';
+const styles = StyleSheet.create({
     container: {
         position: 'absolute',
         width: '100%',
@@ -108,4 +106,4 @@ const styles = react_native_1.StyleSheet.create({
         color: '#FFFFFF',
     },
 });
-exports.default = styles;
+export default styles;

@@ -7,7 +7,13 @@ import React, {
 } from "react";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
-import { AppState, AppStateStatus, Platform } from "react-native";
+import { AppState, AppStateStatus } from "react-native";
+
+/** Единственная настройка:
+ *  false — фон НЕ играет нигде (требование «только фанфары»)
+ *  true  — фон можно включать методом playBackgroundMusic()
+ */
+const ENABLE_BACKGROUND_MUSIC = false;
 
 const SoundContext = createContext<{
   playNotificationSound: (heroIndex?: number) => Promise<void>;
@@ -32,7 +38,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [soundEnabled] = useState(true);
 
-  // ГОЛОСА РОБОТОВ (hero1..hero6/hero.m4a)
+  // Голоса роботов
   const heroVoicesRef = useRef<(Audio.Sound | null)[]>([
     null,
     null,
@@ -42,19 +48,24 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     null,
   ]);
 
-  const [successSound, setSuccessSound] = useState<Audio.Sound | null>(null);
-  const backgroundMusicRef = useRef<Audio.Sound | null>(null);
-  const [isBackgroundPlaying, setIsBackgroundPlaying] = useState(false);
-  const appState = useRef(AppState.currentState);
+  // Фанфары (успех)
+  const successSoundRef = useRef<Audio.Sound | null>(null);
 
-  // Фоллбек-жужжалка (используем только если нет голоса робота)
+  // Фон (не автозапускаем)
+  const backgroundMusicRef = useRef<Audio.Sound | null>(null);
+  const isBackgroundPlayingRef = useRef(false);
+
+  // Фоллбек уведомление
   const fallbackNotifRef = useRef<Audio.Sound | null>(null);
 
+  const appState = useRef(AppState.currentState);
+
   useEffect(() => {
-    let isMounted = true;
+    let mounted = true;
 
     const loadSounds = async () => {
       try {
+        // Общие аудионастройки
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
           staysActiveInBackground: false,
@@ -63,7 +74,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           playThroughEarpieceAndroid: false,
         });
 
-        // --- HERO VOICES ---
+        // --- ROBOT VOICES ---
         const HERO_MODULES = [
           require("../../assets/hero/hero1/hero.m4a"),
           require("../../assets/hero/hero2/hero.m4a"),
@@ -84,7 +95,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
             await sound.setVolumeAsync(1.0);
             heroVoicesRef.current[i] = sound;
           } catch (e) {
-            console.warn("Hero voice load failed, index:", i, e);
+            console.warn("Hero voice load failed:", i, e);
             heroVoicesRef.current[i] = null;
           }
         }
@@ -105,83 +116,94 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn("Fallback notification load failed:", e);
         }
 
-        // --- Success ---
-        const succ = Asset.fromModule(
-          require("../../assets/sounds/success-fanfare-trumpets.mp3")
-        );
-        await succ.downloadAsync();
-        const { sound: success } = await Audio.Sound.createAsync(
-          { uri: succ.localUri ?? succ.uri },
-          { shouldPlay: false }
-        );
-        await success.setVolumeAsync(1.0);
-        if (!isMounted) return;
-        setSuccessSound(success);
-
-        // --- Background (loop) ---
-        const bg = Asset.fromModule(
-          require("../../assets/sounds/background-music.wav")
-        );
-        await bg.downloadAsync();
-        const { sound: background } = await Audio.Sound.createAsync(
-          { uri: bg.localUri ?? bg.uri },
-          { shouldPlay: false, isLooping: true }
-        );
-        backgroundMusicRef.current = background;
-        await backgroundMusicRef.current.setVolumeAsync(0.5);
-        await backgroundMusicRef.current.playAsync();
-        const status = await backgroundMusicRef.current.getStatusAsync();
-        if (status.isLoaded && status.isPlaying) {
-          setIsBackgroundPlaying(true);
+        // --- Success fanfare ---
+        try {
+          const succ = Asset.fromModule(
+            require("../../assets/sounds/success-fanfare-trumpets.mp3")
+          );
+          await succ.downloadAsync();
+          const { sound } = await Audio.Sound.createAsync(
+            { uri: succ.localUri ?? succ.uri },
+            { shouldPlay: false }
+          );
+          await sound.setVolumeAsync(1.0);
+          successSoundRef.current = sound;
+        } catch (e) {
+          console.warn("Success fanfare load failed:", e);
         }
-      } catch (error: unknown) {
+
+        // --- Background (loop) — НЕ автозапускаем ---
+        try {
+          const bg = Asset.fromModule(
+            require("../../assets/sounds/background-music.wav")
+          );
+          await bg.downloadAsync();
+          const { sound: background } = await Audio.Sound.createAsync(
+            { uri: bg.localUri ?? bg.uri },
+            { shouldPlay: false, isLooping: true }
+          );
+          backgroundMusicRef.current = background;
+          await backgroundMusicRef.current.setVolumeAsync(0.5);
+          isBackgroundPlayingRef.current = false; // по умолчанию тишина
+        } catch (e) {
+          console.warn("Background music load failed:", e);
+        }
+      } catch (error) {
         console.error("Failed to load sounds:", error);
       }
     };
 
     loadSounds();
 
-    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+    // Пауза/резюм приложения — фон не возобновляем, если выключен флаг
+    const handleAppStateChange = async (next: AppStateStatus) => {
       if (
         appState.current === "active" &&
-        (nextAppState === "background" || nextAppState === "inactive")
+        (next === "background" || next === "inactive")
       ) {
-        if (backgroundMusicRef.current && isBackgroundPlaying) {
-          backgroundMusicRef.current.pauseAsync().catch(() => {});
-          setIsBackgroundPlaying(false);
+        if (backgroundMusicRef.current && isBackgroundPlayingRef.current) {
+          await backgroundMusicRef.current.pauseAsync().catch(() => {});
+          isBackgroundPlayingRef.current = false;
         }
-      } else if (appState.current !== "active" && nextAppState === "active") {
-        if (soundEnabled && backgroundMusicRef.current) {
-          backgroundMusicRef.current.playAsync().catch(() => {});
-          backgroundMusicRef.current.setVolumeAsync(0.5).catch(() => {});
-          setIsBackgroundPlaying(true);
+      } else if (appState.current !== "active" && next === "active") {
+        if (
+          soundEnabled &&
+          ENABLE_BACKGROUND_MUSIC &&
+          backgroundMusicRef.current
+        ) {
+          await backgroundMusicRef.current.playAsync().catch(() => {});
+          await backgroundMusicRef.current.setVolumeAsync(0.5).catch(() => {});
+          isBackgroundPlayingRef.current = true;
         }
       }
-      appState.current = nextAppState;
+      appState.current = next;
     };
+
     const sub = AppState.addEventListener("change", handleAppStateChange);
 
     return () => {
-      isMounted = false;
+      mounted = false;
       sub.remove();
       backgroundMusicRef.current?.unloadAsync().catch(() => {});
       fallbackNotifRef.current?.unloadAsync().catch(() => {});
-      successSound?.unloadAsync().catch(() => {});
+      successSoundRef.current?.unloadAsync().catch(() => {});
       heroVoicesRef.current.forEach((s) => s?.unloadAsync().catch(() => {}));
     };
   }, [soundEnabled]);
 
+  // Временное приглушение фона (если он вообще играет)
   const duckBackgroundTemporarily = async (ms = 700) => {
-    if (!backgroundMusicRef.current) return;
+    const bg = backgroundMusicRef.current;
+    if (!bg || !isBackgroundPlayingRef.current) return;
     try {
-      await backgroundMusicRef.current.setVolumeAsync(0.25);
+      await bg.setVolumeAsync(0.25);
       setTimeout(() => {
         backgroundMusicRef.current?.setVolumeAsync(0.5).catch(() => {});
       }, ms);
     } catch {}
   };
 
-  // ▶️ голос робота по индексу (0..5)
+  // ▶️ Нотификация/голос робота
   const playNotificationSound = async (heroIndex?: number) => {
     if (!soundEnabled) return;
     try {
@@ -198,14 +220,16 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  // 🎺 Фанфары победы — всегда звучат (даже при выключенном фоне)
   const playSuccessSound = async () => {
     if (!soundEnabled) return;
     try {
-      if (!successSound) return;
+      const snd = successSoundRef.current;
+      if (!snd) return;
       await duckBackgroundTemporarily(1400);
-      await successSound.setPositionAsync(0);
-      await successSound.setVolumeAsync(1.0);
-      await successSound.replayAsync();
+      await snd.setPositionAsync(0);
+      await snd.setVolumeAsync(1.0);
+      await snd.replayAsync();
     } catch (e) {
       console.error("playSuccessSound error:", e);
     }
@@ -213,42 +237,53 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const stopSuccessSound = async () => {
     try {
-      const st = await successSound?.getStatusAsync();
-      if (st?.isLoaded && st?.isPlaying) {
-        await successSound?.stopAsync();
+      const s = successSoundRef.current;
+      const st = await s?.getStatusAsync();
+      if (st?.isLoaded && st.isPlaying) {
+        await s?.stopAsync();
       }
     } catch {}
   };
 
+  // ⏯ Управление фоном — учитывает флаг ENABLE_BACKGROUND_MUSIC
   const playBackgroundMusic = async () => {
+    if (!ENABLE_BACKGROUND_MUSIC) return;
     try {
-      const st = await backgroundMusicRef.current?.getStatusAsync();
+      const bg = backgroundMusicRef.current;
+      const st = await bg?.getStatusAsync();
       if (st?.isLoaded && !st.isPlaying) {
-        await backgroundMusicRef.current?.setPositionAsync(0);
-        await backgroundMusicRef.current?.setVolumeAsync(0.5);
-        await backgroundMusicRef.current?.playAsync();
-        setIsBackgroundPlaying(true);
+        await bg?.setPositionAsync(0);
+        await bg?.setVolumeAsync(0.5);
+        await bg?.playAsync();
+        isBackgroundPlayingRef.current = true;
       }
     } catch {}
   };
 
   const stopBackgroundMusic = async () => {
     try {
-      await backgroundMusicRef.current?.stopAsync();
-      setIsBackgroundPlaying(false);
+      const bg = backgroundMusicRef.current;
+      const st = await bg?.getStatusAsync();
+      if (st?.isLoaded && st.isPlaying) {
+        await bg?.stopAsync();
+      }
+      isBackgroundPlayingRef.current = false;
     } catch {}
   };
 
   const pauseBackgroundMusic = async () => {
     try {
-      if (isBackgroundPlaying) {
-        await backgroundMusicRef.current?.pauseAsync();
-        setIsBackgroundPlaying(false);
+      const bg = backgroundMusicRef.current;
+      const st = await bg?.getStatusAsync();
+      if (st?.isLoaded && st.isPlaying) {
+        await bg?.pauseAsync();
       }
+      isBackgroundPlayingRef.current = false;
     } catch {}
   };
 
   const resumeBackgroundMusic = async () => {
+    // резюм только если включён флаг
     await playBackgroundMusic();
   };
 

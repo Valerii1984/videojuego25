@@ -12,11 +12,10 @@ import {
   StyleProp,
   ViewStyle,
   Platform,
+  Keyboard,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useSound } from "../contexts/SoundContext";
 import * as ScreenOrientation from "expo-screen-orientation";
@@ -25,7 +24,7 @@ import { Asset } from "expo-asset";
 import Confetti from "../components/Confetti";
 import CustomAlert from "../components/CustomAlert";
 import MemoryCard from "../components/Card";
-import { RootParamList, Card } from "../types";
+import { Card } from "../types";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import styles from "./GameScreen.styles";
@@ -44,6 +43,12 @@ import Svg, {
 } from "react-native-svg";
 import { usePropConfig } from "../contexts/PropConfigContext";
 
+/** фон «приглушён» — не запускаем без явного включения */
+const ENABLE_BACKGROUND_MUSIC = false;
+
+/** ЛОКАЛЬНЫЕ ФАНФАРЫ (обход контекста) */
+const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
+
 // ───────────────────────── helpers ─────────────────────────
 const asArray = (val?: string | string[]): string[] | undefined => {
   if (!val) return undefined;
@@ -60,7 +65,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-// Нормалізуємо age у "бакет" для сітки/розмірів (4,6,8,10,12)
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -71,11 +75,9 @@ const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   ) as 4 | 6 | 8 | 10 | 12;
 };
 
-// Таймери
 type IntervalId = ReturnType<typeof setInterval>;
 type TimeoutId = ReturnType<typeof setTimeout>;
 
-// Иконка PlayAgain (не используем в авто-прогрессе, но пусть будет)
 const PlayIcon = () => (
   <Image
     source={require("../../assets/playAgain.png")}
@@ -83,7 +85,6 @@ const PlayIcon = () => (
   />
 );
 
-// ---- РОБОТЫ (анимация + голос) ----
 const ROBOT_SPRITES = [
   require("../../assets/hero/hero1/anim.webp"),
   require("../../assets/hero/hero2/anim.webp"),
@@ -102,7 +103,6 @@ const ROBOT_VOICES = [
   require("../../assets/hero/hero6/hero.m4a"),
 ] as const;
 
-// Витягнути джерело лицьової картинки з локального поля
 const getSrc = (c?: Card): string | undefined => {
   const anyCard = c as unknown as { __source?: { uri?: string } | string };
   if (!anyCard || !anyCard.__source) return undefined;
@@ -113,19 +113,9 @@ const getSrc = (c?: Card): string | undefined => {
 
 const GameScreen = () => {
   const { language } = useLanguage();
-  const {
-    playNotificationSound,
-    playSuccessSound,
-    playBackgroundMusic,
-    stopSuccessSound,
-    // pauseBackgroundMusic, // не используем, музыку не останавливаем
-    // resumeBackgroundMusic,
-  } = useSound();
+  const { playNotificationSound, playBackgroundMusic } = useSound(); // фанфары играем локально
 
-  const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>();
-  const route = useRoute();
   const cfg = usePropConfig();
-
   if (!cfg) {
     return (
       <View
@@ -141,12 +131,8 @@ const GameScreen = () => {
     );
   }
 
-  const incomingAge = (route.params as { age?: number } | undefined)?.age;
-  const age = useMemo(
-    () => Math.max(2, incomingAge ?? cfg.age),
-    [incomingAge, cfg.age]
-  );
-  const gridLevel = useMemo(() => toGridLevel(age), [age]); // 4|6|8|10|12
+  const [age, setAge] = useState<number>(Math.max(2, cfg.age));
+  const gridLevel = useMemo(() => toGridLevel(age), [age]);
   const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
 
   const [cards, setCards] = useState<Card[]>([]);
@@ -164,21 +150,17 @@ const GameScreen = () => {
   const timer = useRef<IntervalId | null>(null);
   const completionTimers = useRef<TimeoutId[]>([]);
 
-  const [isInitialized, setIsInitialized] = useState(false);
   const [hintActive, setHintActive] = useState<number[]>([]);
   const [smileVisible, setSmileVisible] = useState<number | null>(null);
   const [showCongrats, setShowCongrats] = useState(false);
   const [showPlayAgain, setShowPlayAgain] = useState(false);
   const [isGameActive, setIsGameActive] = useState(true);
 
-  // Дуга — полностью контролируем видимость флагом
   const [arcVisible, setArcVisible] = useState(false);
 
-  // Робот текущего совпадения + очередь роботов на раунд
   const [activeRobotIndex, setActiveRobotIndex] = useState<number>(0);
   const robotsOrderRef = useRef<number[]>([]);
 
-  // Предзагруженные URI голосов роботов
   const robotVoiceUrisRef = useRef<(string | null)[]>([
     null,
     null,
@@ -199,6 +181,11 @@ const GameScreen = () => {
   const hintScale = useSharedValue(1);
   const congratsPulse = useSharedValue(1.05);
 
+  /** ——— ГАРАНТ ФАНФАР ——— */
+  const successPlayedRef = useRef(false);
+  const fanfareRef = useRef<Audio.Sound | null>(null);
+  const fanfareLoadedRef = useRef(false);
+
   const PLAY_AGAIN_OFFSET = 110;
   const PLAY_AGAIN_CAP = 0.78;
   const playAgainTop = Math.min(
@@ -206,7 +193,7 @@ const GameScreen = () => {
     height * 0.6 + PLAY_AGAIN_OFFSET
   );
 
-  // ───────────── фон/рубашка/лиця — только из пропсов ─────────────
+  // выбираем картинки только из пропсов
   const selectedBackground = useMemo(() => {
     const candidates = asArray(cfg.background);
     const uri =
@@ -225,7 +212,7 @@ const GameScreen = () => {
     return Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : [];
   }, [cfg.frontCardSide, gridLevel, age]);
 
-  // ───────────── анімації ─────────────
+  // анимации
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -247,15 +234,15 @@ const GameScreen = () => {
     opacity: 1,
   }));
 
-  // ───────────── жизненный цикл ─────────────
   useEffect(() => {
+    // LANDSCAPE
     if (!isWeb) {
       ScreenOrientation.lockAsync(
         ScreenOrientation.OrientationLock.LANDSCAPE
       ).catch(() => {});
     }
 
-    // Предзагружаем голоса роботов (надёжное воспроизведение на Android)
+    // предзагрузка голосов роботов
     (async () => {
       try {
         const assets = await Promise.all(
@@ -267,46 +254,132 @@ const GameScreen = () => {
         );
         robotVoiceUrisRef.current = assets;
       } catch {
-        // если что — fallback потом на notificationSound
         robotVoiceUrisRef.current = [null, null, null, null, null, null];
       }
     })();
 
-    if (!isInitialized) {
-      generateCards();
-      setIsInitialized(true);
-    }
+    // ПРЕДЗАГРУЗКА ФАНФАР
+    (async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        const a = Asset.fromModule(FANFARE);
+        await a.downloadAsync();
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: a.localUri ?? a.uri },
+          { shouldPlay: false }
+        );
+        await sound.setVolumeAsync(1.0);
+        fanfareRef.current = sound;
+        fanfareLoadedRef.current = true;
+      } catch (e) {
+        console.warn("Fanfare preload failed", e);
+        fanfareLoadedRef.current = false;
+      }
+    })();
 
+    const kbShow = Keyboard.addListener("keyboardDidShow", () => {});
+    const kbHide = Keyboard.addListener("keyboardDidHide", () => {});
+    return () => {
+      kbShow.remove();
+      kbHide.remove();
+      completionTimers.current.forEach(clearTimeout);
+      completionTimers.current = [];
+      fanfareRef.current?.unloadAsync().catch(() => {});
+    };
+  }, []);
+
+  // таймер и (опц.) фон
+  useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
     if (gridLevel >= 8) {
-      playBackgroundMusic().catch(() => {});
+      if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic().catch(() => {});
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
+    return () => {
+      if (timer.current) clearInterval(timer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gridLevel]);
 
-    if (showCongrats && isGameActive) {
-      playSuccessSound().catch(() => {});
+  // ЛОКАЛЬНЫЕ ФАНФАРЫ
+  const playFanfareLocal = async () => {
+    try {
+      // если не загружено — повторим загрузку на лету
+      if (!fanfareLoadedRef.current || !fanfareRef.current) {
+        const a = Asset.fromModule(FANFARE);
+        await a.downloadAsync();
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: a.localUri ?? a.uri },
+          { shouldPlay: false }
+        );
+        await sound.setVolumeAsync(1.0);
+        fanfareRef.current = sound;
+        fanfareLoadedRef.current = true;
+      }
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+      await fanfareRef.current!.setPositionAsync(0);
+      await fanfareRef.current!.setVolumeAsync(1.0);
+      await fanfareRef.current!.replayAsync();
+    } catch (e) {
+      console.warn("Fanfare play error", e);
+    }
+  };
+
+  // триггер в момент «Congrats»
+  useEffect(() => {
+    const go = async () => {
+      if (!(showCongrats && isGameActive)) return;
+      if (successPlayedRef.current) return;
+      successPlayedRef.current = true;
+      await playFanfareLocal();
+      // контрольный повтор через 300мс (если первый не стартанёт)
+      setTimeout(() => {
+        fanfareRef.current
+          ?.getStatusAsync()
+          .then((s) => {
+            if (!s?.isLoaded || !s.isPlaying) {
+              playFanfareLocal();
+            }
+          })
+          .catch(() => {});
+      }, 300);
+
+      // анимация «сияния»
       congratsPulse.value = withRepeat(
         withTiming(1.2, { duration: 2000 }),
         -1,
         true
       );
-    }
-
-    return () => {
-      if (timer.current) clearInterval(timer.current);
     };
+    go();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gridLevel, isInitialized, showCongrats, isGameActive]);
+  }, [showCongrats, isGameActive]);
 
-  // ───────────── проиграть голос робота (через предзагруженный URI) ─────────────
+  // генерация
+  useEffect(() => {
+    generateCards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [age]);
+
   const playRobotVoice = async (idx: number) => {
     try {
       const uri = robotVoiceUrisRef.current[idx];
       if (!uri) throw new Error("no-uri");
-      // гарантируем режим (миксуется с фоном)
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         staysActiveInBackground: false,
@@ -319,17 +392,20 @@ const GameScreen = () => {
       await sound.playAsync();
       setTimeout(() => sound.unloadAsync().catch(() => {}), 2500);
     } catch {
-      // запасной вариант
-      playNotificationSound().catch(() => {});
+      // нет голоса — пропускаем
     }
   };
 
-  // ───────────── генерация колоды ─────────────
   const generateCards = () => {
+    completionTimers.current.forEach((t) => clearTimeout(t));
+    completionTimers.current = [];
+
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
+
+    successPlayedRef.current = false; // новый раунд — можно снова играть фанфары
 
     const pairs = pairsNeeded;
     const uniqFront = Array.from(new Set(externalFrontList));
@@ -342,15 +418,31 @@ const GameScreen = () => {
       return;
     }
 
-    // Скидываем статистику
-    statsOffsetY.value = -100;
-    statsOpacity.value = 0;
+    setTime(0);
+    setMoves(0);
+    setMatchedCards([]);
+    setSelectedCards([]);
+    setShowConfetti(false);
+    setIsFlipping(false);
+    setHintActive([]);
+    setSmileVisible(null);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    setShowUpgradePrompt(false);
+    setIsGameActive(true);
 
-    // Очерёдность роботов без повторов (если пар больше 6 — зациклим)
+    arcOffsetY.value = height;
+    arcOpacity.value = 0;
+    arcOffsetY.value = withTiming(0, { duration: 500 });
+    arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
+      if (finished) runOnJS(setArcVisible)(true);
+    });
+    statsOffsetY.value = withTiming(0, { duration: 500 });
+    statsOpacity.value = withTiming(1, { duration: 500 });
+
     const base = [0, 1, 2, 3, 4, 5];
     robotsOrderRef.current = shuffle(base);
 
-    // Выбор лиц и разворот в пары
     const chosen = uniqFront
       .slice()
       .sort(() => Math.random() - 0.5)
@@ -358,7 +450,6 @@ const GameScreen = () => {
       .map((u) => ({ source: { uri: u } }));
     const selectedValues = chosen.flatMap((x) => [x, x]);
 
-    // Карточки
     const cardPairs: Card[] = selectedValues
       .map((val, index) => ({
         id: index,
@@ -371,31 +462,7 @@ const GameScreen = () => {
       .sort(() => Math.random() - 0.5);
 
     setCards(cardPairs);
-    setSelectedCards([]);
-    setMatchedCards([]);
-    setShowConfetti(false);
-    setIsFlipping(false);
-    setTime(0);
-    setMoves(0);
-    setHintActive([]);
-    setSmileVisible(null);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    setShowUpgradePrompt(false);
-    setIsGameActive(true);
 
-    // Показ дуги (вход) — без лишних тёмных оверлеев
-    // ПЕРЕДВИНУЛИ setArcVisible В КОНЕЦ АНИМАЦИИ
-    arcOffsetY.value = height;
-    arcOpacity.value = 0;
-    arcOffsetY.value = withTiming(0, { duration: 500 });
-    arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
-      if (finished) runOnJS(setArcVisible)(true); // Включаем дугу только ПОСЛЕ анимации
-    });
-    statsOffsetY.value = withTiming(0, { duration: 500 });
-    statsOpacity.value = withTiming(1, { duration: 500 });
-
-    // Автопоказ для 2x2
     if (gridLevel === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
@@ -412,12 +479,11 @@ const GameScreen = () => {
     }
 
     if (gridLevel >= 8) {
-      playBackgroundMusic().catch(() => {});
+      if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic().catch(() => {});
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
   };
 
-  // Звёзды — по бакету
   const getStars = (lvlBucket: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
     if (lvlBucket < 8) return 0;
     let maxTime = 30;
@@ -465,15 +531,13 @@ const GameScreen = () => {
         const matchDelay: TimeoutId = setTimeout(() => {
           if (!isGameActive) return;
 
-          // Выбор робота по порядку совпадений
-          const matchIndex = Math.floor((matchedCards.length + 2) / 2) - 1; // 0-based
+          const matchIndex = Math.floor((matchedCards.length + 2) / 2) - 1;
           const order = robotsOrderRef.current.length
             ? robotsOrderRef.current
             : [0, 1, 2, 3, 4, 5];
           const robotIdx = order[matchIndex % order.length];
           setActiveRobotIndex(robotIdx);
 
-          // Голос робота (не останавливая фон)
           playRobotVoice(robotIdx).catch(() => {});
 
           const newMatched = [...matchedCards, firstId, secondId];
@@ -507,8 +571,6 @@ const GameScreen = () => {
               const starsEarned = getStars(gridLevel, time, moves);
               setTotalStars((prev) => prev + starsEarned);
 
-              // Уводим дугу вниз и полностью скрываем до следующего уровня (без вспышек)
-              // УБРАЛИ setTimeout — достаточно анимации
               arcOffsetY.value = withTiming(
                 height,
                 { duration: 700 },
@@ -517,22 +579,36 @@ const GameScreen = () => {
               arcOpacity.value = withTiming(0, { duration: 700 });
               statsOffsetY.value = withTiming(height, { duration: 700 });
               statsOpacity.value = withTiming(0, { duration: 700 });
-              // Убрали: setTimeout(() => setArcVisible(false), 750);
 
               const congratsTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowCongrats(true);
                 setShowConfetti(true);
+
+                // дубль-страховка — сразу играем фанфары
+                if (!successPlayedRef.current) {
+                  successPlayedRef.current = true;
+                  playFanfareLocal();
+                  setTimeout(() => {
+                    fanfareRef.current
+                      ?.getStatusAsync()
+                      .then((s) => {
+                        if (!s?.isLoaded || !s.isPlaying) {
+                          playFanfareLocal();
+                        }
+                      })
+                      .catch(() => {});
+                  }, 300);
+                }
               }, 900);
               completionTimers.current.push(congratsTimer);
 
-              // Переход на следующий уровень
               const nextTimer: TimeoutId = setTimeout(() => {
                 if (!isGameActive) return;
                 setShowPlayAgain(false);
                 const nextAge = age + 2;
                 const goTimer: TimeoutId = setTimeout(() => {
-                  navigation.replace("MagicMemoryGameScreen", { age: nextAge });
+                  setAge(nextAge);
                 }, 400);
                 completionTimers.current.push(goTimer);
               }, 2100);
@@ -745,7 +821,6 @@ const GameScreen = () => {
     generateCards();
   };
 
-  // Валідація пропсів
   const cfgOk =
     selectedBackground &&
     selectedBack &&
@@ -788,7 +863,7 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* дуга + бордер — только если arcVisible; убран тёмный оверлей */}
+      {/* дуга + бордер — только если arcVisible */}
       {arcVisible && (
         <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
           <Svg
@@ -1000,7 +1075,7 @@ const GameScreen = () => {
           </View>
         )}
 
-        {/* Play Again — отключено в авто-прогрессе */}
+        {/* Play Again — (опционально) */}
         {showPlayAgain && (
           <Animated.View
             style={[
@@ -1037,7 +1112,7 @@ const GameScreen = () => {
           </Animated.View>
         )}
 
-        {/* апгрейд-диалог не показываем */}
+        {/* апгрейд-диалог скрыт */}
         <View style={{ position: "relative", zIndex: 3000 }}>
           <CustomAlert
             visible={false}

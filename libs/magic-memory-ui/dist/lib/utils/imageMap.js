@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 const images = {
     "adaptiv-icon": require("../../assets/adaptive-icon.png"),
     "back-button": require("../../assets/back-button.png"),
@@ -49,4 +47,4 @@ const images = {
     star: require("../../assets/star_cursor.png"),
     translation: require("../../assets/translation.png"),
 };
-exports.default = images;
+export default images;

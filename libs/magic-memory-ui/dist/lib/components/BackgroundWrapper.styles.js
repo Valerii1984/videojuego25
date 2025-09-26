@@ -1,26 +1,24 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_native_1 = require("react-native");
-const { width, height } = react_native_1.Dimensions.get('window');
-const styles = react_native_1.StyleSheet.create({
+import { StyleSheet, Dimensions } from 'react-native';
+const { width, height } = Dimensions.get('window');
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#16103E',
         overflow: 'hidden',
     },
     fullGradient: {
-        ...react_native_1.StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFillObject,
         height: '100%',
     },
     overlay: {
-        ...react_native_1.StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(0, 0, 0, 0.25)',
     },
     content: {
-        ...react_native_1.StyleSheet.absoluteFillObject,
+        ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
         paddingBottom: 20,
     },
 });
-exports.default = styles;
+export default styles;

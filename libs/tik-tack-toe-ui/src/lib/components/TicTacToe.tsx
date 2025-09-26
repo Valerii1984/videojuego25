@@ -26,6 +26,13 @@ import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
 
+/** ───────────── Флаги управления ─────────────
+ * Фоновая музыка «припрятана»: не стартует, пока флаг false.
+ * Бейдж языка скрыт: показывается только при true.
+ */
+const ENABLE_BACKGROUND_MUSIC = false;
+const SHOW_LANG_BADGE = false;
+
 /** Мини-словарик для бейджа языка. */
 const STRINGS: Record<Language, { langBadge: (code: Language) => string }> = {
   en: { langBadge: (c) => c.toUpperCase() },
@@ -257,7 +264,10 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           ScreenOrientation.OrientationLock.LANDSCAPE
         );
       } catch {}
-      playBackgroundMusic();
+      // 🔇 BGM припрятана:
+      if (ENABLE_BACKGROUND_MUSIC) {
+        playBackgroundMusic();
+      }
       setIsGameStarted(true);
 
       introAnim.setValue(0);
@@ -288,9 +298,10 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     })();
 
     return () => {
-      mounted = false;
+      // Останавливаем на выходе
       stopBackgroundMusic();
-      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      let t = hintTimerRef.current;
+      if (t) clearTimeout(t);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -304,7 +315,11 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     resetAnimations();
     hintScale.setValue(1);
     setIsGameStarted(true);
-    playBackgroundMusic();
+
+    // 🔇 По умолчанию не включаем BGM
+    if (ENABLE_BACKGROUND_MUSIC) {
+      playBackgroundMusic();
+    }
 
     introAnim.setValue(0);
     Animated.timing(introAnim, {
@@ -410,7 +425,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
 
         {/* Верхняя панель (без Back) */}
         <View style={styles.topBar} pointerEvents="box-none">
-          {!!lang && (
+          {SHOW_LANG_BADGE && !!lang && (
             <View style={styles.centerTopBar}>
               <Text style={{ color: "#fff", fontFamily: "Fredoka" }}>
                 {L.langBadge(lang)}

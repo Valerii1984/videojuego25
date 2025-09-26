@@ -1,14 +1,8 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MagicMemory = void 0;
-const jsx_runtime_1 = require("react/jsx-runtime");
-const native_1 = require("@react-navigation/native");
-const AppNavigator_1 = require("./navigation/AppNavigator");
-const PropConfigContext_1 = require("./contexts/PropConfigContext");
-const LanguageContext_1 = require("./contexts/LanguageContext");
-const MagicMemory = ({ props }) => {
-    // ВАЖНО: убрали initialLanguage — ваш LanguageProvider его не принимает.
-    // Язык из props.lang вы можете выставлять внутри GameScreen, если в контексте есть setter.
-    return ((0, jsx_runtime_1.jsx)(PropConfigContext_1.PropConfigProvider, { value: props, children: (0, jsx_runtime_1.jsx)(LanguageContext_1.LanguageProvider, { children: (0, jsx_runtime_1.jsx)(native_1.NavigationContainer, { children: (0, jsx_runtime_1.jsx)(AppNavigator_1.AppNavigator, {}) }) }) }));
+import { jsx as _jsx } from "react/jsx-runtime";
+import GameScreen from "./screens/GameScreen"; // ← один экран, без Stack/NavigationContainer
+import { PropConfigProvider } from "./contexts"; // ← ИМПОРТ ЧЕРЕЗ БАРРЕЛЬ!
+/** Публичный компонент библиотеки: провайдер + экран. */
+export const MagicMemory = ({ props }) => {
+    return (_jsx(PropConfigProvider, { value: props, children: _jsx(GameScreen, {}) }));
 };
-exports.MagicMemory = MagicMemory;
+export default MagicMemory;

@@ -1,15 +1,9 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.roundButtonStyles = void 0;
-const colors_1 = __importDefault(require("../colors"));
-const react_native_1 = require("react-native");
-exports.roundButtonStyles = react_native_1.StyleSheet.create({
+import colors from "../colors";
+import { StyleSheet } from "react-native";
+export const roundButtonStyles = StyleSheet.create({
     base: {
-        backgroundColor: colors_1.default.purple,
-        borderColor: colors_1.default.lightPurple,
+        backgroundColor: colors.purple,
+        borderColor: colors.lightPurple,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3,

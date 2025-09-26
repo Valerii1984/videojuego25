@@ -8,8 +8,6 @@ export type { MagicMemoryProps } from "./lib/magic-memory-ui";
 export type { MagicMemoryPropConfig, LevelKey } from "./lib/types/props";
 
 // Навигация
-export { AppNavigator } from "./lib/navigation/AppNavigator";
-export * from "./lib/navigation/AppNavigator";
 
 // ⬇️ Ассеты робота, чтобы удобно импортировать в приложении
 export const heroRobot = require("./lib/assets/hero/hero.webp");

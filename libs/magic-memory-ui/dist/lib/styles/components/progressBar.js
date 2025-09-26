@@ -1,7 +1,5 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_native_1 = require("react-native");
-const progressBarStyles = react_native_1.StyleSheet.create({
+import { StyleSheet } from 'react-native';
+const progressBarStyles = StyleSheet.create({
     container: {
         width: 420,
         height: 52,
@@ -24,4 +22,4 @@ const progressBarStyles = react_native_1.StyleSheet.create({
         overflow: 'hidden',
     },
 });
-exports.default = progressBarStyles;
+export default progressBarStyles;

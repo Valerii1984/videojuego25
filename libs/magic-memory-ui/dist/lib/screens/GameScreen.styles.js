@@ -1,8 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const react_native_1 = require("react-native");
-const { width, height } = react_native_1.Dimensions.get("window");
-const styles = react_native_1.StyleSheet.create({
+import { StyleSheet, Dimensions } from "react-native";
+const { width, height } = Dimensions.get("window");
+const styles = StyleSheet.create({
     grid: {
         flexGrow: 1,
         justifyContent: "flex-end",
@@ -202,4 +200,4 @@ const styles = react_native_1.StyleSheet.create({
         backgroundColor: "rgba(0, 0, 0, 0.03)",
     },
 });
-exports.default = styles;
+export default styles;
