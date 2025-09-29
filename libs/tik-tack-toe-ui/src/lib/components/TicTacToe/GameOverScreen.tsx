@@ -7,70 +7,106 @@ import {
   Animated,
   View,
 } from "react-native";
-import { Player } from "../../types/tic-tac-toe";
-import { Language } from "../../types/props";
 import LottieView from "lottie-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Audio } from "expo-av";
 import { Image as ExpoImage } from "expo-image";
 import Confetti from "./litlecomponent/Confeti";
+import { Player } from "../../types/tic-tac-toe";
 
 const { width, height } = Dimensions.get("window");
 
-const STR: Record<
-  Language,
-  { win: string; lose: string; draw: string; playAgain: string }
-> = {
-  en: {
+/** ───────────── i18n (как в Magic Memory, +pl-PL и +uk-UA) ───────────── */
+
+type LocaleTag =
+  | "en-US"
+  | "de-DE"
+  | "es-ES"
+  | "es-419"
+  | "fr-FR"
+  | "it-IT"
+  | "pt-BR"
+  | "pl-PL"
+  | "uk-UA";
+
+/** Принимаем любые входы и приводим к нашим тегам */
+const normalizeLocale = (raw?: string): LocaleTag => {
+  const s = (raw || "").toLowerCase().replace("_", "-");
+
+  if (s.startsWith("de")) return "de-DE";
+  if (s === "es-419") return "es-419";
+  if (s.startsWith("es")) return "es-ES";
+  if (s.startsWith("fr")) return "fr-FR";
+  if (s.startsWith("it")) return "it-IT";
+  if (s === "pt-br" || s.startsWith("pt")) return "pt-BR";
+
+  // Новое: польский и украинский
+  if (s.startsWith("pl")) return "pl-PL";
+  if (s.startsWith("uk") || s === "ua" || s.startsWith("uk-ua")) return "uk-UA";
+
+  return "en-US";
+};
+
+type TKey = "win" | "lose" | "draw" | "playAgain";
+
+const STR: Record<LocaleTag, Record<TKey, string>> = {
+  "en-US": {
     win: "Congratulations!",
     lose: "You Lose",
     draw: "It's a draw!",
     playAgain: "Play Game Again",
   },
-  es: {
-    win: "¡Felicidades!",
-    lose: "Has perdido",
-    draw: "¡Empate!",
-    playAgain: "Jugar de nuevo",
-  },
-  pt: {
-    win: "Parabéns!",
-    lose: "Você perdeu",
-    draw: "Empate!",
-    playAgain: "Jogar novamente",
-  },
-  pl: {
-    win: "Gratulacje!",
-    lose: "Przegrałeś",
-    draw: "Remis!",
-    playAgain: "Zagraj ponownie",
-  },
-  uk: {
-    win: "Вітаємо!",
-    lose: "Ви програли",
-    draw: "Нічия!",
-    playAgain: "Грати ще раз",
-  },
-  de: {
+  "de-DE": {
     win: "Glückwunsch!",
     lose: "Du hast verloren",
     draw: "Unentschieden!",
     playAgain: "Nochmal spielen",
   },
-  fr: {
+  "es-ES": {
+    win: "¡Felicidades!",
+    lose: "Has perdido",
+    draw: "¡Empate!",
+    playAgain: "Jugar de nuevo",
+  },
+  "es-419": {
+    win: "¡Felicidades!",
+    lose: "Perdiste",
+    draw: "¡Empate!",
+    playAgain: "Jugar otra vez",
+  },
+  "fr-FR": {
     win: "Félicitations !",
     lose: "Vous avez perdu",
     draw: "Match nul !",
     playAgain: "Rejouer",
   },
-  it: {
+  "it-IT": {
     win: "Congratulazioni!",
     lose: "Hai perso",
     draw: "Pareggio!",
     playAgain: "Gioca di nuovo",
   },
+  "pt-BR": {
+    win: "Parabéns!",
+    lose: "Você perdeu",
+    draw: "Empate!",
+    playAgain: "Jogar novamente",
+  },
+  "pl-PL": {
+    win: "Gratulacje!",
+    lose: "Przegrałeś",
+    draw: "Remis!",
+    playAgain: "Zagraj ponownie",
+  },
+  "uk-UA": {
+    win: "Вітаємо!",
+    lose: "Ви програли",
+    draw: "Нічия!",
+    playAgain: "Грати ще раз",
+  },
 };
 
+/** ───────────── ассеты роботов ───────────── */
 const HERO = {
   hero1: {
     anim: require("../../assets/hero/hero1/anim.webp"),
@@ -100,6 +136,7 @@ const HERO = {
 
 type HeroKey = keyof typeof HERO;
 
+/** ───────────── пропсы ───────────── */
 interface GameOverScreenProps {
   winner: Player | "draw" | null;
   gameComplete: boolean;
@@ -108,14 +145,16 @@ interface GameOverScreenProps {
   animatedStyle: any;
   onPauseBackground?: () => void;
   onResumeBackground?: () => void;
-  lang?: Language;
+  /** Может прийти и короткий код (en/es/pt/pl/uk/de/fr/it) — нормализуем */
+  lang?: string;
 }
 
+/** ───────────── стикер-робот ───────────── */
 const HeroSticker: React.FC<{
   hero: HeroKey;
   size?: number;
   opacity?: number;
-  onReady?: () => void; // <- сообщаем, когда картинка реально загрузилась
+  onReady?: () => void;
 }> = ({ hero, size, opacity = 1, onReady }) => {
   const source = HERO[hero].anim;
   const base = Math.min(width, height) * 0.55;
@@ -137,6 +176,7 @@ const HeroSticker: React.FC<{
   );
 };
 
+/** ───────────── основной экран ───────────── */
 const GameOverScreen: React.FC<GameOverScreenProps> = ({
   winner,
   gameComplete,
@@ -147,13 +187,14 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
   onResumeBackground,
   lang = "en",
 }) => {
-  const T = STR[lang] ?? STR.en;
+  const locale = normalizeLocale(lang);
+  const T = STR[locale] ?? STR["en-US"];
 
   const [showVictoryEffects, setShowVictoryEffects] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [showHero, setShowHero] = useState(false);
   const [heroKey, setHeroKey] = useState<HeroKey | null>(null);
-  const [heroReady, setHeroReady] = useState(false); // <- флаг готовности изображения
+  const [heroReady, setHeroReady] = useState(false);
 
   const contentScale = useRef(new Animated.Value(0)).current;
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -162,7 +203,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
   const runIdRef = useRef(0);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  // сколько держим героя на экране до появления поздравления
+  // Сколько держим героя до появления поздравления
   const ROBOT_MS = 2800;
 
   const chooseHero = useMemo<HeroKey | null>(() => {
@@ -189,7 +230,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     }
   };
 
-  // Основной цикл показа: показать героя -> (подождать ROBOT_MS) -> показать контент/конфетти
+  // Порядок показа: герой → (ROBOT_MS) → контент/конфетти
   useEffect(() => {
     if (!gameComplete) {
       clearTimersAndSound();
@@ -208,15 +249,14 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
     onPauseBackground?.();
     setShowHero(true);
-    setHeroReady(false); // ждем фактическую загрузку кадра
+    setHeroReady(false);
 
-    // Фолбэк: если по какой-то причине onLoadEnd не пришел — не зависаем
+    // Фолбэк на случай, если onLoadEnd не пришёл
     const readyFallback = setTimeout(() => {
       setHeroReady((prev) => prev || true);
     }, 800);
     timersRef.current.push(readyFallback);
 
-    // Через ROBOT_MS скрываем героя и показываем финальный экран/конфетти
     const contentTimer = setTimeout(() => {
       if (runIdRef.current !== myRunId) return;
       setShowHero(false);
@@ -238,7 +278,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameComplete, chooseHero]);
 
-  // 🔊 Старт голоса — только после того, как герой реально загрузился и показан
+  // Голос робота — стартуем после фактической загрузки кадра
   useEffect(() => {
     if (!gameComplete || !chooseHero || !showHero || !heroReady) return;
 
@@ -260,21 +300,21 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
         soundRef.current = sound;
         await sound.playAsync();
       } catch {}
-    }, 120); // маленькая пауза после onLoadEnd, чтобы кадр гарантированно оказался на экране
+    }, 120);
     timersRef.current.push(voiceTimer);
 
     return () => {
-      // очищаемся в общем clearTimersAndSound
+      // очищается в clearTimersAndSound
     };
   }, [gameComplete, chooseHero, showHero, heroReady]);
 
-  // Пульсация кнопки
+  // Мягкая пульсация кнопки
   useEffect(() => {
     if (gameComplete) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(buttonScale, {
-            toValue: 1.1,
+            toValue: 1.08,
             duration: 800,
             useNativeDriver: true,
           }),
@@ -297,7 +337,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
       style={[styles.container, animatedStyle]}
       pointerEvents="box-none"
     >
-      {/* Робот — слой без перехвата тачей */}
+      {/* Робот */}
       {showHero && heroKey && (
         <View style={styles.heroWrap} pointerEvents="none">
           <HeroSticker hero={heroKey} onReady={() => setHeroReady(true)} />
@@ -323,7 +363,14 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
               style={styles.gradientTextContainer}
             >
               <View style={styles.centeredTextWrapper}>
-                <Text style={styles.gameOverText}>{message}</Text>
+                <Text
+                  style={styles.gameOverText}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.6}
+                >
+                  {message}
+                </Text>
               </View>
             </LinearGradient>
 
@@ -396,6 +443,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 100,
+    paddingHorizontal: 16,
   },
   gradientTextContainer: {
     width: "100%",
@@ -407,21 +455,22 @@ const styles = StyleSheet.create({
   centeredTextWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    minWidth: 400,
+    maxWidth: Math.min(width * 0.9, 820),
+    alignSelf: "center",
   },
   gameOverText: {
-    fontFamily: "Fredoka",
-    fontWeight: "600",
-    width: "100%",
-    fontSize: 48,
-    height: 50,
-    color: "white",
+    color: "#FFF",
+    fontFamily: "FredokaExtraBold",
+    fontSize: 64,
     textAlign: "center",
-    lineHeight: 38,
-    letterSpacing: 0,
+    includeFontPadding: false, // не резать верх/низ на Android
+    textAlignVertical: "center",
+    lineHeight: Math.round(64 * 1.08),
+    paddingHorizontal: 8, // чтобы первый глиф не обрезался
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+    overflow: "visible",
   },
   playAgainButton: {
     backgroundColor: "#FFC965",
@@ -430,7 +479,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 30,
-    width: 300,
+    minWidth: 260,
     alignSelf: "center",
     alignItems: "center",
   },

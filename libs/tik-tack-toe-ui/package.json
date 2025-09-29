@@ -1,6 +1,6 @@
 {
   "name": "@game/tic-tac-toe-ui",
-  "version": "0.0.33",
+  "version": "0.0.36",
   "private": false,
   "sideEffects": false,
   "main": "dist/src/lib/index.js",

@@ -53,6 +53,20 @@ const DEFAULTS = {
 const resolveImage = (src?: string | ImageSourcePropType) =>
   typeof src === "string" ? { uri: src } : src;
 
+/** Нормализация длинных тэгов в короткий код для GameOverScreen */
+type ShortLang = "en" | "es" | "pt" | "pl" | "uk" | "de" | "fr" | "it";
+const toShortLang = (raw?: string): ShortLang => {
+  const s = (raw || "").toLowerCase().replace("_", "-");
+  if (s.startsWith("pl")) return "pl";
+  if (s.startsWith("uk") || s === "ua" || s.startsWith("uk-ua")) return "uk";
+  if (s.startsWith("de")) return "de";
+  if (s === "es-419" || s.startsWith("es")) return "es";
+  if (s.startsWith("fr")) return "fr";
+  if (s.startsWith("it")) return "it";
+  if (s === "pt-br" || s.startsWith("pt")) return "pt";
+  return "en";
+};
+
 type ShortProps = {
   props?: {
     lang?: Language;
@@ -80,6 +94,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
 
   const lang: Language = (p.lang as Language) ?? DEFAULTS.lang;
   const L = STRINGS[lang] ?? STRINGS.en;
+  const shortLang = toShortLang(lang); // <- передаём сюда
 
   const {
     background,
@@ -444,7 +459,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
         animatedStyle={congratsContainerStyle}
         onPauseBackground={pauseBackgroundMusic}
         onResumeBackground={resumeBackgroundMusic}
-        lang={lang}
+        lang={shortLang} // передаём короткий код; в GameOverScreen он мапится на нужный тег
       />
     </ImageBackground>
   );
@@ -488,7 +503,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
-
     right: 30,
   },
   hintGlow: {
