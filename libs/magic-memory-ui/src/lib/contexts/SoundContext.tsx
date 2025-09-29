@@ -9,10 +9,6 @@ import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
 import { AppState, AppStateStatus } from "react-native";
 
-/** Единственная настройка:
- *  false — фон НЕ играет нигде (требование «только фанфары»)
- *  true  — фон можно включать методом playBackgroundMusic()
- */
 const ENABLE_BACKGROUND_MUSIC = false;
 
 const SoundContext = createContext<{
@@ -38,7 +34,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [soundEnabled] = useState(true);
 
-  // Голоса роботов
   const heroVoicesRef = useRef<(Audio.Sound | null)[]>([
     null,
     null,
@@ -48,14 +43,11 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     null,
   ]);
 
-  // Фанфары (успех)
   const successSoundRef = useRef<Audio.Sound | null>(null);
 
-  // Фон (не автозапускаем)
   const backgroundMusicRef = useRef<Audio.Sound | null>(null);
   const isBackgroundPlayingRef = useRef(false);
 
-  // Фоллбек уведомление
   const fallbackNotifRef = useRef<Audio.Sound | null>(null);
 
   const appState = useRef(AppState.currentState);
@@ -65,7 +57,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
 
     const loadSounds = async () => {
       try {
-        // Общие аудионастройки
         await Audio.setAudioModeAsync({
           allowsRecordingIOS: false,
           staysActiveInBackground: false,
@@ -74,7 +65,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           playThroughEarpieceAndroid: false,
         });
 
-        // --- ROBOT VOICES ---
         const HERO_MODULES = [
           require("../../assets/hero/hero1/hero.m4a"),
           require("../../assets/hero/hero2/hero.m4a"),
@@ -100,7 +90,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         }
 
-        // --- Fallback notification ---
         try {
           const fb = Asset.fromModule(
             require("../../assets/sounds/notification-sound-effect.mp3")
@@ -116,7 +105,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn("Fallback notification load failed:", e);
         }
 
-        // --- Success fanfare ---
         try {
           const succ = Asset.fromModule(
             require("../../assets/sounds/success-fanfare-trumpets.mp3")
@@ -132,7 +120,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           console.warn("Success fanfare load failed:", e);
         }
 
-        // --- Background (loop) — НЕ автозапускаем ---
         try {
           const bg = Asset.fromModule(
             require("../../assets/sounds/background-music.wav")
@@ -144,7 +131,7 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
           );
           backgroundMusicRef.current = background;
           await backgroundMusicRef.current.setVolumeAsync(0.5);
-          isBackgroundPlayingRef.current = false; // по умолчанию тишина
+          isBackgroundPlayingRef.current = false;
         } catch (e) {
           console.warn("Background music load failed:", e);
         }
@@ -155,7 +142,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
 
     loadSounds();
 
-    // Пауза/резюм приложения — фон не возобновляем, если выключен флаг
     const handleAppStateChange = async (next: AppStateStatus) => {
       if (
         appState.current === "active" &&
@@ -191,7 +177,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, [soundEnabled]);
 
-  // Временное приглушение фона (если он вообще играет)
   const duckBackgroundTemporarily = async (ms = 700) => {
     const bg = backgroundMusicRef.current;
     if (!bg || !isBackgroundPlayingRef.current) return;
@@ -203,7 +188,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch {}
   };
 
-  // ▶️ Нотификация/голос робота
   const playNotificationSound = async (heroIndex?: number) => {
     if (!soundEnabled) return;
     try {
@@ -220,7 +204,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // 🎺 Фанфары победы — всегда звучат (даже при выключенном фоне)
   const playSuccessSound = async () => {
     if (!soundEnabled) return;
     try {
@@ -245,7 +228,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch {}
   };
 
-  // ⏯ Управление фоном — учитывает флаг ENABLE_BACKGROUND_MUSIC
   const playBackgroundMusic = async () => {
     if (!ENABLE_BACKGROUND_MUSIC) return;
     try {
@@ -283,7 +265,6 @@ export const SoundProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const resumeBackgroundMusic = async () => {
-    // резюм только если включён флаг
     await playBackgroundMusic();
   };
 

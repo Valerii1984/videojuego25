@@ -1,20 +1,20 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, useWindowDimensions, } from 'react-native';
-import Svg, { Circle, Defs, RadialGradient, Stop, Path, LinearGradient, Rect, } from 'react-native-svg';
+import { useMemo, useState, useEffect } from "react";
+import { View, StyleSheet, useWindowDimensions, } from "react-native";
+import Svg, { Circle, Defs, RadialGradient, Stop, Path, LinearGradient, Rect, } from "react-native-svg";
 const wrapperStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#16103E', // Базовый фон для мгновенного отображения
+        backgroundColor: "#16103E",
     },
     overlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.25)',
+        backgroundColor: "rgba(0, 0, 0, 0.25)",
     },
     content: {
         ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center',
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
 const BackgroundWrapper = ({ children, overlay = true }) => {

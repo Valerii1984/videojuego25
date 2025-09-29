@@ -30,13 +30,12 @@ const SplashScreen = ({ fontsLoaded }) => {
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
         }
     }, []);
-    // Фиксированный размер шрифта, без системного масштабирования
     const baseFontSize = 48;
     return (_jsxs(BackgroundWrapper, { children: [_jsx(StatusBar, { hidden: Platform.OS !== "web", translucent: true, backgroundColor: "transparent", style: "light" }), _jsxs(View, { style: styles.contentContainer, children: [_jsxs(View, { style: styles.titleWrapper, children: [_jsx(Image, { source: require("../../assets/Frame_Type3_03_Decor.png"), style: styles.titleGlow }), _jsx(Image, { source: require("../../assets/TitlFon.png"), style: styles.titleFon }), _jsxs(Text, { style: [
                                     styles.titleText,
                                     {
                                         fontSize: baseFontSize,
-                                        lineHeight: baseFontSize * 1.05, // Уменьшенный множитель для меньшего пространства
+                                        lineHeight: baseFontSize * 1.05,
                                     },
                                 ], allowFontScaling: false, numberOfLines: 2, ellipsizeMode: "tail", children: ["Magic", "\n", "Memory"] })] }), _jsxs(View, { style: styles.playButtonContainer, children: [_jsx(Animated.View, { style: [styles.playGlow, glowPulseStyle] }), _jsx(Animated.View, { style: [buttonStyle], children: _jsx(View, { style: {
                                         borderWidth: 6,
@@ -49,7 +48,7 @@ const SplashScreen = ({ fontsLoaded }) => {
                                         elevation: 10,
                                     }, children: _jsx(TouchableOpacity, { activeOpacity: 0.8, onPressIn: () => (pressAnimation.value = 0.95), onPressOut: () => (pressAnimation.value = 1), onPress: () => {
                                             playNotificationSound();
-                                            navigation.replace('MagicMemoryLoadingScreen');
+                                            navigation.replace("MagicMemoryLoadingScreen");
                                         }, children: _jsx(LinearGradient, { colors: [
                                                 "rgba(199, 128, 255, 0.9)",
                                                 "rgba(117, 0, 209, 0.9)",

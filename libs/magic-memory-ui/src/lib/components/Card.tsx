@@ -15,7 +15,6 @@ interface CardProps {
   frontImage: any;
 }
 
-// Цвета для группы facecard
 const facecardBackgroundColors: Record<string, string> = {
   boy: "#00FF00",
   donkey: "#FFFF00",
@@ -173,7 +172,6 @@ const MemoryCard: React.FC<CardProps> = memo(
           disabled={disabled}
           activeOpacity={1}
         >
-          {/* Фиолетовая рамка совпадения */}
           {item.isMatched && (
             <Animated.View
               pointerEvents="none"
@@ -192,7 +190,6 @@ const MemoryCard: React.FC<CardProps> = memo(
             />
           )}
 
-          {/* Передняя сторона */}
           <Animated.View
             style={[
               styles.cardSide,
@@ -208,7 +205,6 @@ const MemoryCard: React.FC<CardProps> = memo(
               },
             ]}
           >
-            {/* Голубая рамка поверх передней стороны */}
             {!item.isMatched && (
               <Animated.View
                 pointerEvents="none"
@@ -232,7 +228,6 @@ const MemoryCard: React.FC<CardProps> = memo(
             />
           </Animated.View>
 
-          {/* Оранжевая рамка-подсказка */}
           {isHinted && !item.isFlipped && !item.isMatched && (
             <Animated.View
               style={{
@@ -250,7 +245,6 @@ const MemoryCard: React.FC<CardProps> = memo(
             />
           )}
 
-          {/* Задняя сторона */}
           <Animated.View
             style={[
               styles.cardSide,
@@ -266,7 +260,6 @@ const MemoryCard: React.FC<CardProps> = memo(
               },
             ]}
           >
-            {/* Голубая рамка поверх задней стороны */}
             {!item.isMatched && (
               <Animated.View
                 pointerEvents="none"

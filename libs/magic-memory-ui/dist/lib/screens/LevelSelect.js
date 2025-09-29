@@ -9,7 +9,7 @@ import globalStyles from "../styles/global-styles";
 import styles from "./LevelSelect.styles";
 import CardImage from "../../assets/card-1.jpg";
 import FrameDecor from "../../assets/Frame_Type3_03_Decor1.png";
-import GroupImage from "../../assets/Group1359.png"; // фон под карточками
+import GroupImage from "../../assets/Group1359.png";
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, } from "react-native-reanimated";
 export const GAME_LEVELS = [
     { cards: 4, difficulty: "Very Easy" },
@@ -18,7 +18,6 @@ export const GAME_LEVELS = [
     { cards: 10, difficulty: "Hard" },
     { cards: 12, difficulty: "Very Hard" },
 ];
-// ================= LevelCard =================
 const LevelCard = ({ cards, difficulty, index, isSelected, onPress, cardWidth, cardHeight, }) => {
     const scale = useSharedValue(1);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -64,7 +63,6 @@ const LevelCard = ({ cards, difficulty, index, isSelected, onPress, cardWidth, c
                                         height: 38,
                                     } })), _jsxs(View, { style: styles.cardIconWrapper, children: [_jsx(Image, { source: CardImage, style: styles.cardIcon }), _jsx(View, { style: styles.cardIconBorder })] })] }) })] }), _jsx(Text, { style: styles.difficulty, children: difficulty })] }, index));
 };
-// ================= LevelSelectScreen =================
 const LevelSelectScreen = () => {
     const navigation = useNavigation();
     const { width } = useWindowDimensions();
@@ -75,16 +73,14 @@ const LevelSelectScreen = () => {
         setSelectedLevel(index);
         navigation.navigate("MagicMemoryGameScreen", { age: level.cards });
     };
-    // Размер карточек
     const cardWidth = 100;
     const cardHeight = 90;
     const baseGap = 40;
-    // Адаптивный gap
     const paddingHorizontal = width * 0.05;
     const gap = Math.max(15, Math.min(baseGap, (width - levels.length * cardWidth - 2 * paddingHorizontal) /
         (levels.length - 1) || baseGap));
     const renderLevelItem = ({ item, index, }) => (_jsx(LevelCard, { cards: item.cards, difficulty: item.difficulty, index: index, isSelected: selectedLevel === index, onPress: () => handleLevelSelect(index), cardWidth: cardWidth, cardHeight: cardHeight }));
-    return (_jsxs(BackgroundWrapper, { children: [_jsx(StatusBar, { hidden: true }), _jsx(TouchableOpacity, { onPress: () => navigation.navigate('MagicMemorySplashScreen'), style: [globalStyles.roundButton.topLeft, styles.backButton], children: _jsx(BackIcon, { style: { alignSelf: "center" } }) }), _jsx(Text, { style: [styles.title, { marginTop: 0 }], children: "CHOOSE DIFFICULTY" }), _jsxs(View, { style: {
+    return (_jsxs(BackgroundWrapper, { children: [_jsx(StatusBar, { hidden: true }), _jsx(TouchableOpacity, { onPress: () => navigation.navigate("MagicMemorySplashScreen"), style: [globalStyles.roundButton.topLeft, styles.backButton], children: _jsx(BackIcon, { style: { alignSelf: "center" } }) }), _jsx(Text, { style: [styles.title, { marginTop: 0 }], children: "CHOOSE DIFFICULTY" }), _jsxs(View, { style: {
                     position: "relative",
                     width: "100%",
                     alignItems: "center",
@@ -92,10 +88,10 @@ const LevelSelectScreen = () => {
                     marginTop: 0,
                 }, children: [_jsx(Image, { source: GroupImage, style: {
                             position: "absolute",
-                            bottom: 25, // оставляем привязку снизу
+                            bottom: 25,
                             left: -40,
                             width: width + 130,
-                            height: 160, // фикс вместо width * 0.22
+                            height: 160,
                             resizeMode: "stretch",
                         } }), _jsx(FlatList, { data: levels, renderItem: renderLevelItem, keyExtractor: (item, index) => index.toString(), horizontal: true, showsHorizontalScrollIndicator: false, contentContainerStyle: {
                             alignItems: "center",

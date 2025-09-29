@@ -15,7 +15,7 @@ import globalStyles from "../styles/global-styles";
 import styles from "./LevelSelect.styles";
 import CardImage from "../../assets/card-1.jpg";
 import FrameDecor from "../../assets/Frame_Type3_03_Decor1.png";
-import GroupImage from "../../assets/Group1359.png"; // фон под карточками
+import GroupImage from "../../assets/Group1359.png";
 import { RootParamList } from "../types/index";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Animated, {
@@ -32,7 +32,6 @@ export const GAME_LEVELS = [
   { cards: 12, difficulty: "Very Hard" },
 ];
 
-// ================= LevelCard =================
 const LevelCard = ({
   cards,
   difficulty,
@@ -133,7 +132,6 @@ const LevelCard = ({
   );
 };
 
-// ================= LevelSelectScreen =================
 const LevelSelectScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootParamList>>();
   const { width } = useWindowDimensions();
@@ -147,12 +145,10 @@ const LevelSelectScreen = () => {
     navigation.navigate("MagicMemoryGameScreen", { age: level.cards });
   };
 
-  // Размер карточек
   const cardWidth = 100;
   const cardHeight = 90;
   const baseGap = 40;
 
-  // Адаптивный gap
   const paddingHorizontal = width * 0.05;
   const gap = Math.max(
     15,
@@ -185,9 +181,8 @@ const LevelSelectScreen = () => {
     <BackgroundWrapper>
       <StatusBar hidden={true} />
 
-      {/* Кнопка назад */}
       <TouchableOpacity
-        onPress={() => navigation.navigate('MagicMemorySplashScreen')}
+        onPress={() => navigation.navigate("MagicMemorySplashScreen")}
         style={[globalStyles.roundButton.topLeft, styles.backButton]}
       >
         <BackIcon style={{ alignSelf: "center" }} />
@@ -204,20 +199,18 @@ const LevelSelectScreen = () => {
           marginTop: 0,
         }}
       >
-        {/* Адаптивный фон */}
         <Image
           source={GroupImage}
           style={{
             position: "absolute",
-            bottom: 25, // оставляем привязку снизу
+            bottom: 25,
             left: -40,
             width: width + 130,
-            height: 160, // фикс вместо width * 0.22
+            height: 160,
             resizeMode: "stretch",
           }}
         />
 
-        {/* Список уровней */}
         <FlatList
           data={levels}
           renderItem={renderLevelItem}

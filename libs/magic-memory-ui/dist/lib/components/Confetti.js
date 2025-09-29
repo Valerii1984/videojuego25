@@ -7,8 +7,8 @@ const Confetti = ({ isActive, level }) => {
             position: "absolute",
             top: 0,
             left: 0,
-            width: "100%", // Растянуть по ширине экрана
-            height: "100%", // Растянуть по высоте экрана
+            width: "100%",
+            height: "100%",
             zIndex: 1000,
         } }));
 };

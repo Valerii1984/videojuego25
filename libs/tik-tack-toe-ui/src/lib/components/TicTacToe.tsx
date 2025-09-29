@@ -1,4 +1,3 @@
-// libs/tik-tack-toe-ui/src/lib/components/TicTacToe.tsx
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -14,8 +13,7 @@ import {
   Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-// import BackIcon from "../assets/svg/back-icon"; // ⛔️ Бэк удалён
-// Типы (оставляю импорт, если у тебя используется где-то ещё)
+
 import type { TicTacToeProps } from "../types/tic-tac-toe";
 import type { Language } from "../types/props";
 import GameBoard from "./TicTacToe/GameBoard";
@@ -26,14 +24,9 @@ import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
 
-/** ───────────── Флаги управления ─────────────
- * Фоновая музыка «припрятана»: не стартует, пока флаг false.
- * Бейдж языка скрыт: показывается только при true.
- */
 const ENABLE_BACKGROUND_MUSIC = false;
 const SHOW_LANG_BADGE = false;
 
-/** Мини-словарик для бейджа языка. */
 const STRINGS: Record<Language, { langBadge: (code: Language) => string }> = {
   en: { langBadge: (c) => c.toUpperCase() },
   es: { langBadge: (c) => c.toUpperCase() },
@@ -52,7 +45,7 @@ const DEFAULTS = {
   name2: "Player 2",
   photo1: require("../assets/6.png") as ImageSourcePropType,
   photo2: require("../assets/81.png") as ImageSourcePropType,
-  // Lottie json
+
   winGif: require("../assets/animations/success-animation.json") as any,
   lang: "en" as Language,
 };
@@ -60,7 +53,6 @@ const DEFAULTS = {
 const resolveImage = (src?: string | ImageSourcePropType) =>
   typeof src === "string" ? { uri: src } : src;
 
-/** Поддержка короткого пропса `props`, как в MagicMemory */
 type ShortProps = {
   props?: {
     lang?: Language;
@@ -68,13 +60,12 @@ type ShortProps = {
     userAvatar?: string;
     enemyCard?: string;
   };
-  // + бэккомпат, если кто-то ещё передаёт напрямую
+
   lang?: Language;
   background?: string;
   userAvatar?: string;
   enemyCard?: string;
 
-  // старые поля (бэккомпат)
   backgroundImage?: ImageSourcePropType;
   name1?: string;
   name2?: string;
@@ -84,11 +75,9 @@ type ShortProps = {
 };
 
 const TicTacToe: React.FC<ShortProps> = (rawProps) => {
-  // Нормализуем вход: либо rawProps.props, либо сами rawProps
   const p = (rawProps.props ?? rawProps) as Required<ShortProps>["props"] &
     Omit<ShortProps, "props">;
 
-  // ✅ язык берём только из пропса (как в Magic Memory)
   const lang: Language = (p.lang as Language) ?? DEFAULTS.lang;
   const L = STRINGS[lang] ?? STRINGS.en;
 
@@ -97,7 +86,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     userAvatar,
     enemyCard,
 
-    // поддержка старых полей
     backgroundImage = DEFAULTS.backgroundImage,
     name1 = DEFAULTS.name1,
     name2 = DEFAULTS.name2,
@@ -116,23 +104,19 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
 
   const [boardHeight, setBoardHeight] = useState<number>(0);
 
-  // Подсказка (hint)
   const [showHint, setShowHint] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Держим высоту экрана, чтобы опустить кнопку "?" к середине
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
   useEffect(() => {
     const sub = Dimensions.addEventListener("change", ({ window }) => {
       setScreenH(window.height);
     });
     return () => {
-      // @ts-ignore
       sub?.remove?.();
     };
   }, []);
 
-  // Звук
   const {
     playBackgroundMusic,
     stopBackgroundMusic,
@@ -143,7 +127,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     resumeBackgroundMusic,
   } = useSound();
 
-  // Логика игры
   const {
     setIsGameStarted,
     gameState,
@@ -152,17 +135,15 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     handleCellPress,
     resetGame,
   } = useTicTacToeGame(() => {
-    // звук клика по клетке / системное уведомление
     playNotificationSound();
   });
 
-  // Анимации
   const {
     player1Style,
     player2Style,
     gameContainerStyle,
     congratsContainerStyle,
-    // backIconStyle, // ⛔️ бэка нет
+
     resetAnimations,
   } = useTicTacToeAnimations(
     gameState.currentPlayer,
@@ -170,7 +151,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     gameComplete
   );
 
-  // Интро контента
   const introAnim = useRef(new Animated.Value(0)).current;
   const introStyle = {
     opacity: introAnim,
@@ -184,13 +164,11 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     ],
   };
 
-  // Дуга (эллипс)
   const ellipseTranslateY = useRef(
     new Animated.Value(Dimensions.get("window").height)
   ).current;
   const ellipseOpacity = useRef(new Animated.Value(0)).current;
 
-  // Подсказка: микро-анимация кнопки
   const hintScale = useRef(new Animated.Value(1)).current;
   const hintAnimatedStyle = {
     transform: [{ scale: hintScale }],
@@ -204,12 +182,9 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     }).start();
   };
 
-  // ⬇️ Скрываем статусбар + нижнюю навигацию (Android), как в MagicMemory
   useEffect(() => {
-    // StatusBar
     StatusBar.setHidden(true, "none");
 
-    // Android Navigation Bar
     (async () => {
       if (Platform.OS === "android") {
         try {
@@ -229,7 +204,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
       }
     })();
 
-    // Повторно скрываем навбар при смене размеров/ориентации
     const sub = Dimensions.addEventListener("change", async () => {
       if (Platform.OS === "android") {
         try {
@@ -240,7 +214,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     });
 
     return () => {
-      // Возвращаем, если нужно
       StatusBar.setHidden(false, "none");
       if (Platform.OS === "android") {
         (async () => {
@@ -250,12 +223,11 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           } catch {}
         })();
       }
-      // @ts-ignore — совместимость API RN <-> Expo SDK
+
       sub?.remove?.();
     };
   }, []);
 
-  // Старт: LANDSCAPE, музыка, анимации
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -264,7 +236,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           ScreenOrientation.OrientationLock.LANDSCAPE
         );
       } catch {}
-      // 🔇 BGM припрятана:
+
       if (ENABLE_BACKGROUND_MUSIC) {
         playBackgroundMusic();
       }
@@ -298,15 +270,12 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     })();
 
     return () => {
-      // Останавливаем на выходе
       stopBackgroundMusic();
       let t = hintTimerRef.current;
       if (t) clearTimeout(t);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Сброс (Play Again)
   const handleResetGame = () => {
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setShowHint(false);
@@ -316,7 +285,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     hintScale.setValue(1);
     setIsGameStarted(true);
 
-    // 🔇 По умолчанию не включаем BGM
     if (ENABLE_BACKGROUND_MUSIC) {
       playBackgroundMusic();
     }
@@ -355,7 +323,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
         testID="game-content"
       >
         <View>
-          {/* ДУГА */}
           <Animated.Image
             source={require("../assets/ellipse.png")}
             style={{
@@ -400,7 +367,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
               photo1={resolvedPhoto1}
               photo2={resolvedPhoto2}
               onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
-              // ✅ ключевое — проводка подсказки
               showHint={showHint}
               onHintUsed={() => setShowHint(false)}
               onVictory={playVictorySound}
@@ -423,7 +389,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           </Animated.View>
         </View>
 
-        {/* Верхняя панель (без Back) */}
         <View style={styles.topBar} pointerEvents="box-none">
           {SHOW_LANG_BADGE && !!lang && (
             <View style={styles.centerTopBar}>
@@ -433,7 +398,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
             </View>
           )}
 
-          {/* Кнопка подсказки — опущена к середине экрана */}
           <Animated.View
             style={[
               styles.hintButton,
@@ -449,7 +413,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
                 playNotificationSound();
                 animateHintButton(1.08);
 
-                // Показать подсказку и авто-скрыть
                 setShowHint(true);
                 if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
                 hintTimerRef.current = setTimeout(
@@ -525,7 +488,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1000,
-    // top задаётся динамически, right фиксируем:
+
     right: 30,
   },
   hintGlow: {

@@ -2,5 +2,4 @@
 export { MagicMemory } from "./lib/magic-memory-ui";
 export type { MagicMemoryProps } from "./lib/magic-memory-ui";
 export type { MagicMemoryPropConfig, LevelKey } from "./lib/types/props";
-export declare const heroRobot: any;
-export declare const heroRobotSound: any;
+export * from "./assets/hero";

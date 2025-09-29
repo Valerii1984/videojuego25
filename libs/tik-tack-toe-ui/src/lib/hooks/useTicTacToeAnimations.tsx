@@ -10,7 +10,7 @@ export const useTicTacToeAnimations = (
   gameComplete?: boolean
 ) => {
   const gameContainerAnim = useRef(new Animated.Value(0)).current;
-  const player1Anim = useRef(new Animated.Value(1)).current; // X сверху по умолчанию
+  const player1Anim = useRef(new Animated.Value(1)).current;
   const player2Anim = useRef(new Animated.Value(0)).current;
   const congratsAnim = useRef(new Animated.Value(0)).current;
   const backIconScale = useRef(new Animated.Value(1)).current;

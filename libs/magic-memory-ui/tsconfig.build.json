@@ -3,13 +3,12 @@
   "compilerOptions": {
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "noEmitOnError": false
+    "noEmitOnError": true
   },
   "include": ["src/**/*"],
   "exclude": [
     "src/**/*.spec.*",
     "src/**/*.test.*",
-    "src/test-setup.ts",
-    "src/lib/layout/layout-asdasdasdasdasd.tsx"
+    "src/test-setup.ts"
   ]
 }

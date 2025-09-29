@@ -1,40 +1,40 @@
-import { StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const styles = StyleSheet.create({
   progressContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 170,
     left: 200,
     width: 420,
     height: 53,
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   gradientBorder: {
     flex: 1,
     borderRadius: 20,
-    padding: 2, // толщина рамки
+    padding: 2,
   },
   innerBackground: {
     flex: 1,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    overflow: 'hidden',
+    backgroundColor: "rgba(0,0,0,0.8)",
+    overflow: "hidden",
   },
   progressFill: {
-    height: '100%',
+    height: "100%",
     borderRadius: 18,
-    backgroundColor: '#7500D1',
+    backgroundColor: "#7500D1",
   },
   loadingTextWrapper: {
-    position: 'absolute',
+    position: "absolute",
     top: 12.5,
-    left: '50%',
+    left: "50%",
     transform: [{ translateX: -50 }],
     height: 28,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   hourglass: {
     width: 28,
@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   loadingText: {
-    fontFamily: 'Fredoka',
+    fontFamily: "Fredoka",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     lineHeight: 22,
-    color: '#FFFFFF',
+    color: "#FFFFFF",
   },
   customBackPosition: {
     top: 40,

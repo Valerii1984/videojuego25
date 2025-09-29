@@ -13,7 +13,6 @@ function copyDir(src, dst) {
   }
 }
 
-// копируем обе папки с ассетами, если они есть
 const root = process.cwd();
 const targets = [
   path.join(root, "assets"),

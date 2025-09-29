@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Board, Player } from "../types/tic-tac-toe";
 
-/** Выбери режим бота: "easy" | "humanlike" | "strong" */
 const BOT_MODE: "easy" | "humanlike" | "strong" = "humanlike";
 
 type GameState = {
   board: Board;
-  currentPlayer: Player; // 'X' | 'O' | null
+  currentPlayer: Player;
   winner: Player | "draw" | null;
   winningLine: number[][] | null;
 };
@@ -18,7 +17,6 @@ const EMPTY_BOARD: Board = [
 ];
 
 const LINES: number[][][] = [
-  // rows
   [
     [0, 0],
     [0, 1],
@@ -50,7 +48,7 @@ const LINES: number[][][] = [
     [1, 2],
     [2, 2],
   ],
-  // diagonals
+
   [
     [0, 0],
     [1, 1],
@@ -95,53 +93,48 @@ function getEmptyCells(board: Board): number[][] {
   return cells;
 }
 
-/** Подсказка для игрока X: сначала выигрыш, потом блок, иначе первая пустая */
 function computeHintMoveForX(board: Board): number[] | null {
   const empties = getEmptyCells(board);
   if (empties.length === 0) return null;
 
-  // 1) можем выиграть X сейчас?
   for (const [r, c] of empties) {
     const tmp = clone(board);
     tmp[r][c] = "X";
     const { winner } = checkWinner(tmp);
     if (winner === "X") return [r, c];
   }
-  // 2) блокируем немедленную победу O
+
   for (const [r, c] of empties) {
     const tmp = clone(board);
     tmp[r][c] = "O";
     const { winner } = checkWinner(tmp);
     if (winner === "O") return [r, c];
   }
-  // 3) первая пустая
+
   return empties[0] ?? null;
 }
 
-/** Сильный бот (как раньше): выигрывает, блокирует, иначе первая пустая */
 function computeStrongMoveForO(board: Board): number[] | null {
   const empties = getEmptyCells(board);
   if (empties.length === 0) return null;
 
-  // 1) можем выиграть O сейчас?
   for (const [r, c] of empties) {
     const tmp = clone(board);
     tmp[r][c] = "O";
     const { winner } = checkWinner(tmp);
     if (winner === "O") return [r, c];
   }
-  // 2) блокируем немедленную победу X
+
   for (const [r, c] of empties) {
     const tmp = clone(board);
     tmp[r][c] = "X";
     const { winner } = checkWinner(tmp);
     if (winner === "X") return [r, c];
   }
-  // 3) первая пустая
+
   return empties[0] ?? null;
 }
 
-/** Почти случайный бот */
 function computeEasyMoveForO(board: Board): number[] | null {
   const empties = getEmptyCells(board);
   if (empties.length === 0) return null;
@@ -149,25 +142,19 @@ function computeEasyMoveForO(board: Board): number[] | null {
   return empties[idx] ?? null;
 }
 
-/** «Человечный новичок»: иногда ошибается, любит центр/углы */
 function computeHumanlikeMoveForO(board: Board): number[] | null {
   const empties = getEmptyCells(board);
   if (empties.length === 0) return null;
 
-  // Вероятности «ошибок/решений»
-  const takeWinProb = 0.7; // 70% заметить свою победу сразу
-  const blockProb = 0.7; // 70% заметить угрозу и заблокировать
-  const preferGoodProb = 0.6; // 60% предпочесть центр/углы перед рандомом
+  const takeWinProb = 0.7;
+  const blockProb = 0.7;
+  const preferGoodProb = 0.6;
 
-  // 1) иногда НЕ замечает победу
   const strongWin = computeStrongMoveForO(board);
   if (strongWin) {
-    if (rand() < takeWinProb) return strongWin; // замечает и добивает
-    // иначе «промахнулся» — идём дальше
+    if (rand() < takeWinProb) return strongWin;
   }
 
-  // 2) иногда НЕ блокирует немедленную победу X
-  // найдём угрозу X
   let blockMove: number[] | null = null;
   for (const [r, c] of empties) {
     const tmp = clone(board);
@@ -179,11 +166,9 @@ function computeHumanlikeMoveForO(board: Board): number[] | null {
     }
   }
   if (blockMove) {
-    if (rand() < blockProb) return blockMove; // заметил и заблокировал
-    // иначе «промахнулся» — идём дальше
+    if (rand() < blockProb) return blockMove;
   }
 
-  // 3) структура предпочтений (центр -> углы -> стороны)
   const center: number[][] = [[1, 1]];
   const corners: number[][] = [
     [0, 0],
@@ -202,7 +187,6 @@ function computeHumanlikeMoveForO(board: Board): number[] | null {
   const emptyCorners = corners.filter(([r, c]) => board[r][c] === null);
   const emptySides = sides.filter(([r, c]) => board[r][c] === null);
 
-  // 60% — выбрать по приоритету, иначе — чистый рандом
   if (rand() < preferGoodProb) {
     if (emptyCenter.length) return emptyCenter[0];
     if (emptyCorners.length)
@@ -211,7 +195,6 @@ function computeHumanlikeMoveForO(board: Board): number[] | null {
       return emptySides[Math.floor(rand() * emptySides.length)];
   }
 
-  // fallback: чисто случайный ход
   const idx = Math.floor(rand() * empties.length);
   return empties[idx] ?? null;
 }
@@ -241,7 +224,6 @@ export function useTicTacToeGame(playNotification?: () => void) {
 
   const gameComplete = state.winner !== null;
 
-  // Подсказка — для игрока X (не «тупит»)
   const bestMove = useMemo(
     () => computeHintMoveForX(state.board),
     [state.board]
@@ -250,8 +232,8 @@ export function useTicTacToeGame(playNotification?: () => void) {
   const handleCellPress = useCallback(
     (row: number, col: number) => {
       if (gameComplete) return;
-      if (state.currentPlayer !== "X") return; // ход бота — тапы блокируем
-      if (state.board[row][col] !== null) return; // занято — игнор
+      if (state.currentPlayer !== "X") return;
+      if (state.board[row][col] !== null) return;
 
       setState((prev) => {
         const next = clone(prev.board);
@@ -306,7 +288,6 @@ export function useTicTacToeGame(playNotification?: () => void) {
     });
   }, []);
 
-  // Авто-ход бота «O»
   useEffect(() => {
     if (gameComplete) return;
     if (state.currentPlayer !== "O") return;
@@ -321,7 +302,6 @@ export function useTicTacToeGame(playNotification?: () => void) {
         }
         const move = pickBotMove(prev.board);
         if (!move) {
-          // ничья
           const { winner, line } = checkWinner(prev.board);
           isProcessingBot.current = false;
           return { ...prev, winner: winner ?? "draw", winningLine: line };
@@ -349,7 +329,6 @@ export function useTicTacToeGame(playNotification?: () => void) {
     };
   }, [state.currentPlayer, state.board, gameComplete]);
 
-  // Совместимость с твоим компонентом
   const isGameStarted = true;
   const setIsGameStarted = (_: boolean) => {};
 

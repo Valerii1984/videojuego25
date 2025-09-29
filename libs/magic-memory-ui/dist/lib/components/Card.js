@@ -3,7 +3,6 @@ import { useEffect, useRef, memo } from "react";
 import { TouchableOpacity, Image, Animated } from "react-native";
 import images from "../utils/imageMap";
 import styles from "./Card.styles";
-// Цвета для группы facecard
 const facecardBackgroundColors = {
     boy: "#00FF00",
     donkey: "#FFFF00",

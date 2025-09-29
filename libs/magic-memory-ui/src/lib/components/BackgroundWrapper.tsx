@@ -1,10 +1,10 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   Dimensions,
   useWindowDimensions,
-} from 'react-native';
+} from "react-native";
 import Svg, {
   Circle,
   Defs,
@@ -13,21 +13,21 @@ import Svg, {
   Path,
   LinearGradient,
   Rect,
-} from 'react-native-svg';
+} from "react-native-svg";
 
 const wrapperStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#16103E', // Базовый фон для мгновенного отображения
+    backgroundColor: "#16103E",
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: "rgba(0, 0, 0, 0.25)",
   },
   content: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

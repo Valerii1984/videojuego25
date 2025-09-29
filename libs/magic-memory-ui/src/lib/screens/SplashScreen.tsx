@@ -61,7 +61,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
     }
   }, []);
 
-  // Фиксированный размер шрифта, без системного масштабирования
   const baseFontSize = 48;
 
   return (
@@ -73,7 +72,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
         style="light"
       />
       <View style={styles.contentContainer}>
-        {/* Заголовок */}
         <View style={styles.titleWrapper}>
           <Image
             source={require("../../assets/Frame_Type3_03_Decor.png")}
@@ -88,7 +86,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
               styles.titleText,
               {
                 fontSize: baseFontSize,
-                lineHeight: baseFontSize * 1.05, // Уменьшенный множитель для меньшего пространства
+                lineHeight: baseFontSize * 1.05,
               },
             ]}
             allowFontScaling={false}
@@ -99,7 +97,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
           </Text>
         </View>
 
-        {/* Кнопка Play */}
         <View style={styles.playButtonContainer}>
           <Animated.View style={[styles.playGlow, glowPulseStyle]} />
           <Animated.View style={[buttonStyle]}>
@@ -121,7 +118,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ fontsLoaded }) => {
                 onPressOut={() => (pressAnimation.value = 1)}
                 onPress={() => {
                   playNotificationSound();
-                  navigation.replace('MagicMemoryLoadingScreen');
+                  navigation.replace("MagicMemoryLoadingScreen");
                 }}
               >
                 <LinearGradient

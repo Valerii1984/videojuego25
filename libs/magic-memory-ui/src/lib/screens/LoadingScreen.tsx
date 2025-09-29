@@ -35,20 +35,15 @@ const LoadingScreen: React.FC = () => {
   const width = useSharedValue(0);
   const rotation = useSharedValue(0);
 
-  // Чистая функция перехода
   const goToLevelSelect = () => {
-    // navigation.replace("LevelSelect");
-
-    navigation.replace('MagicMemoryGameScreen', { age: GAME_LEVELS[0].cards });
+    navigation.replace("MagicMemoryGameScreen", { age: GAME_LEVELS[0].cards });
   };
 
   useEffect(() => {
-    // Запуск анимации прогресса
     width.value = withTiming(420, { duration: 2000 }, () => {
       runOnJS(goToLevelSelect)();
     });
 
-    // Запуск анимации песочных часов
     rotation.value = withRepeat(
       withSequence(
         withTiming(180, { duration: 1000, easing: Easing.linear }),
@@ -73,15 +68,13 @@ const LoadingScreen: React.FC = () => {
     <BackgroundWrapper>
       <StatusBar hidden={true} />
 
-      {/* Кнопка Back */}
       <TouchableOpacity
-        onPress={() => navigation.replace('MagicMemorySplashScreen')}
+        onPress={() => navigation.replace("MagicMemorySplashScreen")}
         style={[globalStyles.roundButton.topLeft, styles.customBackPosition]}
       >
         <BackIcon style={{ alignSelf: "center" }} />
       </TouchableOpacity>
 
-      {/* Прогрессбар */}
       <View style={styles.progressContainer}>
         <LinearGradient
           colors={["#e2dce7ff", "#7500D1"]}
@@ -94,7 +87,6 @@ const LoadingScreen: React.FC = () => {
           </View>
         </LinearGradient>
 
-        {/* Текст и песочные часы */}
         <View style={styles.loadingTextWrapper}>
           <Animated.Image
             source={require("../../assets/hourglass.png")}
