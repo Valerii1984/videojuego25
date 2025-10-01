@@ -1,9 +1,10 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { View, Text, TouchableOpacity, FlatList, StatusBar, Image, ImageBackground, StyleSheet, Dimensions, Keyboard, } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, StatusBar, Image, ImageBackground, StyleSheet, Dimensions, Keyboard, Platform, } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
+import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
 import Confetti from "../components/Confetti";
@@ -17,7 +18,7 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Path, } from "rea
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
-const ENABLE_BACKGROUND_MUSIC = false;
+const ENABLE_BACKGROUND_MUSIC = true;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 const STRINGS = {
     "en-US": {
@@ -83,9 +84,18 @@ const STRINGS = {
         match: "Acerto!",
         upgradePrompt: "Subir para um nível mais difícil?",
     },
+    "pl-PL": {
+        time: "Czas",
+        moves: "Ruchy",
+        stars: "Gwiazdy",
+        congrats: "Gratulacje!",
+        playAgain: "Zagraj ponownie",
+        match: "Para!",
+        upgradePrompt: "Przejść na trudniejszy poziom?",
+    },
 };
 const normalizeLocale = (raw) => {
-    const s = (raw || "").toLowerCase();
+    const s = (raw || "").toLowerCase().replace("_", "-");
     if (s.startsWith("de"))
         return "de-DE";
     if (s === "es-419")
@@ -96,10 +106,10 @@ const normalizeLocale = (raw) => {
         return "fr-FR";
     if (s.startsWith("it"))
         return "it-IT";
-    if (s === "pt-br" || s === "pt_br" || s === "ptbr")
+    if (s === "pt-br" || s === "ptbr" || s.startsWith("pt"))
         return "pt-BR";
-    if (s.startsWith("pt"))
-        return "pt-BR";
+    if (s.startsWith("pl"))
+        return "pl-PL";
     return "en-US";
 };
 const asArray = (val) => !val ? undefined : Array.isArray(val) ? val : [val];
@@ -129,7 +139,8 @@ const getSrc = (c) => {
         : anyCard.__source.uri;
 };
 const GameScreen = () => {
-    const { playBackgroundMusic, playNotificationSound } = useSound();
+    const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } = useSound();
+    const unlockedRef = useRef(false);
     const cfg = usePropConfig();
     if (!cfg) {
         return (_jsx(View, { style: [
@@ -160,12 +171,13 @@ const GameScreen = () => {
     const [showCongrats, setShowCongrats] = useState(false);
     const [showPlayAgain, setShowPlayAgain] = useState(false);
     const [isGameActive, setIsGameActive] = useState(true);
-    // дуга
+    // дуга и её видимость
     const [arcVisible, setArcVisible] = useState(false);
     const [activeRobotIndex, setActiveRobotIndex] = useState(0);
     const robotsOrderRef = useRef([]);
     const robotVoiceUrisRef = useRef(new Array(6).fill(null));
     const { width, height } = Dimensions.get("window");
+    // shared values
     const arcOffsetY = useSharedValue(0);
     const arcOpacity = useSharedValue(1);
     const statsOffsetY = useSharedValue(0);
@@ -190,7 +202,10 @@ const GameScreen = () => {
         const uri = candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
         return uri ? { uri } : null;
     }, [cfg.backCardSide, gridLevel, age]);
-    const externalFrontList = useMemo(() => (Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : []), [cfg.frontCardSide, gridLevel, age]);
+    const externalFrontList = useMemo(() => Array.isArray(cfg.frontCardSide)
+        ? cfg.frontCardSide
+        : [], [cfg.frontCardSide, gridLevel, age]);
+    // animated styles
     const arcAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{ translateY: arcOffsetY.value }],
         opacity: arcOpacity.value,
@@ -203,14 +218,45 @@ const GameScreen = () => {
         transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
         opacity: playAgainOpacity.value,
     }));
-    const hintAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
-        opacity: 1,
-    }));
+    // ✅ ФИКС ТИПОВ для TS2322: создаём строго типизированный массив transform
+    const hintAnimatedStyle = useAnimatedStyle(() => {
+        const t = [
+            { translateY: arcOffsetY.value },
+            { scale: hintScale.value },
+        ];
+        return {
+            transform: t,
+            opacity: arcOpacity.value,
+        };
+    });
     const congratsAnimatedStyle = useAnimatedStyle(() => ({
         transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
         opacity: 1,
     }));
+    // Прячем статус-бар + навбар Android
+    useEffect(() => {
+        const hideBars = async () => {
+            try {
+                StatusBar.setHidden(true, "none");
+                if (Platform.OS === "android") {
+                    await NavigationBar.setVisibilityAsync("hidden");
+                    await NavigationBar.setBehaviorAsync("overlay-swipe");
+                }
+            }
+            catch { }
+        };
+        hideBars();
+        const subShow = Keyboard.addListener("keyboardDidShow", hideBars);
+        const subHide = Keyboard.addListener("keyboardDidHide", hideBars);
+        return () => {
+            subShow.remove();
+            subHide.remove();
+            StatusBar.setHidden(false, "none");
+            if (Platform.OS === "android") {
+                NavigationBar.setVisibilityAsync("visible").catch(() => { });
+            }
+        };
+    }, []);
     useEffect(() => {
         if (!isWeb) {
             ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => { });
@@ -250,17 +296,17 @@ const GameScreen = () => {
                 fanfareLoadedRef.current = false;
             }
         })();
-        const kbShow = Keyboard.addListener("keyboardDidShow", () => { });
-        const kbHide = Keyboard.addListener("keyboardDidHide", () => { });
+        if (ENABLE_BACKGROUND_MUSIC) {
+            playBackgroundMusic().catch(() => { });
+        }
         return () => {
             var _a;
-            kbShow.remove();
-            kbHide.remove();
             completionTimers.current.forEach(clearTimeout);
             completionTimers.current = [];
             (_a = fanfareRef.current) === null || _a === void 0 ? void 0 : _a.unloadAsync().catch(() => { });
         };
     }, []);
+    // Таймер + BGM на ≥8
     useEffect(() => {
         if (timer.current) {
             clearInterval(timer.current);
@@ -322,6 +368,7 @@ const GameScreen = () => {
     }, [showCongrats, isGameActive]);
     useEffect(() => {
         generateCards();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [age]);
     const playRobotVoice = async (idx) => {
         try {
@@ -352,8 +399,7 @@ const GameScreen = () => {
             clearInterval(timer.current);
             timer.current = null;
         }
-        successPlayedRef.current = false;
-        const pairs = pairsNeeded;
+        const pairs = Math.floor(age / 2);
         const uniqFront = Array.from(new Set(externalFrontList));
         const backOk = !!(selectedBack === null || selectedBack === void 0 ? void 0 : selectedBack.uri);
         const bgOk = !!((_a = selectedBackground === null || selectedBackground === void 0 ? void 0 : selectedBackground.source) === null || _a === void 0 ? void 0 : _a.uri);
@@ -374,9 +420,12 @@ const GameScreen = () => {
         setShowPlayAgain(false);
         setShowUpgradePrompt(false);
         setIsGameActive(true);
-        // уводим/возвращаем дугу — и от неё зависит видимость hint
+        // Дуговой оверлей + синхронное появление кнопки «?»
+        arcVisible && setArcVisible(false);
         arcOffsetY.value = height;
         arcOpacity.value = 0;
+        statsOffsetY.value = height;
+        statsOpacity.value = 0;
         arcOffsetY.value = withTiming(0, { duration: 500 });
         arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
             if (finished)
@@ -417,10 +466,11 @@ const GameScreen = () => {
             }, 1000);
             completionTimers.current.push(showTimer);
         }
+        if (ENABLE_BACKGROUND_MUSIC) {
+            playBackgroundMusic().catch(() => { });
+        }
         if (gridLevel >= 8) {
-            if (ENABLE_BACKGROUND_MUSIC)
-                playBackgroundMusic().catch(() => { });
-            timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
+            timer.current = setInterval(() => setTime((p) => p + 1), 1000);
         }
     };
     const getStars = (lvlBucket, t, m) => {
@@ -491,7 +541,7 @@ const GameScreen = () => {
                             setRoundsCompleted(newRounds);
                             const starsEarned = getStars(gridLevel, time, moves);
                             setTotalStars((prev) => prev + starsEarned);
-                            // уводим дугу/панель (hint привязан к дуге — исчезнет)
+                            // уводим дугу и кнопку «?» вместе
                             arcOffsetY.value = withTiming(height, { duration: 700 }, (finished) => finished && runOnJS(setArcVisible)(false));
                             arcOpacity.value = withTiming(0, { duration: 700 });
                             statsOffsetY.value = withTiming(height, { duration: 700 });
@@ -501,20 +551,6 @@ const GameScreen = () => {
                                     return;
                                 setShowCongrats(true);
                                 setShowConfetti(true);
-                                if (!successPlayedRef.current) {
-                                    successPlayedRef.current = true;
-                                    (async () => {
-                                        await playFanfareLocal();
-                                        setTimeout(() => {
-                                            var _a;
-                                            (_a = fanfareRef.current) === null || _a === void 0 ? void 0 : _a.getStatusAsync().then((s) => {
-                                                if (!(s === null || s === void 0 ? void 0 : s.isLoaded) || !s.isPlaying) {
-                                                    playFanfareLocal();
-                                                }
-                                            }).catch(() => { });
-                                        }, 300);
-                                    })();
-                                }
                             }, 900);
                             completionTimers.current.push(congratsTimer);
                             const nextTimer = setTimeout(() => {
@@ -532,7 +568,7 @@ const GameScreen = () => {
                         else {
                             setIsFlipping(false);
                         }
-                    }, 2000);
+                    }, 500);
                     completionTimers.current.push(smileTimer);
                 }, 500);
                 completionTimers.current.push(matchDelay);
@@ -659,17 +695,17 @@ const GameScreen = () => {
                             }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: _jsx(ExpoImage, { source: ROBOT_SPRITES[activeRobotIndex], style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
                     })()] }));
     };
-    const handleHintPressIn = () => (hintScale.value = 1.1);
-    const handleHintPressOut = () => (hintScale.value = 1);
-    const handlePlayAgainPressIn = () => {
-        playAgainScale.value = 1.1;
-        playAgainOpacity.value = 0.8;
-    };
-    const handlePlayAgainPressOut = () => {
-        playAgainScale.value = 1;
-        playAgainOpacity.value = 1;
-        const tmo = setTimeout(() => handlePlayAgain(), 300);
-        completionTimers.current.push(tmo);
+    const onFirstTouch = (_e) => {
+        if (unlockedRef.current)
+            return;
+        unlockedRef.current = true;
+        if (ENABLE_BACKGROUND_MUSIC) {
+            resumeBackgroundMusic().catch(() => { });
+        }
+        StatusBar.setHidden(true, "none");
+        if (Platform.OS === "android") {
+            NavigationBar.setVisibilityAsync("hidden").catch(() => { });
+        }
     };
     const handlePlayAgain = () => {
         setShowConfetti(false);
@@ -687,27 +723,18 @@ const GameScreen = () => {
             ], children: [_jsx(Text, { style: { color: "#fff", fontSize: 16, marginBottom: 8 }, children: "Invalid props. Expected:" }), _jsx(Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 background: at least one image URL" }), _jsx(Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 backCardSide: at least one image URL" }), _jsxs(Text, { style: { color: "#ccc" }, children: ["\u2022 frontCardSide: at least ", pairsNeeded, " unique image URLs"] })] }));
     }
     const { width: W, height: H } = Dimensions.get("window");
-    return (_jsxs(View, { style: { flex: 1, width: "100%", height: "100%" }, children: [_jsx(ImageBackground, { source: selectedBackground.source, style: [
+    const showHintButton = isGameActive && !showCongrats && !showPlayAgain && arcVisible;
+    return (_jsxs(View, { style: { flex: 1, width: "100%", height: "100%" }, onStartShouldSetResponder: () => true, onResponderGrant: onFirstTouch, children: [_jsx(ImageBackground, { source: selectedBackground.source, style: [
                     StyleSheet.absoluteFillObject,
                     { width: "100%", height: "100%", zIndex: 0 },
-                ], resizeMode: "cover" }), arcVisible && (_jsx(Animated.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: _jsxs(Svg, { height: H, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", children: [_jsxs(Defs, { children: [_jsxs(SvgLinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", gradientUnits: "objectBoundingBox", children: [_jsx(Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), _jsx(Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), _jsxs(SvgLinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", gradientUnits: "objectBoundingBox", children: [_jsx(Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), _jsx(Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), _jsx(Path, { d: `M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`, fill: "url(#arcGrad)" }), _jsx(Path, { d: `M0 100 Q${W / 2} 60 ${W} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }) })), _jsx(StatusBar, { hidden: true }), _jsxs(View, { style: [
+                ], resizeMode: "cover" }), arcVisible && (_jsx(Animated.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: _jsxs(Svg, { height: H, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", children: [_jsxs(Defs, { children: [_jsxs(SvgLinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", children: [_jsx(Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), _jsx(Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), _jsxs(SvgLinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", children: [_jsx(Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), _jsx(Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), _jsx(Path, { d: `M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`, fill: "url(#arcGrad)" }), _jsx(Path, { d: `M0 100 Q${W / 2} 60 ${W} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }) })), _jsx(StatusBar, { hidden: true }), _jsxs(View, { style: [
                     globalStyles.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
-                ], children: [arcVisible && !showCongrats && !showPlayAgain && (_jsx(Animated.View, { style: [styles.hintButton, hintAnimatedStyle], children: _jsx(TouchableOpacity, { onPress: handleHint, onPressIn: handleHintPressIn, onPressOut: handleHintPressOut, children: _jsx(View, { style: styles.hintGlow, children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), gridLevel >= 8 && (_jsxs(Animated.View, { style: [
-                            styles.statsPanel,
-                            statsAnimatedStyle,
-                            { zIndex: 20, opacity: 1 },
-                        ], children: [_jsx(View, { style: [
-                                    styles.statsItem,
-                                    {
-                                        backgroundColor: "#C57CFF",
-                                        width: "auto",
-                                        minWidth: 100,
-                                        flexShrink: 0,
-                                        flexGrow: 0,
-                                        alignItems: "center",
-                                    },
-                                ], children: _jsxs(Text, { style: [styles.statsText, { color: "#FFF", opacity: 1 }], children: [t("time"), ": ", _jsxs(Text, { children: [time, "s"] })] }) }), _jsx(View, { style: [styles.statsItem, { backgroundColor: "#C57CFF" }], children: _jsxs(Text, { style: [styles.statsText, { color: "#FFF", opacity: 1 }], children: [t("moves"), ": ", _jsx(Text, { children: moves })] }) }), _jsx(View, { style: [styles.statsItem, { backgroundColor: "#C57CFF" }], children: _jsxs(Text, { style: [styles.statsText, { color: "#FFF", opacity: 1 }], children: [t("stars"), ": ", _jsxs(Text, { children: [totalStars, "\u2605"] })] }) })] })), cards.length > 0 && (_jsx(View, { style: {
+                ], children: [showHintButton && (_jsx(Animated.View, { style: [styles.hintButton, hintAnimatedStyle], children: _jsx(TouchableOpacity, { onPress: handleHint, onPressIn: () => (hintScale.value = withTiming(1.1, { duration: 100 })), onPressOut: () => (hintScale.value = withTiming(1, { duration: 100 })), activeOpacity: 1, children: _jsx(View, { style: [
+                                    styles.hintGlow,
+                                    // приглушаем тень в момент совместного движения с дугой
+                                    { shadowOpacity: 0, elevation: 0 },
+                                ], children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), cards.length > 0 && (_jsx(View, { style: {
                             flex: 1,
                             width: "100%",
                             justifyContent: "center",
@@ -728,13 +755,7 @@ const GameScreen = () => {
                                 length: getCardSize(),
                                 offset: getCardSize() * Math.floor(index / getNumColumns()),
                                 index,
-                            }) }, `flatlist-${gridLevel}-${age}`) })), _jsx(View, { pointerEvents: "none", style: StyleSheet.absoluteFill, children: _jsx(Confetti, { isActive: showConfetti, level: gridLevel }) }), showCongrats && (_jsxs(View, { style: [styles.congratsContainer, { zIndex: 3500 }], pointerEvents: "none", children: [_jsx(Animated.View, { style: [styles.congratsGlow, congratsAnimatedStyle], children: _jsx(Image, { source: require("../../assets/Frame_Type3_03_Decor.png"), style: {
-                                        width: 221,
-                                        height: 221,
-                                        resizeMode: "contain",
-                                        opacity: 1,
-                                        zIndex: 2,
-                                    } }) }), _jsx(Image, { source: require("../../assets/TitlFon.png"), style: [styles.congratsFon, { opacity: 1 }] }), _jsx(Text, { style: [styles.congratsText, { zIndex: 10 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: t("congrats") })] })), showPlayAgain && (_jsx(Animated.View, { style: [
+                            }) }, `flatlist-${gridLevel}-${age}`) })), _jsx(View, { pointerEvents: "none", style: StyleSheet.absoluteFill, children: _jsx(Confetti, { isActive: showConfetti, level: gridLevel }) }), showCongrats && (_jsxs(View, { style: [styles.congratsContainer, { zIndex: 3500 }], pointerEvents: "none", children: [_jsx(Animated.View, { style: [styles.congratsGlow, congratsAnimatedStyle], children: _jsx(Image, { source: require("../../assets/Frame_Type3_03_Decor.png"), style: { width: 221, height: 221, resizeMode: "contain" } }) }), _jsx(Image, { source: require("../../assets/TitlFon.png"), style: [styles.congratsFon] }), _jsx(Text, { style: [styles.congratsText], adjustsFontSizeToFit: true, numberOfLines: 1, children: t("congrats") })] })), showPlayAgain && (_jsx(Animated.View, { style: [
                             styles.playAgainButton,
                             playAgainAnimatedStyle,
                             {
@@ -745,6 +766,14 @@ const GameScreen = () => {
                                 position: "absolute",
                                 alignSelf: "center",
                             },
-                        ], children: _jsx(TouchableOpacity, { onPressIn: handlePlayAgainPressIn, onPressOut: handlePlayAgainPressOut, activeOpacity: 1, children: _jsx(View, { style: [styles.playAgainGradient, { opacity: 1 }], children: _jsxs(View, { style: [styles.playAgainContent, { opacity: 1 }], children: [_jsx(Text, { style: [styles.playAgainText, { opacity: 1 }], adjustsFontSizeToFit: true, numberOfLines: 1, children: t("playAgain") }), _jsx(PlayIcon, {})] }) }) }) })), _jsx(View, { style: { position: "relative", zIndex: 3000 }, children: _jsx(CustomAlert, { visible: false, onClose: () => { }, title: _jsx(Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: t("match") }), message: _jsx(Text, { style: { fontSize: 16, color: "#FFF" }, children: t("upgradePrompt") }), onYes: () => { }, onNo: () => { } }) })] })] }));
+                        ], children: _jsx(TouchableOpacity, { onPressIn: () => {
+                                playAgainScale.value = 1.1;
+                                playAgainOpacity.value = 0.8;
+                            }, onPressOut: () => {
+                                playAgainScale.value = 1;
+                                playAgainOpacity.value = 1;
+                                const tmo = setTimeout(() => handlePlayAgain(), 300);
+                                completionTimers.current.push(tmo);
+                            }, activeOpacity: 1, children: _jsx(View, { style: [styles.playAgainGradient], children: _jsxs(View, { style: [styles.playAgainContent], children: [_jsx(Text, { style: [styles.playAgainText], adjustsFontSizeToFit: true, numberOfLines: 1, children: t("playAgain") }), _jsx(PlayIcon, {})] }) }) }) })), _jsx(View, { style: { position: "relative", zIndex: 3000 }, children: _jsx(CustomAlert, { visible: false, onClose: () => { }, title: _jsx(Text, { style: { fontSize: 20, fontWeight: "bold", color: "#FFF" }, children: t("match") }), message: _jsx(Text, { style: { fontSize: 16, color: "#FFF" }, children: t("upgradePrompt") }), onYes: () => { }, onNo: () => { } }) })] })] }));
 };
 export default GameScreen;

@@ -38,6 +38,7 @@ declare const styles: {
         fontFamily: string;
         textAlign: "center";
     };
+    /** ───────── Hint button (без торчащей тени) ───────── */
     hintButton: {
         position: "absolute";
         width: number;
@@ -51,6 +52,7 @@ declare const styles: {
         transform: {
             translateY: number;
         }[];
+        overflow: "hidden";
     };
     hintGlow: {
         width: number;

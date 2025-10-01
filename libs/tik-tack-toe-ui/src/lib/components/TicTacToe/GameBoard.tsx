@@ -21,12 +21,14 @@ import {
 } from "./Animation";
 import { StarAdvise } from "../../assets/svg/star-advise";
 
+/** ——— Аватар, умеющий отрисовать себя мгновенно (без анимаций) ——— */
 type AnimatedAvatarProps = {
   source: ImageSourcePropType;
   row: number;
   col: number;
   style?: StyleProp<ImageStyle>;
   cellSize: number;
+  instant?: boolean; // если true — без анимации появления
 };
 
 const AnimatedAvatar: React.FC<AnimatedAvatarProps> = ({
@@ -35,16 +37,18 @@ const AnimatedAvatar: React.FC<AnimatedAvatarProps> = ({
   col,
   style,
   cellSize,
+  instant = false,
 }) => {
-  const scale = useRef(new Animated.Value(1.2)).current;
+  const scale = useRef(new Animated.Value(instant ? 1 : 1.2)).current;
   const translateX = useRef(
     new Animated.Value(
-      col === 0 ? -cellSize * 0.8 : col === 2 ? cellSize * 0.8 : 0
+      instant ? 0 : col === 0 ? -cellSize * 0.8 : col === 2 ? cellSize * 0.8 : 0
     )
   ).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(instant ? 1 : 0)).current;
 
   const handleLoad = () => {
+    if (instant) return;
     Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
@@ -86,14 +90,15 @@ interface GameBoardProps {
   onCellPress: (row: number, col: number) => void;
   winningLine: number[][] | null;
   bestMove: number[] | null; // [row, col] | null
-  photo1: any;
-  photo2: any;
+  photo1: ImageSourcePropType;
+  photo2: ImageSourcePropType;
   onLayout?: (event: any) => void;
   onMoveCountChange?: (count: number) => void;
   showHint: boolean;
   onHintUsed: () => void;
   onVictory?: () => void;
   onBotVictory?: () => void;
+  suppressContent?: boolean; // когда true — внутри клеток ничего не рисуем
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({
@@ -109,6 +114,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   onHintUsed,
   onVictory,
   onBotVictory,
+  suppressContent = false,
 }) => {
   const countMoves = board
     .flat()
@@ -121,44 +127,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const intervalRef = useRef<number | null>(null);
 
-  // Подсказка
   const hintScale = useRef(new Animated.Value(1)).current;
-
-  // Мигание всех клеток
-  const cellBlinkAnim = useRef(new Animated.Value(0)).current;
-  const blinkState = useRef(0);
-
-  const cellBlinkStyle = {
-    backgroundColor: cellBlinkAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: ["#184BD933", "transparent"],
-    }),
-  };
-
-  const startBlink = () => {
-    let blinkCount = 0;
-    const maxBlinks = 7;
-
-    const blink = () => {
-      if (blinkCount >= maxBlinks) {
-        cellBlinkAnim.setValue(1);
-        return;
-      }
-      blinkState.current = blinkState.current === 0 ? 1 : 0;
-      cellBlinkAnim.setValue(blinkState.current);
-      blinkCount += 1;
-      setTimeout(blink, 300);
-    };
-
-    blink();
-  };
-
-  useEffect(() => {
-    startBlink();
-  }, []);
-  useEffect(() => {
-    if (isBoardEmpty(board)) startBlink();
-  }, [board]);
 
   useEffect(() => {
     if (bestMove && showHint) {
@@ -239,8 +208,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
       }
     }
   }, [board, winningLine, onVictory, onBotVictory, hasPlayedVictorySound]);
-
-  const cellBackgroundOpacity = useRef(new Animated.Value(1)).current;
 
   const minutes = Math.floor(elapsedSeconds / 60)
     .toString()
@@ -326,21 +293,17 @@ const GameBoard: React.FC<GameBoardProps> = ({
         activeOpacity={0.7}
         testID={`cell-${row}-${col}`}
       >
-        <Animated.View
+        <View
           style={[
             styles.cell,
-            cellBlinkStyle,
             {
               width: cellSize,
               height: cellSize,
-              backgroundColor: cellBlinkAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["#184BD933", "transparent"],
-              }),
+              backgroundColor: "#184BD933",
             },
           ]}
         >
-          {isWinningCell && (
+          {!suppressContent && isWinningCell && (
             <>
               <VictoryGlow />
               <WinningCellEffects
@@ -350,12 +313,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
             </>
           )}
 
-          {cell === "X" && (
+          {!suppressContent && cell === "X" && (
             <AnimatedAvatar
               source={photo1}
               row={row}
               col={col}
               cellSize={cellSize}
+              instant={suppressContent}
               style={[
                 styles.photo1Cell,
                 {
@@ -366,12 +330,13 @@ const GameBoard: React.FC<GameBoardProps> = ({
               ]}
             />
           )}
-          {cell === "O" && (
+          {!suppressContent && cell === "O" && (
             <AnimatedAvatar
               source={photo2}
               row={row}
               col={col}
               cellSize={cellSize}
+              instant={suppressContent}
               style={[
                 styles.photo2Cell,
                 {
@@ -383,7 +348,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             />
           )}
 
-          {isHintCell && (
+          {!suppressContent && isHintCell && (
             <Animated.View
               style={[
                 styles.hintBackground,
@@ -401,20 +366,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
               <StarAdvise width={16} height={16} />
             </Animated.View>
           )}
-        </Animated.View>
+        </View>
       </TouchableOpacity>
     );
   };
-
-  useEffect(() => {
-    if (countMoves === 1) {
-      Animated.timing(cellBackgroundOpacity, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [countMoves, cellBackgroundOpacity]);
 
   return (
     <View
@@ -459,10 +414,10 @@ const GameBoard: React.FC<GameBoardProps> = ({
         <LinearGradient
           key={`v-${i}`}
           colors={[
-            "rgba(183, 0, 255,0.2)",
+            "rgba(183, 0, 255, 0.2)",
             "#00CCFF",
             "#00CCFF",
-            "rgba(183, 0, 255,0.2)",
+            "rgba(183, 0, 255, 0.2)",
           ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
@@ -538,26 +493,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   bgImage: { width: "100%", height: "100%" },
-  highlightedCell: {
-    backgroundColor: "rgba(255,255,255,0.3)",
-    borderWidth: 2,
-    borderColor: "#00CCFF",
-  },
-  verticalLine: {
-    position: "absolute",
-    right: -1,
-    top: 0,
-    width: 2,
-    height: 20,
-    zIndex: 1,
-  },
-  horizontalLine: {
-    position: "absolute",
-    left: 0,
-    bottom: -1,
-    height: 2,
-    zIndex: 1,
-  },
   photo1Cell: {
     borderColor: "#FFE97C",
     borderWidth: 3,
@@ -566,14 +501,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 10,
-    top: 0,
-    zIndex: 999,
-    left: 0,
-    position: "relative",
-    resizeMode: "contain",
-    alignSelf: "flex-start",
   },
-  photo2Cell: { borderWidth: 3, borderColor: "#ADEFFF" },
+  photo2Cell: {
+    borderWidth: 3,
+    borderColor: "#ADEFFF",
+  },
   hintContainer: { position: "absolute", width: 32, height: 32, zIndex: 20 },
   hintBackground: {
     flex: 1,

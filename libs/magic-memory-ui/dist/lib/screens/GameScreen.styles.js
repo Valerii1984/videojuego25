@@ -40,6 +40,7 @@ const styles = StyleSheet.create({
         fontFamily: "FredokaSemiBold",
         textAlign: "center",
     },
+    /** ───────── Hint button (без торчащей тени) ───────── */
     hintButton: {
         position: "absolute",
         width: 45,
@@ -51,6 +52,7 @@ const styles = StyleSheet.create({
         top: "50%",
         right: 30,
         transform: [{ translateY: -22.5 }],
+        overflow: "hidden", // обрезаем любое свечение/тень внутри
     },
     hintGlow: {
         width: 70,
@@ -58,11 +60,12 @@ const styles = StyleSheet.create({
         borderRadius: 35,
         justifyContent: "center",
         alignItems: "center",
-        elevation: 10,
-        shadowColor: "rgba(144, 33, 232, 0.8)",
+        // ВАЖНО: полностью убираем тени/свечение, чтобы ничего не «выпирало»
+        elevation: 0, // Android
+        shadowColor: "transparent",
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 20,
+        shadowOpacity: 0,
+        shadowRadius: 0,
     },
     hintBorder: {
         width: 45,

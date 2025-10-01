@@ -1,8 +1,5 @@
 import React from "react";
-export declare const SoundProvider: React.FC<{
-    children: React.ReactNode;
-}>;
-export declare const useSound: () => {
+type Ctx = {
     playNotificationSound: (heroIndex?: number) => Promise<void>;
     playSuccessSound: () => Promise<void>;
     playBackgroundMusic: () => Promise<void>;
@@ -11,3 +8,8 @@ export declare const useSound: () => {
     resumeBackgroundMusic: () => Promise<void>;
     stopSuccessSound: () => Promise<void>;
 };
+export declare const SoundProvider: React.FC<{
+    children: React.ReactNode;
+}>;
+export declare const useSound: () => Ctx;
+export default useSound;

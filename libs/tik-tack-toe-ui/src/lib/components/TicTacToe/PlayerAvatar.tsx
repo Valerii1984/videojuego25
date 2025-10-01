@@ -19,6 +19,39 @@ import {
 const { width } = Dimensions.get("window");
 const AVATAR_SIZE = 60;
 
+type LocaleTag =
+  | "en-US"
+  | "de-DE"
+  | "es-ES"
+  | "es-419"
+  | "fr-FR"
+  | "it-IT"
+  | "pt-BR";
+
+const normalizeLocale = (raw?: string): LocaleTag => {
+  const s = (raw || "").toLowerCase().replace("_", "-");
+  if (s.startsWith("de")) return "de-DE";
+  if (s === "es-419") return "es-419";
+  if (s.startsWith("es")) return "es-ES";
+  if (s.startsWith("fr")) return "fr-FR";
+  if (s.startsWith("it")) return "it-IT";
+  if (s === "pt-br" || s.startsWith("pt")) return "pt-BR";
+  return "en-US";
+};
+
+const TURN_STR: Record<
+  LocaleTag,
+  { yourTurn: string; otherTurn: (name: string) => string }
+> = {
+  "en-US": { yourTurn: "Your turn", otherTurn: (n) => `${n}'s turn` },
+  "de-DE": { yourTurn: "Du bist dran", otherTurn: (n) => `${n} ist dran` },
+  "es-ES": { yourTurn: "Tu turno", otherTurn: (n) => `Turno de ${n}` },
+  "es-419": { yourTurn: "Tu turno", otherTurn: (n) => `Turno de ${n}` },
+  "fr-FR": { yourTurn: "À toi", otherTurn: (n) => `À ${n}` },
+  "it-IT": { yourTurn: "Tocca a te", otherTurn: (n) => `Tocca a ${n}` },
+  "pt-BR": { yourTurn: "Sua vez", otherTurn: (n) => `Vez de ${n}` },
+};
+
 interface PlayerAvatarProps {
   photo: any;
   name: string;
@@ -29,6 +62,8 @@ interface PlayerAvatarProps {
   testID: string;
   boardHeight?: number;
   isFirstPlayer?: boolean;
+  /** язык для бейджа хода */
+  lang?: string;
 }
 
 const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
@@ -41,8 +76,9 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   testID,
   boardHeight,
   isFirstPlayer,
+  lang,
 }) => {
-  // Победитель остаётся поднятым
+  // Активность: ход текущего игрока ИЛИ уже победитель
   const isActive = (!winner && currentPlayer === player) || winner === player;
 
   const [showBackground, setShowBackground] = useState(false);
@@ -64,37 +100,52 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     { lowOpacity: 0.3, durationMs: 200 }
   );
 
-  // Очистка звезд при деактивации
+  // чистим звёзды при деактивации
   useEffect(() => {
     if (!isActive || !showBackground) {
       activeStars.forEach((starId) => removeStar(starId));
     }
   }, [isActive, showBackground, activeStars, removeStar]);
 
-  // Включаем фон после анимации подъёма аватара
+  // единый cleanup — без разных return по веткам
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (isActive) {
-      const timer = setTimeout(() => setShowBackground(true), 100);
-      return () => clearTimeout(timer);
+      timer = setTimeout(() => setShowBackground(true), 100);
     } else {
       setShowBackground(false);
     }
-    return undefined;
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [isActive]);
 
-  const renderTurnIndicator = () => {
-    if (!(!winner && currentPlayer === player)) return null;
+  const locale = normalizeLocale(lang);
+  const TTURN = TURN_STR[locale];
+
+  // <<< ТУТ была проблема TS7030 — теперь явный тип и return во всех ветках
+  const renderTurnIndicator = (): JSX.Element | null => {
+    const isPlayersTurn = !winner && currentPlayer === player;
+    if (!isPlayersTurn) {
+      return null;
+    }
+
+    const text = player === "X" ? TTURN.yourTurn : TTURN.otherTurn(name);
 
     return (
-      <View style={styles.turnIndicatorAboveAvatar}>
+      <View style={styles.turnIndicatorAboveAvatar} pointerEvents="none">
         <Animated.Text
           style={[
             styles.turnTextAboveAvatar,
             player === "O" && styles.turnTextSecondPlayer,
-            { opacity: blinkingOpacity },
+            { opacity: blinkingOpacity as unknown as number },
           ]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+          ellipsizeMode="tail"
         >
-          {player === "X" ? "Your turn" : `${name}'s turn`}
+          {text}
         </Animated.Text>
       </View>
     );
@@ -104,13 +155,14 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     <Animated.View
       style={[
         styles.playerContainer,
+        { overflow: "visible" },
         boardHeight ? { height: boardHeight } : undefined,
       ]}
       testID={testID}
     >
       <LinearGradient
         colors={["rgba(43, 23, 178, 0)", "rgba(39, 25, 135, 0.3)"]}
-        style={styles.gradientBackground}
+        style={[styles.gradientBackground, { overflow: "visible" }]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       >
@@ -128,8 +180,8 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
           />
         )}
 
-        <View style={styles.contentContainer}>
-          {/* Фон и звёзды для активного игрока или победителя */}
+        <View style={[styles.contentContainer, { overflow: "visible" }]}>
+          {/* фон-ромашка + звёзды только для активного/победителя */}
           {isActive && showBackground && (
             <Animated.View
               pointerEvents="none"
@@ -160,7 +212,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                   key={starId}
                   isActive={starTriggers.includes(starId)}
                   onComplete={() => removeStar(starId)}
-                  isFirstPlayer={isFirstPlayer || false}
+                  isFirstPlayer={!!isFirstPlayer}
                 />
               ))}
             </Animated.View>
@@ -171,7 +223,6 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
           <Animated.View
             style={[
               styles.avatarContainer,
-              // Определяем позицию контейнера (цвет рамки, фон и т.п.)
               currentPlayer === player || winner === player
                 ? isFirstPlayer
                   ? styles.activeFirstPlayerContainer
@@ -179,17 +230,16 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                 : isFirstPlayer
                   ? styles.firstPlayerAvatar
                   : styles.secondPlayerAvatar,
-
               winner
                 ? {
                     transform: [
                       {
-                        translateY: winner === player ? -40 : 0, // победитель сверху, проигравший снизу
+                        translateY: winner === player ? -40 : 0,
                       },
                     ],
                     borderWidth: winner === player ? 6 : 3,
                   }
-                : animatedStyle, // обычная анимация в процессе игры
+                : animatedStyle,
             ]}
           >
             <Image
@@ -221,7 +271,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     paddingBottom: 20,
-    overflow: "hidden",
   },
   contentContainer: {
     alignItems: "center",
@@ -242,23 +291,6 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     zIndex: 999,
   },
-  leftBorder: {
-    position: "absolute",
-    left: -2,
-    bottom: 0,
-    width: 3,
-    zIndex: 1000,
-    height: "100%",
-    borderRadius: 1,
-  },
-  rightBorder: {
-    position: "absolute",
-    right: -2,
-    width: 3,
-    height: "100%",
-    borderRadius: 1,
-    bottom: 0,
-  },
   playerName: {
     color: "white",
     position: "relative",
@@ -273,20 +305,23 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   turnIndicatorAboveAvatar: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 15,
-    maxWidth: "100%",
-    fontFamily: "Fredoka",
+    borderRadius: 14,
+    maxWidth: 240,
+    minWidth: 92,
     position: "absolute",
     top: "-90%",
     zIndex: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
   },
   leftBorderImage: {
     position: "absolute",
     left: -1,
     bottom: 0,
-    width: 3, // ширина бордера
+    width: 3,
     height: "100%",
     zIndex: 100000,
   },
@@ -294,7 +329,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: -2,
     bottom: 0,
-    width: 3, // ширина бордера
+    width: 3,
     height: "100%",
     zIndex: 701,
   },
@@ -305,13 +340,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 18.3,
     letterSpacing: 0,
-    width: 100,
-    height: "auto",
     textAlign: "center",
-    verticalAlign: "middle",
     textShadowColor: "#B14EFF",
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 4,
+    paddingHorizontal: 2,
   },
   turnTextSecondPlayer: {
     color: "white",

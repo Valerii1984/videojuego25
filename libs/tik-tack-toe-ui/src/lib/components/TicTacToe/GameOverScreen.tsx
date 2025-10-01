@@ -16,7 +16,7 @@ import { Player } from "../../types/tic-tac-toe";
 
 const { width, height } = Dimensions.get("window");
 
-/** ───────────── i18n (как в Magic Memory, +pl-PL и +uk-UA) ───────────── */
+/** ── i18n: как в Magic Memory ─────────────────────────────────────────── */
 
 type LocaleTag =
   | "en-US"
@@ -25,25 +25,18 @@ type LocaleTag =
   | "es-419"
   | "fr-FR"
   | "it-IT"
-  | "pt-BR"
-  | "pl-PL"
-  | "uk-UA";
+  | "pt-BR"; // pl-PL — TBD
 
-/** Принимаем любые входы и приводим к нашим тегам */
+/** Любой вход → в наши теги; pl → en-US (TBD) */
 const normalizeLocale = (raw?: string): LocaleTag => {
   const s = (raw || "").toLowerCase().replace("_", "-");
-
   if (s.startsWith("de")) return "de-DE";
   if (s === "es-419") return "es-419";
   if (s.startsWith("es")) return "es-ES";
   if (s.startsWith("fr")) return "fr-FR";
   if (s.startsWith("it")) return "it-IT";
   if (s === "pt-br" || s.startsWith("pt")) return "pt-BR";
-
-  // Новое: польский и украинский
-  if (s.startsWith("pl")) return "pl-PL";
-  if (s.startsWith("uk") || s === "ua" || s.startsWith("uk-ua")) return "uk-UA";
-
+  // pl-PL (или pl) пока не поддерживаем — откатываем на en-US
   return "en-US";
 };
 
@@ -92,21 +85,10 @@ const STR: Record<LocaleTag, Record<TKey, string>> = {
     draw: "Empate!",
     playAgain: "Jogar novamente",
   },
-  "pl-PL": {
-    win: "Gratulacje!",
-    lose: "Przegrałeś",
-    draw: "Remis!",
-    playAgain: "Zagraj ponownie",
-  },
-  "uk-UA": {
-    win: "Вітаємо!",
-    lose: "Ви програли",
-    draw: "Нічия!",
-    playAgain: "Грати ще раз",
-  },
 };
 
-/** ───────────── ассеты роботов ───────────── */
+/** ── ассеты роботов ───────────────────────────────────────────────────── */
+
 const HERO = {
   hero1: {
     anim: require("../../assets/hero/hero1/anim.webp"),
@@ -136,7 +118,8 @@ const HERO = {
 
 type HeroKey = keyof typeof HERO;
 
-/** ───────────── пропсы ───────────── */
+/** ── пропсы ───────────────────────────────────────────────────────────── */
+
 interface GameOverScreenProps {
   winner: Player | "draw" | null;
   gameComplete: boolean;
@@ -145,11 +128,12 @@ interface GameOverScreenProps {
   animatedStyle: any;
   onPauseBackground?: () => void;
   onResumeBackground?: () => void;
-  /** Может прийти и короткий код (en/es/pt/pl/uk/de/fr/it) — нормализуем */
+  /** принимает en-US/de-DE/.../pt-BR (pl-PL → упадёт в en-US) */
   lang?: string;
 }
 
-/** ───────────── стикер-робот ───────────── */
+/** ── стикер-робот ─────────────────────────────────────────────────────── */
+
 const HeroSticker: React.FC<{
   hero: HeroKey;
   size?: number;
@@ -176,7 +160,8 @@ const HeroSticker: React.FC<{
   );
 };
 
-/** ───────────── основной экран ───────────── */
+/** ── основной экран ───────────────────────────────────────────────────── */
+
 const GameOverScreen: React.FC<GameOverScreenProps> = ({
   winner,
   gameComplete,
@@ -185,10 +170,10 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
   animatedStyle,
   onPauseBackground,
   onResumeBackground,
-  lang = "en",
+  lang = "en-US",
 }) => {
   const locale = normalizeLocale(lang);
-  const T = STR[locale] ?? STR["en-US"];
+  const T = STR[locale];
 
   const [showVictoryEffects, setShowVictoryEffects] = useState(false);
   const [showContent, setShowContent] = useState(false);
@@ -230,7 +215,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     }
   };
 
-  // Порядок показа: герой → (ROBOT_MS) → контент/конфетти
+  // Порядок: робот → (ROBOT_MS) → контент/конфетти
   useEffect(() => {
     if (!gameComplete) {
       clearTimersAndSound();
@@ -247,11 +232,10 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
 
     if (chooseHero) setHeroKey(chooseHero);
 
-    onPauseBackground?.();
+    onPauseBackground?.(); // приглушили фон
     setShowHero(true);
     setHeroReady(false);
 
-    // Фолбэк на случай, если onLoadEnd не пришёл
     const readyFallback = setTimeout(() => {
       setHeroReady((prev) => prev || true);
     }, 800);
@@ -278,7 +262,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameComplete, chooseHero]);
 
-  // Голос робота — стартуем после фактической загрузки кадра
+  // Голос робота — после загрузки кадра
   useEffect(() => {
     if (!gameComplete || !chooseHero || !showHero || !heroReady) return;
 
@@ -302,13 +286,9 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
       } catch {}
     }, 120);
     timersRef.current.push(voiceTimer);
-
-    return () => {
-      // очищается в clearTimersAndSound
-    };
   }, [gameComplete, chooseHero, showHero, heroReady]);
 
-  // Мягкая пульсация кнопки
+  // Пульс кнопки
   useEffect(() => {
     if (gameComplete) {
       Animated.loop(
@@ -382,7 +362,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
                 onPress={() => {
                   clearTimersAndSound();
                   runIdRef.current++;
-                  onResumeBackground?.();
+                  onResumeBackground?.(); // вернули фон
                   onPlayAgain();
                 }}
               >
@@ -463,10 +443,10 @@ const styles = StyleSheet.create({
     fontFamily: "FredokaExtraBold",
     fontSize: 64,
     textAlign: "center",
-    includeFontPadding: false, // не резать верх/низ на Android
+    includeFontPadding: false,
     textAlignVertical: "center",
     lineHeight: Math.round(64 * 1.08),
-    paddingHorizontal: 8, // чтобы первый глиф не обрезался
+    paddingHorizontal: 8,
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,

@@ -24,18 +24,69 @@ import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
 
-const ENABLE_BACKGROUND_MUSIC = false;
+const ENABLE_BACKGROUND_MUSIC = true;
 const SHOW_LANG_BADGE = false;
 
-const STRINGS: Record<Language, { langBadge: (code: Language) => string }> = {
-  en: { langBadge: (c) => c.toUpperCase() },
-  es: { langBadge: (c) => c.toUpperCase() },
-  uk: { langBadge: (c) => c.toUpperCase() },
-  de: { langBadge: (c) => c.toUpperCase() },
-  fr: { langBadge: (c) => c.toUpperCase() },
-  pl: { langBadge: (c) => c.toUpperCase() },
-  it: { langBadge: (c) => c.toUpperCase() },
-  pt: { langBadge: (c) => c.toUpperCase() },
+/** ——— локали как в Magic Memory ——— */
+type LocaleTag =
+  | "en-US"
+  | "de-DE"
+  | "es-ES"
+  | "es-419"
+  | "fr-FR"
+  | "it-IT"
+  | "pt-BR";
+
+const normalizeLocale = (raw?: string): LocaleTag => {
+  const s = (raw || "").toLowerCase().replace("_", "-");
+  if (s.startsWith("de")) return "de-DE";
+  if (s === "es-419") return "es-419";
+  if (s.startsWith("es")) return "es-ES";
+  if (s.startsWith("fr")) return "fr-FR";
+  if (s.startsWith("it")) return "it-IT";
+  if (s === "pt-br" || s.startsWith("pt")) return "pt-BR";
+  return "en-US";
+};
+
+const I18N: Record<
+  LocaleTag,
+  { player1: string; player2: string; badge: (c: string) => string }
+> = {
+  "en-US": {
+    player1: "Player 1",
+    player2: "Player 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "de-DE": {
+    player1: "Spieler 1",
+    player2: "Spieler 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "es-ES": {
+    player1: "Jugador 1",
+    player2: "Jugador 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "es-419": {
+    player1: "Jugador 1",
+    player2: "Jugador 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "fr-FR": {
+    player1: "Joueur 1",
+    player2: "Joueur 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "it-IT": {
+    player1: "Giocatore 1",
+    player2: "Giocatore 2",
+    badge: (c) => c.toUpperCase(),
+  },
+  "pt-BR": {
+    player1: "Jogador 1",
+    player2: "Jogador 2",
+    badge: (c) => c.toUpperCase(),
+  },
 };
 
 const DEFAULTS = {
@@ -45,26 +96,16 @@ const DEFAULTS = {
   name2: "Player 2",
   photo1: require("../assets/6.png") as ImageSourcePropType,
   photo2: require("../assets/81.png") as ImageSourcePropType,
-
   winGif: require("../assets/animations/success-animation.json") as any,
   lang: "en" as Language,
 };
 
-const resolveImage = (src?: string | ImageSourcePropType) =>
-  typeof src === "string" ? { uri: src } : src;
-
-/** Нормализация длинных тэгов в короткий код для GameOverScreen */
-type ShortLang = "en" | "es" | "pt" | "pl" | "uk" | "de" | "fr" | "it";
-const toShortLang = (raw?: string): ShortLang => {
-  const s = (raw || "").toLowerCase().replace("_", "-");
-  if (s.startsWith("pl")) return "pl";
-  if (s.startsWith("uk") || s === "ua" || s.startsWith("uk-ua")) return "uk";
-  if (s.startsWith("de")) return "de";
-  if (s === "es-419" || s.startsWith("es")) return "es";
-  if (s.startsWith("fr")) return "fr";
-  if (s.startsWith("it")) return "it";
-  if (s === "pt-br" || s.startsWith("pt")) return "pt";
-  return "en";
+const resolveImage = (
+  src?: string | ImageSourcePropType,
+  fallback?: ImageSourcePropType
+): ImageSourcePropType => {
+  if (typeof src === "string") return { uri: src };
+  return src ?? (fallback as ImageSourcePropType);
 };
 
 type ShortProps = {
@@ -88,19 +129,24 @@ type ShortProps = {
   winGif?: any;
 };
 
+const EMPTY_BOARD: (null | "X" | "O")[][] = [
+  [null, null, null],
+  [null, null, null],
+  [null, null, null],
+];
+
 const TicTacToe: React.FC<ShortProps> = (rawProps) => {
   const p = (rawProps.props ?? rawProps) as Required<ShortProps>["props"] &
     Omit<ShortProps, "props">;
 
   const lang: Language = (p.lang as Language) ?? DEFAULTS.lang;
-  const L = STRINGS[lang] ?? STRINGS.en;
-  const shortLang = toShortLang(lang); // <- передаём сюда
+  const locale = normalizeLocale(lang);
+  const L = I18N[locale];
 
   const {
     background,
     userAvatar,
     enemyCard,
-
     backgroundImage = DEFAULTS.backgroundImage,
     name1 = DEFAULTS.name1,
     name2 = DEFAULTS.name2,
@@ -109,16 +155,23 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     winGif = DEFAULTS.winGif,
   } = p as any;
 
+  const finalName1 = name1 === DEFAULTS.name1 ? L.player1 : name1;
+  const finalName2 = name2 === DEFAULTS.name2 ? L.player2 : name2;
+
   const resolvedBackground = background
     ? { uri: background }
-    : resolveImage(backgroundImage);
+    : resolveImage(backgroundImage, DEFAULTS.backgroundImage);
   const resolvedPhoto1 = userAvatar
     ? { uri: userAvatar }
-    : resolveImage(photo1);
-  const resolvedPhoto2 = enemyCard ? { uri: enemyCard } : resolveImage(photo2);
+    : resolveImage(photo1, DEFAULTS.photo1);
+  const resolvedPhoto2 = enemyCard
+    ? { uri: enemyCard }
+    : resolveImage(photo2, DEFAULTS.photo2);
 
   const [boardHeight, setBoardHeight] = useState<number>(0);
-
+  const [roundKey, setRoundKey] = useState(0);
+  const [showBoard, setShowBoard] = useState(true);
+  const [suppressContent, setSuppressContent] = useState(false); // прячем фишки/эффекты полностью
   const [showHint, setShowHint] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -127,9 +180,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     const sub = Dimensions.addEventListener("change", ({ window }) => {
       setScreenH(window.height);
     });
-    return () => {
-      sub?.remove?.();
-    };
+    return () => sub?.remove?.();
   }, []);
 
   const {
@@ -158,7 +209,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     player2Style,
     gameContainerStyle,
     congratsContainerStyle,
-
     resetAnimations,
   } = useTicTacToeAnimations(
     gameState.currentPlayer,
@@ -185,10 +235,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
   const ellipseOpacity = useRef(new Animated.Value(0)).current;
 
   const hintScale = useRef(new Animated.Value(1)).current;
-  const hintAnimatedStyle = {
-    transform: [{ scale: hintScale }],
-    opacity: 1,
-  };
+  const hintAnimatedStyle = { transform: [{ scale: hintScale }], opacity: 1 };
   const animateHintButton = (toValue: number) => {
     Animated.timing(hintScale, {
       toValue,
@@ -197,6 +244,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     }).start();
   };
 
+  /** системные бары */
   useEffect(() => {
     StatusBar.setHidden(true, "none");
 
@@ -213,9 +261,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           try {
             await NB.setBehaviorAsync("inset-swipe");
           } catch {}
-        } catch (err) {
-          console.warn("NavigationBar import/ops error:", err);
-        }
+        } catch {}
       }
     })();
 
@@ -238,11 +284,11 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           } catch {}
         })();
       }
-
       sub?.remove?.();
     };
   }, []);
 
+  /** старт анимаций/музыки */
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -252,9 +298,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
         );
       } catch {}
 
-      if (ENABLE_BACKGROUND_MUSIC) {
-        playBackgroundMusic();
-      }
+      if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
       setIsGameStarted(true);
 
       introAnim.setValue(0);
@@ -291,18 +335,33 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     };
   }, []);
 
+  /** как только партия закончилась — мгновенно скрываем всё содержимое доски */
+  useEffect(() => {
+    if (gameComplete) setSuppressContent(true);
+  }, [gameComplete]);
+
+  /** новый раунд */
   const handleResetGame = () => {
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setShowHint(false);
 
+    // 1) мгновенно убираем содержимое + переключаем ключ раунда
+    setSuppressContent(true);
+    setShowBoard(false);
+    setRoundKey((k) => k + 1);
+
+    // 2) сбрасываем внутреннее состояние
     resetGame();
     resetAnimations();
     hintScale.setValue(1);
     setIsGameStarted(true);
+    if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
 
-    if (ENABLE_BACKGROUND_MUSIC) {
-      playBackgroundMusic();
-    }
+    // 3) возвращаем чистую доску на следующий кадр и разрешаем контент
+    requestAnimationFrame(() => {
+      setShowBoard(true);
+      setSuppressContent(false);
+    });
 
     introAnim.setValue(0);
     Animated.timing(introAnim, {
@@ -326,6 +385,9 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
       }),
     ]).start();
   };
+
+  // пока board скрыт — отдаём пустую матрицу (ни кадра старого стейта)
+  const displayedBoard = showBoard ? gameState.board : (EMPTY_BOARD as any);
 
   return (
     <ImageBackground
@@ -362,8 +424,9 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           >
             <View style={{ marginRight: 20 }}>
               <PlayerAvatar
+                key={`p1-${roundKey}`}
                 photo={resolvedPhoto1}
-                name={name1}
+                name={finalName1}
                 player="X"
                 currentPlayer={gameState.currentPlayer}
                 winner={gameState.winner}
@@ -371,11 +434,13 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
                 testID="player1-container"
                 boardHeight={boardHeight}
                 isFirstPlayer={true}
+                lang={lang}
               />
             </View>
 
             <GameBoard
-              board={gameState.board}
+              key={`board-${roundKey}`}
+              board={displayedBoard}
               onCellPress={handleCellPress}
               winningLine={gameState.winningLine}
               bestMove={bestMove}
@@ -386,12 +451,14 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
               onHintUsed={() => setShowHint(false)}
               onVictory={playVictorySound}
               onBotVictory={() => playSadGameSound()}
+              suppressContent={suppressContent}
             />
 
             <View style={{ marginLeft: 20 }}>
               <PlayerAvatar
+                key={`p2-${roundKey}`}
                 photo={resolvedPhoto2}
-                name={name2}
+                name={finalName2}
                 player="O"
                 currentPlayer={gameState.currentPlayer}
                 winner={gameState.winner}
@@ -399,6 +466,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
                 testID="player2-container"
                 boardHeight={boardHeight}
                 isFirstPlayer={false}
+                lang={lang}
               />
             </View>
           </Animated.View>
@@ -408,7 +476,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           {SHOW_LANG_BADGE && !!lang && (
             <View style={styles.centerTopBar}>
               <Text style={{ color: "#fff", fontFamily: "Fredoka" }}>
-                {L.langBadge(lang)}
+                {I18N[locale].badge(lang)}
               </Text>
             </View>
           )}
@@ -416,18 +484,27 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           <Animated.View
             style={[
               styles.hintButton,
-              hintAnimatedStyle,
+              { transform: [{ scale: hintAnimatedStyle.transform[0].scale }] },
               { top: Math.max(34, Math.round(screenH / 2 - 20)) },
             ]}
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPressIn={() => animateHintButton(0.9)}
-              onPressOut={() => animateHintButton(1)}
+              onPressIn={() =>
+                (
+                  hintAnimatedStyle.transform[0].scale as Animated.Value
+                ).setValue(0.9)
+              }
+              onPressOut={() =>
+                (
+                  hintAnimatedStyle.transform[0].scale as Animated.Value
+                ).setValue(1)
+              }
               onPress={() => {
                 playNotificationSound();
-                animateHintButton(1.08);
-
+                (
+                  hintAnimatedStyle.transform[0].scale as Animated.Value
+                ).setValue(1.08);
                 setShowHint(true);
                 if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
                 hintTimerRef.current = setTimeout(
@@ -454,12 +531,12 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
       <GameOverScreen
         winner={gameState.winner}
         gameComplete={gameComplete}
-        winGif={resolveImage(winGif)}
+        winGif={resolveImage(winGif, DEFAULTS.winGif)}
         onPlayAgain={handleResetGame}
         animatedStyle={congratsContainerStyle}
         onPauseBackground={pauseBackgroundMusic}
         onResumeBackground={resumeBackgroundMusic}
-        lang={shortLang} // передаём короткий код; в GameOverScreen он мапится на нужный тег
+        lang={lang}
       />
     </ImageBackground>
   );
@@ -495,6 +572,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 980,
   },
+  /** КНОПКА ПОДСКАЗКИ — без «торчащей» тени */
   hintButton: {
     position: "absolute",
     width: 40,
@@ -504,6 +582,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 1000,
     right: 30,
+    overflow: "hidden", // режем любое свечение
   },
   hintGlow: {
     width: 70,
@@ -511,10 +590,11 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 14,
-    shadowColor: "rgba(144, 33, 232, 0.8)",
+    elevation: 0, // Android: тени нет
+    shadowOpacity: 0, // iOS: тени нет
+    shadowColor: "transparent",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowRadius: 0,
   },
   hintBorder: {
     width: 40,

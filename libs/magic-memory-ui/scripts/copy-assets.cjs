@@ -22,7 +22,15 @@ function copyDir(src, dest) {
 
 copyDir(SRC, DEST);
 
-const heroIndexJS = path.join(DEST, "hero", "index.js");
-if (fs.existsSync(heroIndexJS)) {
-  const content = fs.readFileSync(heroIndexJS, "utf8");
+// sanity-check
+const mustFiles = [
+  path.join(DEST, "hero", "hero1", "anim.webp"),
+  path.join(DEST, "assets-exists.txt"), // опционально, если захотите класть маркер
+  path.join(DEST, "sounds", "background-music.wav"),
+].filter(Boolean);
+
+for (const f of mustFiles) {
+  if (!fs.existsSync(f)) {
+    console.warn("[copy-assets] Missing after copy:", path.relative(DEST, f));
+  }
 }

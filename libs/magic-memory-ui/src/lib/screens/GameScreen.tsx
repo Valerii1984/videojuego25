@@ -12,10 +12,14 @@ import {
   StyleProp,
   ViewStyle,
   Keyboard,
+  GestureResponderEvent,
+  Platform,
+  type TransformsStyle, // ✅ для строгой типизации transform
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
+import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
 import Confetti from "../components/Confetti";
@@ -42,7 +46,7 @@ import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
-const ENABLE_BACKGROUND_MUSIC = false;
+const ENABLE_BACKGROUND_MUSIC = true;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 
 type LocaleTag =
@@ -52,7 +56,8 @@ type LocaleTag =
   | "es-419"
   | "fr-FR"
   | "it-IT"
-  | "pt-BR";
+  | "pt-BR"
+  | "pl-PL";
 
 type TKey =
   | "time"
@@ -127,17 +132,26 @@ const STRINGS: Record<LocaleTag, Record<TKey, string>> = {
     match: "Acerto!",
     upgradePrompt: "Subir para um nível mais difícil?",
   },
+  "pl-PL": {
+    time: "Czas",
+    moves: "Ruchy",
+    stars: "Gwiazdy",
+    congrats: "Gratulacje!",
+    playAgain: "Zagraj ponownie",
+    match: "Para!",
+    upgradePrompt: "Przejść na trudniejszy poziom?",
+  },
 };
 
 const normalizeLocale = (raw?: string): LocaleTag => {
-  const s = (raw || "").toLowerCase();
+  const s = (raw || "").toLowerCase().replace("_", "-");
   if (s.startsWith("de")) return "de-DE";
   if (s === "es-419") return "es-419";
   if (s.startsWith("es")) return "es-ES";
   if (s.startsWith("fr")) return "fr-FR";
   if (s.startsWith("it")) return "it-IT";
-  if (s === "pt-br" || s === "pt_br" || s === "ptbr") return "pt-BR";
-  if (s.startsWith("pt")) return "pt-BR";
+  if (s === "pt-br" || s === "ptbr" || s.startsWith("pt")) return "pt-BR";
+  if (s.startsWith("pl")) return "pl-PL";
   return "en-US";
 };
 
@@ -185,7 +199,10 @@ const getSrc = (c?: Card): string | undefined => {
 };
 
 const GameScreen = () => {
-  const { playBackgroundMusic, playNotificationSound } = useSound();
+  const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
+    useSound();
+
+  const unlockedRef = useRef(false);
 
   const cfg = usePropConfig();
   if (!cfg) {
@@ -203,10 +220,10 @@ const GameScreen = () => {
     );
   }
 
-  const locale = normalizeLocale(cfg.lang);
+  const locale = normalizeLocale((cfg as any).lang);
   const t = (key: TKey) => (STRINGS[locale] || STRINGS["en-US"])[key];
 
-  const [age, setAge] = useState<number>(Math.max(2, cfg.age));
+  const [age, setAge] = useState<number>(Math.max(2, (cfg as any).age));
   const gridLevel = useMemo(() => toGridLevel(age), [age]);
   const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
 
@@ -231,7 +248,7 @@ const GameScreen = () => {
   const [showPlayAgain, setShowPlayAgain] = useState(false);
   const [isGameActive, setIsGameActive] = useState(true);
 
-  // дуга
+  // дуга и её видимость
   const [arcVisible, setArcVisible] = useState(false);
 
   const [activeRobotIndex, setActiveRobotIndex] = useState<number>(0);
@@ -243,6 +260,7 @@ const GameScreen = () => {
 
   const { width, height } = Dimensions.get("window");
 
+  // shared values
   const arcOffsetY = useSharedValue(0);
   const arcOpacity = useSharedValue(1);
   const statsOffsetY = useSharedValue(0);
@@ -264,44 +282,83 @@ const GameScreen = () => {
   );
 
   const selectedBackground = useMemo(() => {
-    const candidates = asArray(cfg.background);
+    const candidates = asArray((cfg as any).background);
     const uri =
       candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
     return uri ? { source: { uri } } : null;
-  }, [cfg.background, gridLevel, age]);
+  }, [(cfg as any).background, gridLevel, age]);
 
   const selectedBack = useMemo(() => {
-    const candidates = asArray(cfg.backCardSide);
+    const candidates = asArray((cfg as any).backCardSide);
     const uri =
       candidates && candidates.length > 0 ? pickRandom(candidates) : undefined;
     return uri ? { uri } : null;
-  }, [cfg.backCardSide, gridLevel, age]);
+  }, [(cfg as any).backCardSide, gridLevel, age]);
 
   const externalFrontList: string[] = useMemo(
-    () => (Array.isArray(cfg.frontCardSide) ? cfg.frontCardSide : []),
-    [cfg.frontCardSide, gridLevel, age]
+    () =>
+      Array.isArray((cfg as any).frontCardSide)
+        ? (cfg as any).frontCardSide
+        : [],
+    [(cfg as any).frontCardSide, gridLevel, age]
   );
 
+  // animated styles
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
   }));
+
   const statsAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: statsOffsetY.value }],
     opacity: statsOpacity.value,
   }));
+
   const playAgainAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
     opacity: playAgainOpacity.value,
   }));
-  const hintAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(hintScale.value, { duration: 100 }) }],
-    opacity: 1,
-  }));
+
+  // ✅ ФИКС ТИПОВ для TS2322: создаём строго типизированный массив transform
+  const hintAnimatedStyle = useAnimatedStyle(() => {
+    const t: NonNullable<TransformsStyle["transform"]> = [
+      { translateY: arcOffsetY.value as number },
+      { scale: hintScale.value as number },
+    ];
+    return {
+      transform: t,
+      opacity: arcOpacity.value as number,
+    } as ViewStyle;
+  });
+
   const congratsAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
     opacity: 1,
   }));
+
+  // Прячем статус-бар + навбар Android
+  useEffect(() => {
+    const hideBars = async () => {
+      try {
+        StatusBar.setHidden(true, "none");
+        if (Platform.OS === "android") {
+          await NavigationBar.setVisibilityAsync("hidden");
+          await NavigationBar.setBehaviorAsync("overlay-swipe");
+        }
+      } catch {}
+    };
+    hideBars();
+    const subShow = Keyboard.addListener("keyboardDidShow", hideBars);
+    const subHide = Keyboard.addListener("keyboardDidHide", hideBars);
+    return () => {
+      subShow.remove();
+      subHide.remove();
+      StatusBar.setHidden(false, "none");
+      if (Platform.OS === "android") {
+        NavigationBar.setVisibilityAsync("visible").catch(() => {});
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!isWeb) {
@@ -351,17 +408,18 @@ const GameScreen = () => {
       }
     })();
 
-    const kbShow = Keyboard.addListener("keyboardDidShow", () => {});
-    const kbHide = Keyboard.addListener("keyboardDidHide", () => {});
+    if (ENABLE_BACKGROUND_MUSIC) {
+      playBackgroundMusic().catch(() => {});
+    }
+
     return () => {
-      kbShow.remove();
-      kbHide.remove();
       completionTimers.current.forEach(clearTimeout);
       completionTimers.current = [];
       fanfareRef.current?.unloadAsync().catch(() => {});
     };
   }, []);
 
+  // Таймер + BGM на ≥8
   useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
@@ -371,10 +429,7 @@ const GameScreen = () => {
       if (ENABLE_BACKGROUND_MUSIC) {
         playBackgroundMusic().catch(() => {});
       }
-      timer.current = setInterval(
-        () => setTime((prev: number) => prev + 1),
-        1000
-      );
+      timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
     return () => {
       if (timer.current) clearInterval(timer.current);
@@ -418,7 +473,7 @@ const GameScreen = () => {
         fanfareRef.current
           ?.getStatusAsync()
           .then((s) => {
-            if (!s?.isLoaded || !s.isPlaying) {
+            if (!s?.isLoaded || !(s as any).isPlaying) {
               playFanfareLocal();
             }
           })
@@ -435,6 +490,7 @@ const GameScreen = () => {
 
   useEffect(() => {
     generateCards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [age]);
 
   const playRobotVoice = async (idx: number) => {
@@ -466,9 +522,7 @@ const GameScreen = () => {
       timer.current = null;
     }
 
-    successPlayedRef.current = false;
-
-    const pairs = pairsNeeded;
+    const pairs = Math.floor(age / 2);
     const uniqFront = Array.from(new Set(externalFrontList));
     const backOk = !!selectedBack?.uri;
     const bgOk = !!selectedBackground?.source?.uri;
@@ -492,9 +546,13 @@ const GameScreen = () => {
     setShowUpgradePrompt(false);
     setIsGameActive(true);
 
-    // уводим/возвращаем дугу — и от неё зависит видимость hint
+    // Дуговой оверлей + синхронное появление кнопки «?»
+    arcVisible && setArcVisible(false);
     arcOffsetY.value = height;
     arcOpacity.value = 0;
+    statsOffsetY.value = height;
+    statsOpacity.value = 0;
+
     arcOffsetY.value = withTiming(0, { duration: 500 });
     arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
       if (finished) runOnJS(setArcVisible)(true);
@@ -540,12 +598,11 @@ const GameScreen = () => {
       completionTimers.current.push(showTimer);
     }
 
+    if (ENABLE_BACKGROUND_MUSIC) {
+      playBackgroundMusic().catch(() => {});
+    }
     if (gridLevel >= 8) {
-      if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic().catch(() => {});
-      timer.current = setInterval(
-        () => setTime((prev: number) => prev + 1),
-        1000
-      );
+      timer.current = setInterval(() => setTime((p) => p + 1), 1000);
     }
   };
 
@@ -636,7 +693,7 @@ const GameScreen = () => {
               const starsEarned = getStars(gridLevel, time, moves);
               setTotalStars((prev: number) => prev + starsEarned);
 
-              // уводим дугу/панель (hint привязан к дуге — исчезнет)
+              // уводим дугу и кнопку «?» вместе
               arcOffsetY.value = withTiming(
                 height,
                 { duration: 700 },
@@ -650,23 +707,6 @@ const GameScreen = () => {
                 if (!isGameActive) return;
                 setShowCongrats(true);
                 setShowConfetti(true);
-
-                if (!successPlayedRef.current) {
-                  successPlayedRef.current = true;
-                  (async () => {
-                    await playFanfareLocal();
-                    setTimeout(() => {
-                      fanfareRef.current
-                        ?.getStatusAsync()
-                        .then((s) => {
-                          if (!s?.isLoaded || !s.isPlaying) {
-                            playFanfareLocal();
-                          }
-                        })
-                        .catch(() => {});
-                    }, 300);
-                  })();
-                }
               }, 900);
               completionTimers.current.push(congratsTimer);
 
@@ -683,7 +723,7 @@ const GameScreen = () => {
             } else {
               setIsFlipping(false);
             }
-          }, 2000);
+          }, 500);
           completionTimers.current.push(smileTimer);
         }, 500);
         completionTimers.current.push(matchDelay);
@@ -866,18 +906,16 @@ const GameScreen = () => {
     );
   };
 
-  const handleHintPressIn = () => (hintScale.value = 1.1);
-  const handleHintPressOut = () => (hintScale.value = 1);
-
-  const handlePlayAgainPressIn = () => {
-    playAgainScale.value = 1.1;
-    playAgainOpacity.value = 0.8;
-  };
-  const handlePlayAgainPressOut = () => {
-    playAgainScale.value = 1;
-    playAgainOpacity.value = 1;
-    const tmo: TimeoutId = setTimeout(() => handlePlayAgain(), 300);
-    completionTimers.current.push(tmo);
+  const onFirstTouch = (_e: GestureResponderEvent) => {
+    if (unlockedRef.current) return;
+    unlockedRef.current = true;
+    if (ENABLE_BACKGROUND_MUSIC) {
+      resumeBackgroundMusic().catch(() => {});
+    }
+    StatusBar.setHidden(true, "none");
+    if (Platform.OS === "android") {
+      NavigationBar.setVisibilityAsync("hidden").catch(() => {});
+    }
   };
 
   const handlePlayAgain = () => {
@@ -917,9 +955,15 @@ const GameScreen = () => {
   }
 
   const { width: W, height: H } = Dimensions.get("window");
+  const showHintButton =
+    isGameActive && !showCongrats && !showPlayAgain && arcVisible;
 
   return (
-    <View style={{ flex: 1, width: "100%", height: "100%" }}>
+    <View
+      style={{ flex: 1, width: "100%", height: "100%" }}
+      onStartShouldSetResponder={() => true}
+      onResponderGrant={onFirstTouch}
+    >
       <ImageBackground
         source={selectedBackground!.source}
         style={[
@@ -929,7 +973,7 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* дуга + бордер */}
+      {/* дуга-оверлей */}
       {arcVisible && (
         <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
           <Svg
@@ -940,14 +984,7 @@ const GameScreen = () => {
             preserveAspectRatio="none"
           >
             <Defs>
-              <SvgLinearGradient
-                id="arcGrad"
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="1"
-                gradientUnits="objectBoundingBox"
-              >
+              <SvgLinearGradient id="arcGrad" x1="0" y1="0" x2="0" y2="1">
                 <Stop offset="0" stopColor="#020743" stopOpacity="0.55" />
                 <Stop offset="1" stopColor="#080001" stopOpacity="0.75" />
               </SvgLinearGradient>
@@ -957,7 +994,6 @@ const GameScreen = () => {
                 y1="0.5"
                 x2="1"
                 y2="0.5"
-                gradientUnits="objectBoundingBox"
               >
                 <Stop offset="0" stopColor="#C57CFF" stopOpacity="0" />
                 <Stop offset="0.3" stopColor="#C57CFF" stopOpacity="1" />
@@ -988,15 +1024,26 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* HINT: показываем только когда дуга на экране, нет поздравления и нет play-again */}
-        {arcVisible && !showCongrats && !showPlayAgain && (
+        {/* Кнопка подсказки — идёт одной дугой вместе с overlay */}
+        {showHintButton && (
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
               onPress={handleHint}
-              onPressIn={handleHintPressIn}
-              onPressOut={handleHintPressOut}
+              onPressIn={() =>
+                (hintScale.value = withTiming(1.1, { duration: 100 }))
+              }
+              onPressOut={() =>
+                (hintScale.value = withTiming(1, { duration: 100 }))
+              }
+              activeOpacity={1}
             >
-              <View style={styles.hintGlow}>
+              <View
+                style={[
+                  styles.hintGlow,
+                  // приглушаем тень в момент совместного движения с дугой
+                  { shadowOpacity: 0, elevation: 0 },
+                ]}
+              >
                 <View style={styles.hintBorder}>
                   <LinearGradient
                     colors={["#FFB380", "#D16C00"]}
@@ -1007,44 +1054,6 @@ const GameScreen = () => {
                 </View>
               </View>
             </TouchableOpacity>
-          </Animated.View>
-        )}
-
-        {gridLevel >= 8 && (
-          <Animated.View
-            style={[
-              styles.statsPanel,
-              statsAnimatedStyle,
-              { zIndex: 20, opacity: 1 },
-            ]}
-          >
-            <View
-              style={[
-                styles.statsItem,
-                {
-                  backgroundColor: "#C57CFF",
-                  width: "auto",
-                  minWidth: 100,
-                  flexShrink: 0,
-                  flexGrow: 0,
-                  alignItems: "center",
-                },
-              ]}
-            >
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
-                {t("time")}: <Text>{time}s</Text>
-              </Text>
-            </View>
-            <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
-                {t("moves")}: <Text>{moves}</Text>
-              </Text>
-            </View>
-            <View style={[styles.statsItem, { backgroundColor: "#C57CFF" }]}>
-              <Text style={[styles.statsText, { color: "#FFF", opacity: 1 }]}>
-                {t("stars")}: <Text>{totalStars}★</Text>
-              </Text>
-            </View>
           </Animated.View>
         )}
 
@@ -1087,7 +1096,7 @@ const GameScreen = () => {
               removeClippedSubviews={false}
               getItemLayout={(_data, index) => ({
                 length: getCardSize(),
-                offset: getCardSize() * Math.floor(index / getNumColumns()),
+                offset: getCardSize() * Math.floor(index / getNumColumns()!),
                 index,
               })}
             />
@@ -1106,21 +1115,15 @@ const GameScreen = () => {
             <Animated.View style={[styles.congratsGlow, congratsAnimatedStyle]}>
               <Image
                 source={require("../../assets/Frame_Type3_03_Decor.png")}
-                style={{
-                  width: 221,
-                  height: 221,
-                  resizeMode: "contain",
-                  opacity: 1,
-                  zIndex: 2,
-                }}
+                style={{ width: 221, height: 221, resizeMode: "contain" }}
               />
             </Animated.View>
             <Image
               source={require("../../assets/TitlFon.png")}
-              style={[styles.congratsFon, { opacity: 1 }]}
+              style={[styles.congratsFon]}
             />
             <Text
-              style={[styles.congratsText, { zIndex: 10 }]}
+              style={[styles.congratsText]}
               adjustsFontSizeToFit
               numberOfLines={1}
             >
@@ -1145,14 +1148,22 @@ const GameScreen = () => {
             ]}
           >
             <TouchableOpacity
-              onPressIn={handlePlayAgainPressIn}
-              onPressOut={handlePlayAgainPressOut}
+              onPressIn={() => {
+                playAgainScale.value = 1.1;
+                playAgainOpacity.value = 0.8;
+              }}
+              onPressOut={() => {
+                playAgainScale.value = 1;
+                playAgainOpacity.value = 1;
+                const tmo: TimeoutId = setTimeout(() => handlePlayAgain(), 300);
+                completionTimers.current.push(tmo);
+              }}
               activeOpacity={1}
             >
-              <View style={[styles.playAgainGradient, { opacity: 1 }]}>
-                <View style={[styles.playAgainContent, { opacity: 1 }]}>
+              <View style={[styles.playAgainGradient]}>
+                <View style={[styles.playAgainContent]}>
                   <Text
-                    style={[styles.playAgainText, { opacity: 1 }]}
+                    style={[styles.playAgainText]}
                     adjustsFontSizeToFit
                     numberOfLines={1}
                   >
