@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,30 +17,12 @@ import {
   Platform,
   type TransformsStyle,
 } from "react-native";
-
-// ❗ пробуем взять expo-image, но не ломаемся если модуля нет
-let ExpoImg: any = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  ExpoImg = require("expo-image").Image;
-} catch {}
-
-// RN Image для фолбэка
-import { Image as RNImage } from "react-native";
+import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
-
-import Confetti from "../components/Confetti";
-import CustomAlert from "../components/CustomAlert";
-import MemoryCard from "../components/Card";
-import { Card } from "../types";
-import { isWeb } from "../utils/config";
-import globalStyles from "../styles/global-styles";
-import styles from "./GameScreen.styles";
-
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -55,31 +37,27 @@ import Svg, {
   Path,
 } from "react-native-svg";
 
+import Confetti from "../components/Confetti";
+import CustomAlert from "../components/CustomAlert";
+import MemoryCard from "../components/Card";
+import { Card } from "../types";
+import { isWeb } from "../utils/config";
+import globalStyles from "../styles/global-styles";
+import styles from "./GameScreen.styles";
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
-// ====== Fallback картинка для робота, если expo-image дала пустоту
-const HERO_FALLBACK = require("../../assets/hero/hero.webp");
-
-// ====== Универсальный компонент отрисовки робота
-function RobotImage(props: { source: any; style?: any; contentFit?: any }) {
-  const [err, setErr] = useState(false);
-
-  // Android → RN Image (Fresco умеет animated webp стабильно)
-  // iOS/Web → пробуем Expo Image, если нет — RN Image
-  const Comp = Platform.OS === "android" ? RNImage : ExpoImg || RNImage;
-
-  return (
-    <Comp
-      {...props}
-      // @ts-ignore: contentFit не у RN Image — ок, для него игнор
-      contentFit={props.contentFit}
-      source={err ? HERO_FALLBACK : props.source}
-      onError={() => setErr(true)}
-    />
-  );
-}
+// ▼▼▼ ДОБАВЛЕНО: превью PNG для Android (гарантировано есть в пакете)
+const ROBOT_SPRITES_ANDROID = [
+  require("@game/magic-memory-ui/dist/assets/hero/hero1/preview.png"),
+  require("@game/magic-memory-ui/dist/assets/hero/hero2/preview.png"),
+  require("@game/magic-memory-ui/dist/assets/hero/hero3/preview.png"),
+  require("@game/magic-memory-ui/dist/assets/hero/hero4/preview.png"),
+  require("@game/magic-memory-ui/dist/assets/hero/hero5/preview.png"),
+  require("@game/magic-memory-ui/dist/assets/hero/hero6/preview.png"),
+] as const;
+// ▲▲▲
 
 const ENABLE_BACKGROUND_MUSIC = true;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
@@ -283,7 +261,6 @@ const GameScreen = () => {
   const [showPlayAgain, setShowPlayAgain] = useState(false);
   const [isGameActive, setIsGameActive] = useState(true);
 
-  // дуга и её видимость
   const [arcVisible, setArcVisible] = useState(false);
 
   const [activeRobotIndex, setActiveRobotIndex] = useState<number>(0);
@@ -338,7 +315,6 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
-  // animated styles
   const arcAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: arcOffsetY.value }],
     opacity: arcOpacity.value,
@@ -580,7 +556,7 @@ const GameScreen = () => {
     setShowUpgradePrompt(false);
     setIsGameActive(true);
 
-    // Дуговой оверлей + синхронное появление кнопки «?»
+    // дуга + вход анимаций
     arcVisible && setArcVisible(false);
     arcOffsetY.value = height;
     arcOpacity.value = 0;
@@ -927,8 +903,12 @@ const GameScreen = () => {
                 renderToHardwareTextureAndroid
                 needsOffscreenAlphaCompositing
               >
-                <RobotImage
-                  source={ROBOT_SPRITES[activeRobotIndex]}
+                <ExpoImage
+                  source={
+                    Platform.OS === "android"
+                      ? ROBOT_SPRITES_ANDROID[activeRobotIndex] // ← PNG превью на Android
+                      : ROBOT_SPRITES[activeRobotIndex] // ← anim.webp на iOS/Web
+                  }
                   style={{ width: "100%", height: "100%" }}
                   contentFit="contain"
                 />
