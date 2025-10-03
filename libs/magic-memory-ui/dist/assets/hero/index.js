@@ -1,3 +1,5 @@
+// src/assets/hero/index.ts
+// (это TS-модуль; НИКАКОГО Node-кода внутри)
 export const ROBOT_SPRITES = [
     require("./hero1/anim.webp"),
     require("./hero2/anim.webp"),

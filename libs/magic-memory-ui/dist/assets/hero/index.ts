@@ -1,3 +1,6 @@
+// src/assets/hero/index.ts
+// (это TS-модуль; НИКАКОГО Node-кода внутри)
+
 declare function require(path: string): any;
 
 export const ROBOT_SPRITES = [
