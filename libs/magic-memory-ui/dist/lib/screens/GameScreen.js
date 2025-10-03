@@ -1,7 +1,16 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+/* eslint-disable */
 import { useEffect, useRef, useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, FlatList, StatusBar, Image, ImageBackground, StyleSheet, Dimensions, Keyboard, Platform, } from "react-native";
-import { Image as ExpoImage } from "expo-image";
+// ❗ пробуем взять expo-image, но не ломаемся если модуля нет
+let ExpoImg = null;
+try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    ExpoImg = require("expo-image").Image;
+}
+catch { }
+// RN Image для фолбэка
+import { Image as RNImage } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
@@ -18,6 +27,18 @@ import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Path, } from "rea
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
+// ====== Fallback картинка для робота, если expo-image дала пустоту
+const HERO_FALLBACK = require("../../assets/hero/hero.webp");
+// ====== Универсальный компонент отрисовки робота
+function RobotImage(props) {
+    const [err, setErr] = useState(false);
+    // Android → RN Image (Fresco умеет animated webp стабильно)
+    // iOS/Web → пробуем Expo Image, если нет — RN Image
+    const Comp = Platform.OS === "android" ? RNImage : ExpoImg || RNImage;
+    return (_jsx(Comp, { ...props, 
+        // @ts-ignore: contentFit не у RN Image — ок, для него игнор
+        contentFit: props.contentFit, source: err ? HERO_FALLBACK : props.source, onError: () => setErr(true) }));
+}
 const ENABLE_BACKGROUND_MUSIC = true;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 const STRINGS = {
@@ -218,7 +239,6 @@ const GameScreen = () => {
         transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
         opacity: playAgainOpacity.value,
     }));
-    // ✅ ФИКС ТИПОВ для TS2322: создаём строго типизированный массив transform
     const hintAnimatedStyle = useAnimatedStyle(() => {
         const t = [
             { translateY: arcOffsetY.value },
@@ -541,7 +561,6 @@ const GameScreen = () => {
                             setRoundsCompleted(newRounds);
                             const starsEarned = getStars(gridLevel, time, moves);
                             setTotalStars((prev) => prev + starsEarned);
-                            // уводим дугу и кнопку «?» вместе
                             arcOffsetY.value = withTiming(height, { duration: 700 }, (finished) => finished && runOnJS(setArcVisible)(false));
                             arcOpacity.value = withTiming(0, { duration: 700 });
                             statsOffsetY.value = withTiming(height, { duration: 700 });
@@ -692,7 +711,7 @@ const GameScreen = () => {
                                 height: size,
                                 zIndex: 9999,
                                 elevation: 50,
-                            }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: _jsx(ExpoImage, { source: ROBOT_SPRITES[activeRobotIndex], style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
+                            }, pointerEvents: "none", collapsable: false, renderToHardwareTextureAndroid: true, needsOffscreenAlphaCompositing: true, children: _jsx(RobotImage, { source: ROBOT_SPRITES[activeRobotIndex], style: { width: "100%", height: "100%" }, contentFit: "contain" }) }));
                     })()] }));
     };
     const onFirstTouch = (_e) => {
@@ -730,11 +749,7 @@ const GameScreen = () => {
                 ], resizeMode: "cover" }), arcVisible && (_jsx(Animated.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: _jsxs(Svg, { height: H, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", children: [_jsxs(Defs, { children: [_jsxs(SvgLinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", children: [_jsx(Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), _jsx(Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), _jsxs(SvgLinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", children: [_jsx(Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), _jsx(Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), _jsx(Path, { d: `M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`, fill: "url(#arcGrad)" }), _jsx(Path, { d: `M0 100 Q${W / 2} 60 ${W} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }) })), _jsx(StatusBar, { hidden: true }), _jsxs(View, { style: [
                     globalStyles.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
-                ], children: [showHintButton && (_jsx(Animated.View, { style: [styles.hintButton, hintAnimatedStyle], children: _jsx(TouchableOpacity, { onPress: handleHint, onPressIn: () => (hintScale.value = withTiming(1.1, { duration: 100 })), onPressOut: () => (hintScale.value = withTiming(1, { duration: 100 })), activeOpacity: 1, children: _jsx(View, { style: [
-                                    styles.hintGlow,
-                                    // приглушаем тень в момент совместного движения с дугой
-                                    { shadowOpacity: 0, elevation: 0 },
-                                ], children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), cards.length > 0 && (_jsx(View, { style: {
+                ], children: [showHintButton && (_jsx(Animated.View, { style: [styles.hintButton, hintAnimatedStyle], children: _jsx(TouchableOpacity, { onPress: handleHint, onPressIn: () => (hintScale.value = withTiming(1.1, { duration: 100 })), onPressOut: () => (hintScale.value = withTiming(1, { duration: 100 })), activeOpacity: 1, children: _jsx(View, { style: [styles.hintGlow, { shadowOpacity: 0, elevation: 0 }], children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), cards.length > 0 && (_jsx(View, { style: {
                             flex: 1,
                             width: "100%",
                             justifyContent: "center",

@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+/* eslint-disable */
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -14,14 +15,24 @@ import {
   Keyboard,
   GestureResponderEvent,
   Platform,
-  type TransformsStyle, // ✅ для строгой типизации transform
+  type TransformsStyle,
 } from "react-native";
-import { Image as ExpoImage } from "expo-image";
+
+// ❗ пробуем взять expo-image, но не ломаемся если модуля нет
+let ExpoImg: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  ExpoImg = require("expo-image").Image;
+} catch {}
+
+// RN Image для фолбэка
+import { Image as RNImage } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
+
 import Confetti from "../components/Confetti";
 import CustomAlert from "../components/CustomAlert";
 import MemoryCard from "../components/Card";
@@ -29,6 +40,7 @@ import { Card } from "../types";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import styles from "./GameScreen.styles";
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -42,9 +54,32 @@ import Svg, {
   Stop,
   Path,
 } from "react-native-svg";
+
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
+
+// ====== Fallback картинка для робота, если expo-image дала пустоту
+const HERO_FALLBACK = require("../../assets/hero/hero.webp");
+
+// ====== Универсальный компонент отрисовки робота
+function RobotImage(props: { source: any; style?: any; contentFit?: any }) {
+  const [err, setErr] = useState(false);
+
+  // Android → RN Image (Fresco умеет animated webp стабильно)
+  // iOS/Web → пробуем Expo Image, если нет — RN Image
+  const Comp = Platform.OS === "android" ? RNImage : ExpoImg || RNImage;
+
+  return (
+    <Comp
+      {...props}
+      // @ts-ignore: contentFit не у RN Image — ок, для него игнор
+      contentFit={props.contentFit}
+      source={err ? HERO_FALLBACK : props.source}
+      onError={() => setErr(true)}
+    />
+  );
+}
 
 const ENABLE_BACKGROUND_MUSIC = true;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
@@ -319,7 +354,6 @@ const GameScreen = () => {
     opacity: playAgainOpacity.value,
   }));
 
-  // ✅ ФИКС ТИПОВ для TS2322: создаём строго типизированный массив transform
   const hintAnimatedStyle = useAnimatedStyle(() => {
     const t: NonNullable<TransformsStyle["transform"]> = [
       { translateY: arcOffsetY.value as number },
@@ -693,7 +727,6 @@ const GameScreen = () => {
               const starsEarned = getStars(gridLevel, time, moves);
               setTotalStars((prev: number) => prev + starsEarned);
 
-              // уводим дугу и кнопку «?» вместе
               arcOffsetY.value = withTiming(
                 height,
                 { duration: 700 },
@@ -894,7 +927,7 @@ const GameScreen = () => {
                 renderToHardwareTextureAndroid
                 needsOffscreenAlphaCompositing
               >
-                <ExpoImage
+                <RobotImage
                   source={ROBOT_SPRITES[activeRobotIndex]}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="contain"
@@ -1024,7 +1057,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* Кнопка подсказки — идёт одной дугой вместе с overlay */}
+        {/* Кнопка подсказки */}
         {showHintButton && (
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
@@ -1038,11 +1071,7 @@ const GameScreen = () => {
               activeOpacity={1}
             >
               <View
-                style={[
-                  styles.hintGlow,
-                  // приглушаем тень в момент совместного движения с дугой
-                  { shadowOpacity: 0, elevation: 0 },
-                ]}
+                style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
               >
                 <View style={styles.hintBorder}>
                   <LinearGradient
