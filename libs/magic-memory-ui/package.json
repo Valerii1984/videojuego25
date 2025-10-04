@@ -1,10 +1,9 @@
 {
   "name": "@game/magic-memory-ui",
-  "version": "0.0.107",
+  "version": "0.0.108",
   "private": false,
   "sideEffects": true,
 
-  "type": "module",
   "main": "dist/index.js",
   "react-native": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,12 +11,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./assets/hero": {
       "types": "./dist/assets/hero/index.d.ts",
-      "import": "./dist/assets/hero/index.js",
       "default": "./dist/assets/hero/index.js"
     },
     "./package.json": "./package.json"
