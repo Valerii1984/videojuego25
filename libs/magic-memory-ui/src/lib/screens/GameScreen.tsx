@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -22,20 +22,6 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
-import Svg, {
-  Defs,
-  LinearGradient as SvgLinearGradient,
-  Stop,
-  Path,
-} from "react-native-svg";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withRepeat,
-  runOnJS,
-} from "react-native-reanimated";
-
 import Confetti from "../components/Confetti";
 import CustomAlert from "../components/CustomAlert";
 import MemoryCard from "../components/Card";
@@ -43,36 +29,41 @@ import { Card } from "../types";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import styles from "./GameScreen.styles";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withRepeat,
+  runOnJS,
+} from "react-native-reanimated";
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+  Path,
+} from "react-native-svg";
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
 const ENABLE_BACKGROUND_MUSIC = true;
+const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 
-// ──────────────────────────────────────────────
-// BGM/FANFARE с fallback: mp3 → wav
-// ──────────────────────────────────────────────
-let BGM_MOD: number | null = null;
-try {
-  BGM_MOD = require("../../assets/sounds/background-music.mp3");
-} catch {}
-if (!BGM_MOD) {
-  try {
-    BGM_MOD = require("../../assets/sounds/background-music.wav");
-  } catch {}
-}
+/** ---------- ФОЛБЭКИ/БЕЗОПАСНЫЕ МАССИВЫ ДЛЯ РОБОТОВ ---------- */
+// один гарантированный плейсхолдер-кадр (легкий webp/png, который точно есть)
+const HERO_FALLBACK = require("../../assets/hero/hero.webp");
 
-let FANFARE_MOD: number | null = null;
-try {
-  FANFARE_MOD = require("../../assets/sounds/success-fanfare-trumpets.mp3");
-} catch {}
-if (!FANFARE_MOD) {
-  try {
-    FANFARE_MOD = require("../../assets/sounds/success-fanfare-trumpets.wav");
-  } catch {}
-}
+// Спрятать дырки: если какого-то anim.webp нет — подставим плейсхолдер,
+// чтобы не было require(undefined).
+const SAFE_SPRITES = (ROBOT_SPRITES ?? []).map(
+  (m: any, i: number) =>
+    m || (console.warn("[robots] missing sprite", i + 1), HERO_FALLBACK)
+);
 
-// ──────────────────────────────────────────────
+// Голоса — выкинем пустые слоты, чтобы не падал Audio.Sound.createAsync
+const SAFE_VOICES = (ROBOT_VOICES ?? []).filter(Boolean) as any[];
+
+/** -------------------------------------------------------------- */
 
 type LocaleTag =
   | "en-US"
@@ -83,6 +74,7 @@ type LocaleTag =
   | "it-IT"
   | "pt-BR"
   | "pl-PL";
+
 type TKey =
   | "time"
   | "moves"
@@ -187,7 +179,7 @@ const pickRandom = <T,>(arr: T[]): T =>
 
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i++) {
+  for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
@@ -225,9 +217,10 @@ const getSrc = (c?: Card): string | undefined => {
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
     useSound();
-  const unlockedRef = useRef(false);
-  const cfg = usePropConfig();
 
+  const unlockedRef = useRef(false);
+
+  const cfg = usePropConfig();
   if (!cfg) {
     return (
       <View
@@ -332,12 +325,26 @@ const GameScreen = () => {
     opacity: arcOpacity.value,
   }));
 
+  const statsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: statsOffsetY.value }],
+    opacity: statsOpacity.value,
+  }));
+
+  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
+    opacity: playAgainOpacity.value,
+  }));
+
+  // строго типизированный transform
   const hintAnimatedStyle = useAnimatedStyle(() => {
     const t: NonNullable<TransformsStyle["transform"]> = [
       { translateY: arcOffsetY.value as number },
       { scale: hintScale.value as number },
     ];
-    return { transform: t, opacity: arcOpacity.value as number } as ViewStyle;
+    return {
+      transform: t,
+      opacity: arcOpacity.value as number,
+    } as ViewStyle;
   });
 
   const congratsAnimatedStyle = useAnimatedStyle(() => ({
@@ -345,7 +352,7 @@ const GameScreen = () => {
     opacity: 1,
   }));
 
-  // status bar + Android navbar
+  // Прячем статус-бар + навбар Android
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -376,17 +383,20 @@ const GameScreen = () => {
       ).catch(() => {});
     }
 
-    // Прогреваем голоса роботов
     (async () => {
       try {
         const assets = await Promise.all(
-          ROBOT_VOICES.map(async (mod) => {
+          SAFE_VOICES.map(async (mod) => {
             const a = Asset.fromModule(mod);
             await a.downloadAsync();
             return a.localUri ?? a.uri ?? null;
           })
         );
         robotVoiceUrisRef.current = assets;
+        // выровнять до 6, чтобы индексы не уезжали
+        while (robotVoiceUrisRef.current.length < 6) {
+          robotVoiceUrisRef.current.push(null);
+        }
       } catch {
         robotVoiceUrisRef.current = new Array(6).fill(null) as (
           | string
@@ -395,49 +405,36 @@ const GameScreen = () => {
       }
     })();
 
-    // Прогреваем фанфары (mp3/wav fallback)
     (async () => {
       try {
-        if (FANFARE_MOD) {
-          const a = Asset.fromModule(FANFARE_MOD);
-          await a.downloadAsync();
-          const { sound } = await Audio.Sound.createAsync(
-            { uri: a.localUri ?? a.uri },
-            { shouldPlay: false }
-          );
-          await sound.setVolumeAsync(1.0);
-          fanfareRef.current = sound;
-          fanfareLoadedRef.current = true;
-        } else {
-          fanfareLoadedRef.current = false;
-        }
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: false,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        const a = Asset.fromModule(FANFARE);
+        await a.downloadAsync();
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: a.localUri ?? a.uri },
+          { shouldPlay: false }
+        );
+        await sound.setVolumeAsync(1.0);
+        fanfareRef.current = sound;
+        fanfareLoadedRef.current = true;
       } catch {
         fanfareLoadedRef.current = false;
       }
     })();
 
-    // Фоновая музыка
     if (ENABLE_BACKGROUND_MUSIC) {
-      (async () => {
-        try {
-          if (BGM_MOD) {
-            const a = Asset.fromModule(BGM_MOD);
-            await a.downloadAsync();
-            const { sound } = await Audio.Sound.createAsync(
-              { uri: a.localUri ?? a.uri },
-              { shouldPlay: true, isLooping: true, volume: 0.35 }
-            );
-            // даём играть в фоне; не выгружаем до размонтирования экрана
-            completionTimers.current.push(
-              setTimeout(() => {
-                /* keep reference somewhere if нужно */
-              }, 1)
-            );
-          }
-        } catch (e) {
-          console.warn("Background music load failed:", e);
-        }
-      })();
+      playBackgroundMusic().catch(() => {});
+    }
+
+    if (__DEV__) {
+      const missing = SAFE_SPRITES.filter((x) => !x).length;
+      if (missing) console.warn(`[robots] missing sprites: ${missing}`);
     }
 
     return () => {
@@ -447,25 +444,27 @@ const GameScreen = () => {
     };
   }, []);
 
-  // Таймер для ≥8
+  // Таймер + BGM на ≥8
   useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
       timer.current = null;
     }
     if (gridLevel >= 8) {
+      if (ENABLE_BACKGROUND_MUSIC) {
+        playBackgroundMusic().catch(() => {});
+      }
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
     return () => {
       if (timer.current) clearInterval(timer.current);
     };
-  }, [gridLevel]);
+  }, [gridLevel, playBackgroundMusic]);
 
   const playFanfareLocal = async () => {
     try {
       if (!fanfareLoadedRef.current || !fanfareRef.current) {
-        if (!FANFARE_MOD) return;
-        const a = Asset.fromModule(FANFARE_MOD);
+        const a = Asset.fromModule(FANFARE);
         await a.downloadAsync();
         const { sound } = await Audio.Sound.createAsync(
           { uri: a.localUri ?? a.uri },
@@ -499,7 +498,9 @@ const GameScreen = () => {
         fanfareRef.current
           ?.getStatusAsync()
           .then((s) => {
-            if (!s?.isLoaded || !(s as any).isPlaying) playFanfareLocal();
+            if (!s?.isLoaded || !(s as any).isPlaying) {
+              playFanfareLocal();
+            }
           })
           .catch(() => {});
       }, 300);
@@ -510,7 +511,7 @@ const GameScreen = () => {
       -1,
       true
     );
-  }, [showCongrats, isGameActive]);
+  }, [showCongrats, isGameActive, congratsPulse]);
 
   useEffect(() => {
     generateCards();
@@ -519,8 +520,11 @@ const GameScreen = () => {
 
   const playRobotVoice = async (idx: number) => {
     try {
-      const uri = robotVoiceUrisRef.current[idx];
-      if (!uri) throw new Error("no-uri");
+      const uri = robotVoiceUrisRef.current[idx] ?? null;
+      if (!uri) {
+        await playNotificationSound().catch(() => {});
+        return;
+      }
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         staysActiveInBackground: false,
@@ -531,7 +535,7 @@ const GameScreen = () => {
       const { sound } = await Audio.Sound.createAsync({ uri });
       await sound.setVolumeAsync(1.0);
       await sound.playAsync();
-      setTimeout(() => sound.unloadAsync().catch(() => {}), 3000);
+      setTimeout(() => sound.unloadAsync().catch(() => {}), 2500);
     } catch {
       playNotificationSound().catch(() => {});
     }
@@ -570,24 +574,25 @@ const GameScreen = () => {
     setShowUpgradePrompt(false);
     setIsGameActive(true);
 
-    // дуга + панель статистики
-    setArcVisible(false);
+    // Дуговой оверлей + синхронное появление кнопки «?»
+    arcVisible && setArcVisible(false);
     arcOffsetY.value = height;
     arcOpacity.value = 0;
     statsOffsetY.value = height;
     statsOpacity.value = 0;
 
-    arcOffsetY.value = withTiming(
-      0,
-      { duration: 500 },
-      (f) => f && runOnJS(setArcVisible)(true)
-    );
-    arcOpacity.value = withTiming(1, { duration: 500 });
+    arcOffsetY.value = withTiming(0, { duration: 500 });
+    arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
+      if (finished) runOnJS(setArcVisible)(true);
+    });
     statsOffsetY.value = withTiming(0, { duration: 500 });
     statsOpacity.value = withTiming(1, { duration: 500 });
 
-    const base = [0, 1, 2, 3, 4, 5];
-    robotsOrderRef.current = shuffle(base);
+    // доступные индексы роботов (только те, у кого есть спрайт)
+    const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
+      (i) => i >= 0
+    );
+    robotsOrderRef.current = shuffle(availableIdx.length ? availableIdx : [0]);
 
     const chosen = uniqFront
       .slice()
@@ -625,21 +630,21 @@ const GameScreen = () => {
     }
 
     if (ENABLE_BACKGROUND_MUSIC) {
-      // если есть таймер — обновим музыку (но не дублируем загрузку)
+      playBackgroundMusic().catch(() => {});
     }
     if (gridLevel >= 8) {
       timer.current = setInterval(() => setTime((p) => p + 1), 1000);
     }
   };
 
-  const getStars = (lvl: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
-    if (lvl < 8) return 0;
-    let maxTime = 30,
-      maxMoves = 12;
-    if (lvl === 10) {
+  const getStars = (lvlBucket: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
+    if (lvlBucket < 8) return 0;
+    let maxTime = 30;
+    let maxMoves = 12;
+    if (lvlBucket === 10) {
       maxTime = 40;
       maxMoves = 18;
-    } else if (lvl === 12) {
+    } else if (lvlBucket === 12) {
       maxTime = 50;
       maxMoves = 24;
     }
@@ -655,8 +660,9 @@ const GameScreen = () => {
       selectedCards.includes(id) ||
       isFlipping ||
       !isGameActive
-    )
+    ) {
       return;
+    }
 
     setIsFlipping(true);
     const newSelected = [...selectedCards, id];
@@ -681,7 +687,7 @@ const GameScreen = () => {
           const matchIndex = Math.floor((matchedCards.length + 2) / 2) - 1;
           const order = robotsOrderRef.current.length
             ? robotsOrderRef.current
-            : [0, 1, 2, 3, 4, 5];
+            : [0];
           const robotIdx = order[matchIndex % order.length];
           setActiveRobotIndex(robotIdx);
 
@@ -718,10 +724,11 @@ const GameScreen = () => {
               const starsEarned = getStars(gridLevel, time, moves);
               setTotalStars((prev: number) => prev + starsEarned);
 
+              // уводим дугу и кнопку «?» вместе
               arcOffsetY.value = withTiming(
                 height,
                 { duration: 700 },
-                (f) => f && runOnJS(setArcVisible)(false)
+                (finished) => finished && runOnJS(setArcVisible)(false)
               );
               arcOpacity.value = withTiming(0, { duration: 700 });
               statsOffsetY.value = withTiming(height, { duration: 700 });
@@ -775,71 +782,72 @@ const GameScreen = () => {
     }
   };
 
-  const onFirstTouch = (_e: GestureResponderEvent) => {
-    if (unlockedRef.current) return;
-    unlockedRef.current = true;
-    if (ENABLE_BACKGROUND_MUSIC) {
-      resumeBackgroundMusic().catch(() => {});
+  const handleHint = () => {
+    const unmatched = cards.filter((c) => !matchedCards.includes(c.id));
+    if (selectedCards.length === 1) {
+      const selected = cards.find((c) => c.id === selectedCards[0]);
+      if (selected) {
+        const key = getSrc(selected);
+        const match = unmatched.find(
+          (c) => c.id !== selected!.id && getSrc(c) === key
+        );
+        if (match) {
+          setHintActive([unmatched.find((c) => c.id === match.id)!.id]);
+          const tmo: TimeoutId = setTimeout(() => setHintActive([]), 2000);
+          completionTimers.current.push(tmo);
+          return;
+        }
+      }
     }
-    StatusBar.setHidden(true, "none");
-    if (Platform.OS === "android") {
-      NavigationBar.setVisibilityAsync("hidden").catch(() => {});
+    for (let i = 0; i < unmatched.length; i++) {
+      for (let j = i + 1; j < unmatched.length; j++) {
+        const a = getSrc(unmatched[i]);
+        const b = getSrc(unmatched[j]);
+        if (a && b && a === b) {
+          setHintActive([unmatched[i].id, unmatched[j].id]);
+          const tmo: TimeoutId = setTimeout(() => setHintActive([]), 2000);
+          completionTimers.current.push(tmo);
+          return;
+        }
+      }
     }
   };
 
-  const handlePlayAgain = () => {
-    setShowConfetti(false);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    generateCards();
+  const getNumColumns = () => {
+    switch (gridLevel) {
+      case 4:
+        return 2;
+      case 6:
+        return 3;
+      case 8:
+        return 4;
+      case 10:
+        return 5;
+      case 12:
+        return 6;
+      default:
+        return 3;
+    }
   };
 
-  const pairs = Math.floor(age / 2);
-  const cfgOk =
-    selectedBackground && selectedBack && externalFrontList.length >= pairs;
-
-  if (!cfgOk) {
-    return (
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { padding: 24, justifyContent: "center" },
-        ]}
-      >
-        <Text style={{ color: "#fff", fontSize: 16, marginBottom: 8 }}>
-          Invalid props. Expected:
-        </Text>
-        <Text style={{ color: "#ccc", marginBottom: 4 }}>
-          • background: at least one image URL
-        </Text>
-        <Text style={{ color: "#ccc", marginBottom: 4 }}>
-          • backCardSide: at least one image URL
-        </Text>
-        <Text style={{ color: "#ccc" }}>
-          • frontCardSide: at least {pairs} unique image URLs
-        </Text>
-      </View>
-    );
-  }
-
-  const { width: W, height: H } = Dimensions.get("window");
-  const showHintButton =
-    isGameActive && !showCongrats && !showPlayAgain && arcVisible;
+  const getCardSize = () => {
+    switch (gridLevel) {
+      case 4:
+        return 120;
+      case 6:
+        return 120;
+      case 8:
+        return 100;
+      case 10:
+      case 12:
+        return 100;
+      default:
+        return 110;
+    }
+  };
 
   const renderItem = ({ item }: { item: Card }) => {
-    const cardSize = (() => {
-      switch (gridLevel) {
-        case 4:
-        case 6:
-          return 120;
-        case 8:
-        case 10:
-        case 12:
-          return 100;
-        default:
-          return 110;
-      }
-    })();
+    const cardSize = getCardSize();
     const faceSource = (item as any).__source as any;
 
     return (
@@ -869,7 +877,7 @@ const GameScreen = () => {
               borderColor: "#C57CFF",
               borderRadius: 10,
               backgroundColor: "transparent",
-              shadowColor: "rgba(197,124,255,0.3)",
+              shadowColor: "rgba(197, 124, 255, 0.3)",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
               shadowRadius: 15,
@@ -884,7 +892,7 @@ const GameScreen = () => {
           <MemoryCard
             item={item}
             onPress={handleCardPress}
-            getCardSize={() => cardSize}
+            getCardSize={getCardSize}
             disabled={isShowingCards || selectedCards.length >= 2}
             isHinted={
               hintActive.includes(item.id) || selectedCards.includes(item.id)
@@ -897,8 +905,8 @@ const GameScreen = () => {
 
         {smileVisible === item.id &&
           (() => {
-            const size = Math.round(cardSize * 0.34);
-            const left = (cardSize - size) / 2;
+            const size = Math.round(getCardSize() * 0.34);
+            const left = (getCardSize() - size) / 2;
             const top = -size - 12;
 
             return (
@@ -918,7 +926,7 @@ const GameScreen = () => {
                 needsOffscreenAlphaCompositing
               >
                 <ExpoImage
-                  source={ROBOT_SPRITES[activeRobotIndex]}
+                  source={SAFE_SPRITES[activeRobotIndex] || HERO_FALLBACK}
                   style={{ width: "100%", height: "100%" }}
                   contentFit="contain"
                 />
@@ -929,22 +937,57 @@ const GameScreen = () => {
     );
   };
 
-  const getNumColumns = () => {
-    switch (gridLevel) {
-      case 4:
-        return 2;
-      case 6:
-        return 3;
-      case 8:
-        return 4;
-      case 10:
-        return 5;
-      case 12:
-        return 6;
-      default:
-        return 3;
+  const onFirstTouch = (_e: GestureResponderEvent) => {
+    if (unlockedRef.current) return;
+    unlockedRef.current = true;
+    if (ENABLE_BACKGROUND_MUSIC) {
+      resumeBackgroundMusic().catch(() => {});
+    }
+    StatusBar.setHidden(true, "none");
+    if (Platform.OS === "android") {
+      NavigationBar.setVisibilityAsync("hidden").catch(() => {});
     }
   };
+
+  const handlePlayAgain = () => {
+    setShowConfetti(false);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    generateCards();
+  };
+
+  const cfgOk =
+    selectedBackground &&
+    selectedBack &&
+    externalFrontList.length >= pairsNeeded;
+
+  if (!cfgOk) {
+    return (
+      <View
+        style={[
+          StyleSheet.absoluteFill,
+          { padding: 24, justifyContent: "center" },
+        ]}
+      >
+        <Text style={{ color: "#fff", fontSize: 16, marginBottom: 8 }}>
+          Invalid props. Expected:
+        </Text>
+        <Text style={{ color: "#ccc", marginBottom: 4 }}>
+          • background: at least one image URL
+        </Text>
+        <Text style={{ color: "#ccc", marginBottom: 4 }}>
+          • backCardSide: at least one image URL
+        </Text>
+        <Text style={{ color: "#ccc" }}>
+          • frontCardSide: at least {pairsNeeded} unique image URLs
+        </Text>
+      </View>
+    );
+  }
+
+  const { width: W, height: H } = Dimensions.get("window");
+  const showHintButton =
+    isGameActive && !showCongrats && !showPlayAgain && arcVisible;
 
   return (
     <View
@@ -1012,48 +1055,11 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* Кнопка подсказки */}
+        {/* Кнопка подсказки — идёт одной дугой вместе с overlay */}
         {showHintButton && (
           <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
             <TouchableOpacity
-              onPress={() => {
-                const unmatched = cards.filter(
-                  (c) => !matchedCards.includes(c.id)
-                );
-                if (selectedCards.length === 1) {
-                  const selected = cards.find((c) => c.id === selectedCards[0]);
-                  if (selected) {
-                    const key = getSrc(selected);
-                    const match = unmatched.find(
-                      (c) => c.id !== selected!.id && getSrc(c) === key
-                    );
-                    if (match) {
-                      setHintActive([match.id]);
-                      const tmo: TimeoutId = setTimeout(
-                        () => setHintActive([]),
-                        2000
-                      );
-                      completionTimers.current.push(tmo);
-                      return;
-                    }
-                  }
-                }
-                for (let i = 0; i < unmatched.length; i++) {
-                  for (let j = i + 1; j < unmatched.length; j++) {
-                    const a = getSrc(unmatched[i]);
-                    const b = getSrc(unmatched[j]);
-                    if (a && b && a === b) {
-                      setHintActive([unmatched[i].id, unmatched[j].id]);
-                      const tmo: TimeoutId = setTimeout(
-                        () => setHintActive([]),
-                        2000
-                      );
-                      completionTimers.current.push(tmo);
-                      return;
-                    }
-                  }
-                }
-              }}
+              onPress={handleHint}
               onPressIn={() =>
                 (hintScale.value = withTiming(1.1, { duration: 100 }))
               }
@@ -1115,26 +1121,11 @@ const GameScreen = () => {
               windowSize={1}
               extraData={cards}
               removeClippedSubviews={false}
-              getItemLayout={(_d, index) => {
-                const size = (() => {
-                  switch (gridLevel) {
-                    case 4:
-                    case 6:
-                      return 120;
-                    case 8:
-                    case 10:
-                    case 12:
-                      return 100;
-                    default:
-                      return 110;
-                  }
-                })();
-                return {
-                  length: size,
-                  offset: size * Math.floor(index / getNumColumns()!),
-                  index,
-                };
-              }}
+              getItemLayout={(_data, index) => ({
+                length: getCardSize(),
+                offset: getCardSize() * Math.floor(index / getNumColumns()!),
+                index,
+              })}
             />
           </View>
         )}
@@ -1172,13 +1163,8 @@ const GameScreen = () => {
           <Animated.View
             style={[
               styles.playAgainButton,
+              playAgainAnimatedStyle,
               {
-                transform: [
-                  {
-                    scale: withTiming(playAgainScale.value, { duration: 225 }),
-                  },
-                ],
-                opacity: playAgainOpacity.value,
                 top: playAgainTop,
                 bottom: undefined,
                 zIndex: 5000,
