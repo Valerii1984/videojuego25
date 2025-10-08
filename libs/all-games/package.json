@@ -1,0 +1,16 @@
+{
+  "name": "all-games",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "pack": "npm pack",
+    "postversion": "node ./scripts/update-version.js",
+    "release": "pnpm changeset version && pnpm pack",
+    "worksp": "node ./scripts/workspace-ver.js"
+  },
+  "dependencies": {
+    "@game/magic-memory-ui": "workspace:*",
+    "@game/tic-tac-toe-ui": "workspace:*"
+  }
+}
