@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect, useRef, } from "react";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
 import { AppState } from "react-native";
-const ENABLE_BACKGROUND_MUSIC = true;
+const ENABLE_BACKGROUND_MUSIC = false;
 const noop = async () => { };
 const SoundContext = createContext({
     playNotificationSound: noop,

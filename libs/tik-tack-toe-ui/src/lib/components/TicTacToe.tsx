@@ -24,7 +24,7 @@ import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
 
-const ENABLE_BACKGROUND_MUSIC = true;
+const ENABLE_BACKGROUND_MUSIC = false;
 const SHOW_LANG_BADGE = false;
 
 /** ——— локали как в Magic Memory ——— */

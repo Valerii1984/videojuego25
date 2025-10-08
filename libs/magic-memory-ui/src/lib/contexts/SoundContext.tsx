@@ -9,7 +9,7 @@ import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess } from "expo-av";
 import { Asset } from "expo-asset";
 import { AppState, AppStateStatus } from "react-native";
 
-const ENABLE_BACKGROUND_MUSIC = true;
+const ENABLE_BACKGROUND_MUSIC = false;
 
 type Ctx = {
   playNotificationSound: (heroIndex?: number) => Promise<void>;

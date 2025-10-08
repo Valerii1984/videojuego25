@@ -10,11 +10,9 @@ export interface MagicMemoryProps {
 
 export const MagicMemory: React.FC<MagicMemoryProps> = ({ props }) => {
   return (
-    <SoundProvider>
-      <PropConfigProvider value={props}>
-        <GameScreen />
-      </PropConfigProvider>
-    </SoundProvider>
+    <PropConfigProvider value={props}>
+      <GameScreen />
+    </PropConfigProvider>
   );
 };
 

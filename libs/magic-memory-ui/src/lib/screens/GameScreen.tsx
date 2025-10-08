@@ -46,7 +46,7 @@ import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
-const ENABLE_BACKGROUND_MUSIC = true;
+const ENABLE_BACKGROUND_MUSIC = false;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 
 /** ---------- ФОЛБЭКИ/БЕЗОПАСНЫЕ МАССИВЫ ДЛЯ РОБОТОВ ---------- */
