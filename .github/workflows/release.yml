@@ -1,0 +1,38 @@
+name: Release @game/all-games
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run release script
+        run: pnpm --filter @game/all-games release
+
+      - name: Get package version
+        id: get_version
+        run: echo "version=$(node -p \"require('./packages/all-games/package.json').version\")" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.get_version.outputs.version }}
+          name: "@game/all-games ${{ steps.get_version.outputs.version }}"
+          files: |
+            packages/all-games/*.tgz
