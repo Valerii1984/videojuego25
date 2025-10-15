@@ -8,6 +8,7 @@ package-lock.json
 # build outputs
 dist/
 !libs/magic-memory-ui/dist
+!libs/tik-tack-toe-ui/dist
 tmp/
 *.tgz
 
@@ -23,3 +24,4 @@ web-build/
 Thumbs.db
 .vscode/
 .idea/
+*.lnk
