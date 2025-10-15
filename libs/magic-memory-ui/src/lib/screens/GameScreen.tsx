@@ -15,6 +15,8 @@ import {
   GestureResponderEvent,
   Platform,
   type TransformsStyle,
+  Animated as RNAnimated,
+  Easing as RNEasing,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
@@ -22,6 +24,7 @@ import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
+
 import Confetti from "../components/Confetti";
 import CustomAlert from "../components/CustomAlert";
 import MemoryCard from "../components/Card";
@@ -29,19 +32,14 @@ import { Card } from "../types";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import styles from "./GameScreen.styles";
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
   withRepeat,
-  runOnJS,
 } from "react-native-reanimated";
-import Svg, {
-  Defs,
-  LinearGradient as SvgLinearGradient,
-  Stop,
-  Path,
-} from "react-native-svg";
+
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
@@ -49,21 +47,12 @@ import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 const ENABLE_BACKGROUND_MUSIC = false;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 
-/** ---------- ФОЛБЭКИ/БЕЗОПАСНЫЕ МАССИВЫ ДЛЯ РОБОТОВ ---------- */
-// один гарантированный плейсхолдер-кадр (легкий webp/png, который точно есть)
 const HERO_FALLBACK = require("../../assets/hero/hero.webp");
-
-// Спрятать дырки: если какого-то anim.webp нет — подставим плейсхолдер,
-// чтобы не было require(undefined).
 const SAFE_SPRITES = (ROBOT_SPRITES ?? []).map(
   (m: any, i: number) =>
     m || (console.warn("[robots] missing sprite", i + 1), HERO_FALLBACK)
 );
-
-// Голоса — выкинем пустые слоты, чтобы не падал Audio.Sound.createAsync
 const SAFE_VOICES = (ROBOT_VOICES ?? []).filter(Boolean) as any[];
-
-/** -------------------------------------------------------------- */
 
 type LocaleTag =
   | "en-US"
@@ -74,7 +63,6 @@ type LocaleTag =
   | "it-IT"
   | "pt-BR"
   | "pl-PL";
-
 type TKey =
   | "time"
   | "moves"
@@ -173,10 +161,8 @@ const normalizeLocale = (raw?: string): LocaleTag => {
 
 const asArray = (val?: string | string[]): string[] | undefined =>
   !val ? undefined : Array.isArray(val) ? val : [val];
-
 const pickRandom = <T,>(arr: T[]): T =>
   arr[Math.floor(Math.random() * arr.length)];
-
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -185,7 +171,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
-
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -213,6 +198,9 @@ const getSrc = (c?: Card): string | undefined => {
     ? anyCard.__source
     : anyCard.__source.uri;
 };
+
+const ARC_BOTTOM_PAD = 48;
+const ARC_TOP_OFFSET = 44;
 
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
@@ -249,7 +237,6 @@ const GameScreen = () => {
   const [moves, setMoves] = useState<number>(0);
   const [matchedCards, setMatchedCards] = useState<number[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [roundsCompleted, setRoundsCompleted] = useState<number>(0);
   const [totalStars, setTotalStars] = useState<number>(0);
   const [isShowingCards, setIsShowingCards] = useState(false);
@@ -264,27 +251,74 @@ const GameScreen = () => {
   const [showPlayAgain, setShowPlayAgain] = useState(false);
   const [isGameActive, setIsGameActive] = useState(true);
 
-  // дуга и её видимость
-  const [arcVisible, setArcVisible] = useState(false);
-
   const [activeRobotIndex, setActiveRobotIndex] = useState<number>(0);
   const robotsOrderRef = useRef<number[]>([]);
-
   const robotVoiceUrisRef = useRef<(string | null)[]>(
     new Array(6).fill(null) as (string | null)[]
   );
 
-  const { width, height } = Dimensions.get("window");
+  const [screen, setScreen] = useState(Dimensions.get("window"));
+  useEffect(() => {
+    const sub = Dimensions.addEventListener("change", ({ window }) => {
+      setScreen(window);
+    });
+    return () => sub?.remove?.();
+  }, []);
+  const { width, height } = screen;
 
-  // shared values
-  const arcOffsetY = useSharedValue(0);
-  const arcOpacity = useSharedValue(1);
-  const statsOffsetY = useSharedValue(0);
-  const statsOpacity = useSharedValue(1);
+  const arcTransY = useRef(
+    new RNAnimated.Value(height + ARC_BOTTOM_PAD)
+  ).current;
+  const arcOpacity = useRef(new RNAnimated.Value(0)).current;
+
+  const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
+
+  const arcIn = () => {
+    arcTransY.setValue(height + ARC_BOTTOM_PAD);
+    arcOpacity.setValue(0);
+    RNAnimated.parallel([
+      RNAnimated.timing(arcTransY, {
+        toValue: 0,
+        duration: 700,
+        easing: RNEasing.out(RNEasing.cubic),
+        useNativeDriver: true,
+      }),
+      RNAnimated.timing(arcOpacity, {
+        toValue: 1,
+        duration: 700,
+        easing: RNEasing.out(RNEasing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+  const arcOut = (onDone?: () => void) => {
+    RNAnimated.parallel([
+      RNAnimated.timing(arcTransY, {
+        toValue: height + ARC_BOTTOM_PAD,
+        duration: 700,
+        easing: RNEasing.in(RNEasing.cubic),
+        useNativeDriver: true,
+      }),
+      RNAnimated.timing(arcOpacity, {
+        toValue: 0,
+        duration: 700,
+        easing: RNEasing.in(RNEasing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => onDone?.());
+  };
+
   const playAgainScale = useSharedValue(1);
   const playAgainOpacity = useSharedValue(1);
-  const hintScale = useSharedValue(1);
+  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
+    opacity: playAgainOpacity.value,
+  }));
   const congratsPulse = useSharedValue(1.05);
+  const congratsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
+    opacity: 1,
+  }));
 
   const successPlayedRef = useRef(false);
   const fanfareRef = useRef<Audio.Sound | null>(null);
@@ -319,40 +353,6 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
-  // animated styles
-  const arcAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: arcOffsetY.value }],
-    opacity: arcOpacity.value,
-  }));
-
-  const statsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: statsOffsetY.value }],
-    opacity: statsOpacity.value,
-  }));
-
-  const playAgainAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
-    opacity: playAgainOpacity.value,
-  }));
-
-  // строго типизированный transform
-  const hintAnimatedStyle = useAnimatedStyle(() => {
-    const t: NonNullable<TransformsStyle["transform"]> = [
-      { translateY: arcOffsetY.value as number },
-      { scale: hintScale.value as number },
-    ];
-    return {
-      transform: t,
-      opacity: arcOpacity.value as number,
-    } as ViewStyle;
-  });
-
-  const congratsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
-    opacity: 1,
-  }));
-
-  // Прячем статус-бар + навбар Android
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -393,7 +393,6 @@ const GameScreen = () => {
           })
         );
         robotVoiceUrisRef.current = assets;
-        // выровнять до 6, чтобы индексы не уезжали
         while (robotVoiceUrisRef.current.length < 6) {
           robotVoiceUrisRef.current.push(null);
         }
@@ -432,11 +431,6 @@ const GameScreen = () => {
       playBackgroundMusic().catch(() => {});
     }
 
-    if (__DEV__) {
-      const missing = SAFE_SPRITES.filter((x) => !x).length;
-      if (missing) console.warn(`[robots] missing sprites: ${missing}`);
-    }
-
     return () => {
       completionTimers.current.forEach(clearTimeout);
       completionTimers.current = [];
@@ -444,7 +438,6 @@ const GameScreen = () => {
     };
   }, []);
 
-  // Таймер + BGM на ≥8
   useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
@@ -511,12 +504,11 @@ const GameScreen = () => {
       -1,
       true
     );
-  }, [showCongrats, isGameActive, congratsPulse]);
+  }, [showCongrats, isGameActive]);
 
   useEffect(() => {
     generateCards();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [age]);
+  }, [age, height, width]);
 
   const playRobotVoice = async (idx: number) => {
     try {
@@ -539,6 +531,18 @@ const GameScreen = () => {
     } catch {
       playNotificationSound().catch(() => {});
     }
+  };
+
+  const fadesRef = useRef(new Map<number, RNAnimated.Value>()).current;
+  const scalesRef = useRef(new Map<number, RNAnimated.Value>()).current;
+  const ensureAnimFor = (id: number) => {
+    if (!fadesRef.has(id)) fadesRef.set(id, new RNAnimated.Value(1));
+    if (!scalesRef.has(id)) scalesRef.set(id, new RNAnimated.Value(1));
+    return { fade: fadesRef.get(id)!, scale: scalesRef.get(id)! };
+  };
+  const resetAnimFor = (id: number) => {
+    ensureAnimFor(id).fade.setValue(1);
+    ensureAnimFor(id).scale.setValue(1);
   };
 
   const generateCards = () => {
@@ -571,24 +575,11 @@ const GameScreen = () => {
     setSmileVisible(null);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    setShowUpgradePrompt(false);
     setIsGameActive(true);
+    successPlayedRef.current = false;
 
-    // Дуговой оверлей + синхронное появление кнопки «?»
-    arcVisible && setArcVisible(false);
-    arcOffsetY.value = height;
-    arcOpacity.value = 0;
-    statsOffsetY.value = height;
-    statsOpacity.value = 0;
+    arcIn();
 
-    arcOffsetY.value = withTiming(0, { duration: 500 });
-    arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
-      if (finished) runOnJS(setArcVisible)(true);
-    });
-    statsOffsetY.value = withTiming(0, { duration: 500 });
-    statsOpacity.value = withTiming(1, { duration: 500 });
-
-    // доступные индексы роботов (только те, у кого есть спрайт)
     const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
       (i) => i >= 0
     );
@@ -611,6 +602,9 @@ const GameScreen = () => {
         ...({ __source: val.source } as any),
       }))
       .sort(() => Math.random() - 0.5);
+
+    fadesRef.clear();
+    scalesRef.clear();
 
     setCards(cardPairs);
 
@@ -677,7 +671,6 @@ const GameScreen = () => {
       const [firstId, secondId] = newSelected;
       const first = cards.find((c) => c.id === firstId);
       const second = cards.find((c) => c.id === secondId);
-
       const same = getSrc(first) && getSrc(first) === getSrc(second);
 
       if (same) {
@@ -709,51 +702,76 @@ const GameScreen = () => {
           const smileTimer: TimeoutId = setTimeout(() => {
             if (!isGameActive) return;
             setSmileVisible(null);
-            setCards((prev) =>
-              prev.map((card) =>
-                newMatched.includes(card.id)
-                  ? { ...card, isHidden: true }
-                  : card
-              )
-            );
-            setSelectedCards([]);
-            if (newMatched.length === cards.length) {
-              const newRounds = roundsCompleted + 1;
-              setRoundsCompleted(newRounds);
 
-              const starsEarned = getStars(gridLevel, time, moves);
-              setTotalStars((prev: number) => prev + starsEarned);
+            const pairIds = [firstId, secondId];
+            RNAnimated.parallel(
+              pairIds.map((pid) => {
+                const { fade, scale } = ensureAnimFor(pid);
+                fade.stopAnimation();
+                scale.stopAnimation();
 
-              // уводим дугу и кнопку «?» вместе
-              arcOffsetY.value = withTiming(
-                height,
-                { duration: 700 },
-                (finished) => finished && runOnJS(setArcVisible)(false)
+                fade.setValue(1);
+                scale.setValue(1);
+                return RNAnimated.parallel([
+                  RNAnimated.timing(fade, {
+                    toValue: 0,
+                    duration: 500,
+                    easing: RNEasing.out(RNEasing.cubic),
+                    useNativeDriver: true,
+                  }),
+                  RNAnimated.timing(scale, {
+                    toValue: 0.92,
+                    duration: 500,
+                    easing: RNEasing.out(RNEasing.cubic),
+                    useNativeDriver: true,
+                  }),
+                ]);
+              })
+            ).start(() => {
+              setCards((prev) =>
+                prev.map((card) =>
+                  pairIds.includes(card.id) ? { ...card, isHidden: true } : card
+                )
               );
-              arcOpacity.value = withTiming(0, { duration: 700 });
-              statsOffsetY.value = withTiming(height, { duration: 700 });
-              statsOpacity.value = withTiming(0, { duration: 700 });
 
-              const congratsTimer: TimeoutId = setTimeout(() => {
-                if (!isGameActive) return;
-                setShowCongrats(true);
-                setShowConfetti(true);
-              }, 900);
-              completionTimers.current.push(congratsTimer);
+              setSelectedCards([]);
 
-              const nextTimer: TimeoutId = setTimeout(() => {
-                if (!isGameActive) return;
-                setShowPlayAgain(false);
-                const nextAge = age + 2;
-                const goTimer: TimeoutId = setTimeout(() => {
-                  setAge(nextAge);
-                }, 400);
-                completionTimers.current.push(goTimer);
-              }, 2100);
-              completionTimers.current.push(nextTimer);
-            } else {
-              setIsFlipping(false);
-            }
+              if (newMatched.length === cards.length) {
+                const newRounds = roundsCompleted + 1;
+                setRoundsCompleted(newRounds);
+
+                const starsEarned = getStars(gridLevel, time, moves);
+                setTotalStars((prev: number) => prev + starsEarned);
+
+                arcOut();
+
+                const congratsTimer: TimeoutId = setTimeout(() => {
+                  if (!isGameActive) return;
+                  setShowCongrats(true);
+                  setShowConfetti(true);
+                }, 900);
+                completionTimers.current.push(congratsTimer);
+
+                const nextTimer: TimeoutId = setTimeout(async () => {
+                  if (!isGameActive) return;
+
+                  const start = Date.now();
+                  try {
+                    let playing = true;
+                    while (playing && Date.now() - start < 6000) {
+                      const s = await fanfareRef.current?.getStatusAsync();
+                      playing = !!(s as any)?.isPlaying;
+                      if (playing) await new Promise((r) => setTimeout(r, 150));
+                    }
+                  } catch {}
+                  setShowPlayAgain(false);
+                  setAge(age + 2);
+                }, 3800);
+                completionTimers.current.push(nextTimer);
+              } else {
+                setIsFlipping(false);
+              }
+            });
           }, 500);
           completionTimers.current.push(smileTimer);
         }, 500);
@@ -770,7 +788,7 @@ const GameScreen = () => {
           );
           setSelectedCards([]);
           setIsFlipping(false);
-        }, 500);
+        }, 650);
         completionTimers.current.push(flipBackTimer);
       }
     } else {
@@ -850,8 +868,10 @@ const GameScreen = () => {
     const cardSize = getCardSize();
     const faceSource = (item as any).__source as any;
 
+    const { fade, scale } = ensureAnimFor(item.id);
+
     return (
-      <View
+      <RNAnimated.View
         style={{
           position: "relative",
           marginHorizontal: 5,
@@ -859,9 +879,9 @@ const GameScreen = () => {
           alignItems: "center",
           width: cardSize,
           height: cardSize,
-          opacity: 1,
-          overflow: "visible",
           zIndex: 0,
+          opacity: fade,
+          transform: [{ scale }],
         }}
         collapsable={false}
       >
@@ -907,7 +927,7 @@ const GameScreen = () => {
           (() => {
             const size = Math.round(getCardSize() * 0.34);
             const left = (getCardSize() - size) / 2;
-            const top = -size - 12;
+            const top = -size - 18;
 
             return (
               <View
@@ -933,7 +953,7 @@ const GameScreen = () => {
               </View>
             );
           })()}
-      </View>
+      </RNAnimated.View>
     );
   };
 
@@ -942,10 +962,6 @@ const GameScreen = () => {
     unlockedRef.current = true;
     if (ENABLE_BACKGROUND_MUSIC) {
       resumeBackgroundMusic().catch(() => {});
-    }
-    StatusBar.setHidden(true, "none");
-    if (Platform.OS === "android") {
-      NavigationBar.setVisibilityAsync("hidden").catch(() => {});
     }
   };
 
@@ -985,9 +1001,8 @@ const GameScreen = () => {
     );
   }
 
-  const { width: W, height: H } = Dimensions.get("window");
-  const showHintButton =
-    isGameActive && !showCongrats && !showPlayAgain && arcVisible;
+  const { height: H } = screen;
+  const hintTop = Math.max(34, Math.round(H / 2 - 20));
 
   return (
     <View
@@ -1004,48 +1019,23 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* дуга-оверлей */}
-      {arcVisible && (
-        <Animated.View style={[arcAnimatedStyle, { zIndex: 30 }]}>
-          <Svg
-            height={H}
-            width="100%"
-            style={{ position: "absolute", top: 0, left: 0, zIndex: 5 }}
-            viewBox={`0 0 ${W} ${H}`}
-            preserveAspectRatio="none"
-          >
-            <Defs>
-              <SvgLinearGradient id="arcGrad" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor="#020743" stopOpacity="0.55" />
-                <Stop offset="1" stopColor="#080001" stopOpacity="0.75" />
-              </SvgLinearGradient>
-              <SvgLinearGradient
-                id="arcBorderGrad"
-                x1="0"
-                y1="0.5"
-                x2="1"
-                y2="0.5"
-              >
-                <Stop offset="0" stopColor="#C57CFF" stopOpacity="0" />
-                <Stop offset="0.3" stopColor="#C57CFF" stopOpacity="1" />
-                <Stop offset="0.7" stopColor="#C57CFF" stopOpacity="1" />
-                <Stop offset="1" stopColor="#C57CFF" stopOpacity="0" />
-              </SvgLinearGradient>
-            </Defs>
-            <Path
-              d={`M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`}
-              fill="url(#arcGrad)"
-            />
-            <Path
-              d={`M0 100 Q${W / 2} 60 ${W} 100`}
-              fill="none"
-              stroke="url(#arcBorderGrad)"
-              strokeWidth={4}
-              strokeLinecap="round"
-            />
-          </Svg>
-        </Animated.View>
-      )}
+      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <RNAnimated.Image
+          source={require("../../assets/ellipse.png")}
+          resizeMode="cover"
+          style={{
+            position: "absolute",
+            top: ARC_TOP_OFFSET,
+            left: 0,
+            right: 0,
+            width: "100%",
+            height: H + ARC_BOTTOM_PAD + ARC_TOP_OFFSET,
+            opacity: arcOpacity as any,
+            transform: [{ translateY: arcTransY as any }],
+            zIndex: 30,
+          }}
+        />
+      </View>
 
       <StatusBar hidden />
 
@@ -1055,18 +1045,37 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* Кнопка подсказки — идёт одной дугой вместе с overlay */}
-        {showHintButton && (
-          <Animated.View style={[styles.hintButton, hintAnimatedStyle]}>
+        {isGameActive && !showCongrats && !showPlayAgain && (
+          <RNAnimated.View
+            style={{
+              position: "absolute",
+              right: 30,
+              top: hintTop,
+              zIndex: 1000,
+              opacity: arcOpacity as any,
+              transform: [
+                { translateY: arcTransY as any },
+                { scale: hintScaleRN as any },
+              ],
+            }}
+          >
             <TouchableOpacity
               onPress={handleHint}
+              activeOpacity={1}
               onPressIn={() =>
-                (hintScale.value = withTiming(1.1, { duration: 100 }))
+                RNAnimated.timing(hintScaleRN, {
+                  toValue: 1.1,
+                  duration: 100,
+                  useNativeDriver: true,
+                }).start()
               }
               onPressOut={() =>
-                (hintScale.value = withTiming(1, { duration: 100 }))
+                RNAnimated.timing(hintScaleRN, {
+                  toValue: 1,
+                  duration: 100,
+                  useNativeDriver: true,
+                }).start()
               }
-              activeOpacity={1}
             >
               <View
                 style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
@@ -1081,7 +1090,7 @@ const GameScreen = () => {
                 </View>
               </View>
             </TouchableOpacity>
-          </Animated.View>
+          </RNAnimated.View>
         )}
 
         {cards.length > 0 && (

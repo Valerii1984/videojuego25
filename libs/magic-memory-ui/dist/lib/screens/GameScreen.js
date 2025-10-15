@@ -1,6 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useRef, useState, useMemo } from "react";
-import { View, Text, TouchableOpacity, FlatList, StatusBar, Image, ImageBackground, StyleSheet, Dimensions, Keyboard, Platform, } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, StatusBar, Image, ImageBackground, StyleSheet, Dimensions, Keyboard, Platform, Animated as RNAnimated, Easing as RNEasing, } from "react-native";
 import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
@@ -13,20 +13,14 @@ import MemoryCard from "../components/Card";
 import { isWeb } from "../utils/config";
 import globalStyles from "../styles/global-styles";
 import styles from "./GameScreen.styles";
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, runOnJS, } from "react-native-reanimated";
-import Svg, { Defs, LinearGradient as SvgLinearGradient, Stop, Path, } from "react-native-svg";
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withRepeat, } from "react-native-reanimated";
 import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 const ENABLE_BACKGROUND_MUSIC = false;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
-/** ---------- ФОЛБЭКИ/БЕЗОПАСНЫЕ МАССИВЫ ДЛЯ РОБОТОВ ---------- */
-// один гарантированный плейсхолдер-кадр (легкий webp/png, который точно есть)
 const HERO_FALLBACK = require("../../assets/hero/hero.webp");
-// Спрятать дырки: если какого-то anim.webp нет — подставим плейсхолдер,
-// чтобы не было require(undefined).
 const SAFE_SPRITES = (ROBOT_SPRITES !== null && ROBOT_SPRITES !== void 0 ? ROBOT_SPRITES : []).map((m, i) => m || (console.warn("[robots] missing sprite", i + 1), HERO_FALLBACK));
-// Голоса — выкинем пустые слоты, чтобы не падал Audio.Sound.createAsync
 const SAFE_VOICES = (ROBOT_VOICES !== null && ROBOT_VOICES !== void 0 ? ROBOT_VOICES : []).filter(Boolean);
 const STRINGS = {
     "en-US": {
@@ -146,6 +140,8 @@ const getSrc = (c) => {
         ? anyCard.__source
         : anyCard.__source.uri;
 };
+const ARC_BOTTOM_PAD = 48;
+const ARC_TOP_OFFSET = 44;
 const GameScreen = () => {
     const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } = useSound();
     const unlockedRef = useRef(false);
@@ -167,7 +163,6 @@ const GameScreen = () => {
     const [moves, setMoves] = useState(0);
     const [matchedCards, setMatchedCards] = useState([]);
     const [showConfetti, setShowConfetti] = useState(false);
-    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
     const [roundsCompleted, setRoundsCompleted] = useState(0);
     const [totalStars, setTotalStars] = useState(0);
     const [isShowingCards, setIsShowingCards] = useState(false);
@@ -179,21 +174,65 @@ const GameScreen = () => {
     const [showCongrats, setShowCongrats] = useState(false);
     const [showPlayAgain, setShowPlayAgain] = useState(false);
     const [isGameActive, setIsGameActive] = useState(true);
-    // дуга и её видимость
-    const [arcVisible, setArcVisible] = useState(false);
     const [activeRobotIndex, setActiveRobotIndex] = useState(0);
     const robotsOrderRef = useRef([]);
     const robotVoiceUrisRef = useRef(new Array(6).fill(null));
-    const { width, height } = Dimensions.get("window");
-    // shared values
-    const arcOffsetY = useSharedValue(0);
-    const arcOpacity = useSharedValue(1);
-    const statsOffsetY = useSharedValue(0);
-    const statsOpacity = useSharedValue(1);
+    const [screen, setScreen] = useState(Dimensions.get("window"));
+    useEffect(() => {
+        const sub = Dimensions.addEventListener("change", ({ window }) => {
+            setScreen(window);
+        });
+        return () => { var _a; return (_a = sub === null || sub === void 0 ? void 0 : sub.remove) === null || _a === void 0 ? void 0 : _a.call(sub); };
+    }, []);
+    const { width, height } = screen;
+    const arcTransY = useRef(new RNAnimated.Value(height + ARC_BOTTOM_PAD)).current;
+    const arcOpacity = useRef(new RNAnimated.Value(0)).current;
+    const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
+    const arcIn = () => {
+        arcTransY.setValue(height + ARC_BOTTOM_PAD);
+        arcOpacity.setValue(0);
+        RNAnimated.parallel([
+            RNAnimated.timing(arcTransY, {
+                toValue: 0,
+                duration: 700,
+                easing: RNEasing.out(RNEasing.cubic),
+                useNativeDriver: true,
+            }),
+            RNAnimated.timing(arcOpacity, {
+                toValue: 1,
+                duration: 700,
+                easing: RNEasing.out(RNEasing.cubic),
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
+    const arcOut = (onDone) => {
+        RNAnimated.parallel([
+            RNAnimated.timing(arcTransY, {
+                toValue: height + ARC_BOTTOM_PAD,
+                duration: 700,
+                easing: RNEasing.in(RNEasing.cubic),
+                useNativeDriver: true,
+            }),
+            RNAnimated.timing(arcOpacity, {
+                toValue: 0,
+                duration: 700,
+                easing: RNEasing.in(RNEasing.cubic),
+                useNativeDriver: true,
+            }),
+        ]).start(() => onDone === null || onDone === void 0 ? void 0 : onDone());
+    };
     const playAgainScale = useSharedValue(1);
     const playAgainOpacity = useSharedValue(1);
-    const hintScale = useSharedValue(1);
+    const playAgainAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
+        opacity: playAgainOpacity.value,
+    }));
     const congratsPulse = useSharedValue(1.05);
+    const congratsAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
+        opacity: 1,
+    }));
     const successPlayedRef = useRef(false);
     const fanfareRef = useRef(null);
     const fanfareLoadedRef = useRef(false);
@@ -213,35 +252,6 @@ const GameScreen = () => {
     const externalFrontList = useMemo(() => Array.isArray(cfg.frontCardSide)
         ? cfg.frontCardSide
         : [], [cfg.frontCardSide, gridLevel, age]);
-    // animated styles
-    const arcAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: arcOffsetY.value }],
-        opacity: arcOpacity.value,
-    }));
-    const statsAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: statsOffsetY.value }],
-        opacity: statsOpacity.value,
-    }));
-    const playAgainAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: withTiming(playAgainScale.value, { duration: 225 }) }],
-        opacity: playAgainOpacity.value,
-    }));
-    // строго типизированный transform
-    const hintAnimatedStyle = useAnimatedStyle(() => {
-        const t = [
-            { translateY: arcOffsetY.value },
-            { scale: hintScale.value },
-        ];
-        return {
-            transform: t,
-            opacity: arcOpacity.value,
-        };
-    });
-    const congratsAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{ scale: withTiming(congratsPulse.value, { duration: 2000 }) }],
-        opacity: 1,
-    }));
-    // Прячем статус-бар + навбар Android
     useEffect(() => {
         const hideBars = async () => {
             try {
@@ -278,7 +288,6 @@ const GameScreen = () => {
                     return (_b = (_a = a.localUri) !== null && _a !== void 0 ? _a : a.uri) !== null && _b !== void 0 ? _b : null;
                 }));
                 robotVoiceUrisRef.current = assets;
-                // выровнять до 6, чтобы индексы не уезжали
                 while (robotVoiceUrisRef.current.length < 6) {
                     robotVoiceUrisRef.current.push(null);
                 }
@@ -311,11 +320,6 @@ const GameScreen = () => {
         if (ENABLE_BACKGROUND_MUSIC) {
             playBackgroundMusic().catch(() => { });
         }
-        if (__DEV__) {
-            const missing = SAFE_SPRITES.filter((x) => !x).length;
-            if (missing)
-                console.warn(`[robots] missing sprites: ${missing}`);
-        }
         return () => {
             var _a;
             completionTimers.current.forEach(clearTimeout);
@@ -323,7 +327,6 @@ const GameScreen = () => {
             (_a = fanfareRef.current) === null || _a === void 0 ? void 0 : _a.unloadAsync().catch(() => { });
         };
     }, []);
-    // Таймер + BGM на ≥8
     useEffect(() => {
         if (timer.current) {
             clearInterval(timer.current);
@@ -382,11 +385,10 @@ const GameScreen = () => {
             }, 300);
         })();
         congratsPulse.value = withRepeat(withTiming(1.2, { duration: 2000 }), -1, true);
-    }, [showCongrats, isGameActive, congratsPulse]);
+    }, [showCongrats, isGameActive]);
     useEffect(() => {
         generateCards();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [age]);
+    }, [age, height, width]);
     const playRobotVoice = async (idx) => {
         var _a;
         try {
@@ -410,6 +412,19 @@ const GameScreen = () => {
         catch {
             playNotificationSound().catch(() => { });
         }
+    };
+    const fadesRef = useRef(new Map()).current;
+    const scalesRef = useRef(new Map()).current;
+    const ensureAnimFor = (id) => {
+        if (!fadesRef.has(id))
+            fadesRef.set(id, new RNAnimated.Value(1));
+        if (!scalesRef.has(id))
+            scalesRef.set(id, new RNAnimated.Value(1));
+        return { fade: fadesRef.get(id), scale: scalesRef.get(id) };
+    };
+    const resetAnimFor = (id) => {
+        ensureAnimFor(id).fade.setValue(1);
+        ensureAnimFor(id).scale.setValue(1);
     };
     const generateCards = () => {
         var _a;
@@ -438,22 +453,9 @@ const GameScreen = () => {
         setSmileVisible(null);
         setShowCongrats(false);
         setShowPlayAgain(false);
-        setShowUpgradePrompt(false);
         setIsGameActive(true);
-        // Дуговой оверлей + синхронное появление кнопки «?»
-        arcVisible && setArcVisible(false);
-        arcOffsetY.value = height;
-        arcOpacity.value = 0;
-        statsOffsetY.value = height;
-        statsOpacity.value = 0;
-        arcOffsetY.value = withTiming(0, { duration: 500 });
-        arcOpacity.value = withTiming(1, { duration: 500 }, (finished) => {
-            if (finished)
-                runOnJS(setArcVisible)(true);
-        });
-        statsOffsetY.value = withTiming(0, { duration: 500 });
-        statsOpacity.value = withTiming(1, { duration: 500 });
-        // доступные индексы роботов (только те, у кого есть спрайт)
+        successPlayedRef.current = false;
+        arcIn();
         const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter((i) => i >= 0);
         robotsOrderRef.current = shuffle(availableIdx.length ? availableIdx : [0]);
         const chosen = uniqFront
@@ -472,6 +474,8 @@ const GameScreen = () => {
             ...{ __source: val.source },
         }))
             .sort(() => Math.random() - 0.5);
+        fadesRef.clear();
+        scalesRef.clear();
         setCards(cardPairs);
         if (gridLevel === 4) {
             setIsShowingCards(true);
@@ -553,42 +557,67 @@ const GameScreen = () => {
                         if (!isGameActive)
                             return;
                         setSmileVisible(null);
-                        setCards((prev) => prev.map((card) => newMatched.includes(card.id)
-                            ? { ...card, isHidden: true }
-                            : card));
-                        setSelectedCards([]);
-                        if (newMatched.length === cards.length) {
-                            const newRounds = roundsCompleted + 1;
-                            setRoundsCompleted(newRounds);
-                            const starsEarned = getStars(gridLevel, time, moves);
-                            setTotalStars((prev) => prev + starsEarned);
-                            // уводим дугу и кнопку «?» вместе
-                            arcOffsetY.value = withTiming(height, { duration: 700 }, (finished) => finished && runOnJS(setArcVisible)(false));
-                            arcOpacity.value = withTiming(0, { duration: 700 });
-                            statsOffsetY.value = withTiming(height, { duration: 700 });
-                            statsOpacity.value = withTiming(0, { duration: 700 });
-                            const congratsTimer = setTimeout(() => {
-                                if (!isGameActive)
-                                    return;
-                                setShowCongrats(true);
-                                setShowConfetti(true);
-                            }, 900);
-                            completionTimers.current.push(congratsTimer);
-                            const nextTimer = setTimeout(() => {
-                                if (!isGameActive)
-                                    return;
-                                setShowPlayAgain(false);
-                                const nextAge = age + 2;
-                                const goTimer = setTimeout(() => {
-                                    setAge(nextAge);
-                                }, 400);
-                                completionTimers.current.push(goTimer);
-                            }, 2100);
-                            completionTimers.current.push(nextTimer);
-                        }
-                        else {
-                            setIsFlipping(false);
-                        }
+                        const pairIds = [firstId, secondId];
+                        RNAnimated.parallel(pairIds.map((pid) => {
+                            const { fade, scale } = ensureAnimFor(pid);
+                            fade.stopAnimation();
+                            scale.stopAnimation();
+                            fade.setValue(1);
+                            scale.setValue(1);
+                            return RNAnimated.parallel([
+                                RNAnimated.timing(fade, {
+                                    toValue: 0,
+                                    duration: 500,
+                                    easing: RNEasing.out(RNEasing.cubic),
+                                    useNativeDriver: true,
+                                }),
+                                RNAnimated.timing(scale, {
+                                    toValue: 0.92,
+                                    duration: 500,
+                                    easing: RNEasing.out(RNEasing.cubic),
+                                    useNativeDriver: true,
+                                }),
+                            ]);
+                        })).start(() => {
+                            setCards((prev) => prev.map((card) => pairIds.includes(card.id) ? { ...card, isHidden: true } : card));
+                            setSelectedCards([]);
+                            if (newMatched.length === cards.length) {
+                                const newRounds = roundsCompleted + 1;
+                                setRoundsCompleted(newRounds);
+                                const starsEarned = getStars(gridLevel, time, moves);
+                                setTotalStars((prev) => prev + starsEarned);
+                                arcOut();
+                                const congratsTimer = setTimeout(() => {
+                                    if (!isGameActive)
+                                        return;
+                                    setShowCongrats(true);
+                                    setShowConfetti(true);
+                                }, 900);
+                                completionTimers.current.push(congratsTimer);
+                                const nextTimer = setTimeout(async () => {
+                                    var _a;
+                                    if (!isGameActive)
+                                        return;
+                                    const start = Date.now();
+                                    try {
+                                        let playing = true;
+                                        while (playing && Date.now() - start < 6000) {
+                                            const s = await ((_a = fanfareRef.current) === null || _a === void 0 ? void 0 : _a.getStatusAsync());
+                                            playing = !!(s === null || s === void 0 ? void 0 : s.isPlaying);
+                                            if (playing)
+                                                await new Promise((r) => setTimeout(r, 150));
+                                        }
+                                    }
+                                    catch { }
+                                    setShowPlayAgain(false);
+                                    setAge(age + 2);
+                                }, 3800);
+                                completionTimers.current.push(nextTimer);
+                            }
+                            else {
+                                setIsFlipping(false);
+                            }
+                        });
                     }, 500);
                     completionTimers.current.push(smileTimer);
                 }, 500);
@@ -603,7 +632,7 @@ const GameScreen = () => {
                         : card));
                     setSelectedCards([]);
                     setIsFlipping(false);
-                }, 500);
+                }, 650);
                 completionTimers.current.push(flipBackTimer);
             }
         }
@@ -674,16 +703,17 @@ const GameScreen = () => {
     const renderItem = ({ item }) => {
         const cardSize = getCardSize();
         const faceSource = item.__source;
-        return (_jsxs(View, { style: {
+        const { fade, scale } = ensureAnimFor(item.id);
+        return (_jsxs(RNAnimated.View, { style: {
                 position: "relative",
                 marginHorizontal: 5,
                 justifyContent: "center",
                 alignItems: "center",
                 width: cardSize,
                 height: cardSize,
-                opacity: 1,
-                overflow: "visible",
                 zIndex: 0,
+                opacity: fade,
+                transform: [{ scale }],
             }, collapsable: false, children: [item.isMatched && !item.isHidden && (_jsx(View, { style: {
                         position: "absolute",
                         top: 0,
@@ -704,7 +734,7 @@ const GameScreen = () => {
                     (() => {
                         const size = Math.round(getCardSize() * 0.34);
                         const left = (getCardSize() - size) / 2;
-                        const top = -size - 12;
+                        const top = -size - 18;
                         return (_jsx(View, { style: {
                                 position: "absolute",
                                 left,
@@ -723,10 +753,6 @@ const GameScreen = () => {
         if (ENABLE_BACKGROUND_MUSIC) {
             resumeBackgroundMusic().catch(() => { });
         }
-        StatusBar.setHidden(true, "none");
-        if (Platform.OS === "android") {
-            NavigationBar.setVisibilityAsync("hidden").catch(() => { });
-        }
     };
     const handlePlayAgain = () => {
         setShowConfetti(false);
@@ -743,15 +769,43 @@ const GameScreen = () => {
                 { padding: 24, justifyContent: "center" },
             ], children: [_jsx(Text, { style: { color: "#fff", fontSize: 16, marginBottom: 8 }, children: "Invalid props. Expected:" }), _jsx(Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 background: at least one image URL" }), _jsx(Text, { style: { color: "#ccc", marginBottom: 4 }, children: "\u2022 backCardSide: at least one image URL" }), _jsxs(Text, { style: { color: "#ccc" }, children: ["\u2022 frontCardSide: at least ", pairsNeeded, " unique image URLs"] })] }));
     }
-    const { width: W, height: H } = Dimensions.get("window");
-    const showHintButton = isGameActive && !showCongrats && !showPlayAgain && arcVisible;
+    const { height: H } = screen;
+    const hintTop = Math.max(34, Math.round(H / 2 - 20));
     return (_jsxs(View, { style: { flex: 1, width: "100%", height: "100%" }, onStartShouldSetResponder: () => true, onResponderGrant: onFirstTouch, children: [_jsx(ImageBackground, { source: selectedBackground.source, style: [
                     StyleSheet.absoluteFillObject,
                     { width: "100%", height: "100%", zIndex: 0 },
-                ], resizeMode: "cover" }), arcVisible && (_jsx(Animated.View, { style: [arcAnimatedStyle, { zIndex: 30 }], children: _jsxs(Svg, { height: H, width: "100%", style: { position: "absolute", top: 0, left: 0, zIndex: 5 }, viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", children: [_jsxs(Defs, { children: [_jsxs(SvgLinearGradient, { id: "arcGrad", x1: "0", y1: "0", x2: "0", y2: "1", children: [_jsx(Stop, { offset: "0", stopColor: "#020743", stopOpacity: "0.55" }), _jsx(Stop, { offset: "1", stopColor: "#080001", stopOpacity: "0.75" })] }), _jsxs(SvgLinearGradient, { id: "arcBorderGrad", x1: "0", y1: "0.5", x2: "1", y2: "0.5", children: [_jsx(Stop, { offset: "0", stopColor: "#C57CFF", stopOpacity: "0" }), _jsx(Stop, { offset: "0.3", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "0.7", stopColor: "#C57CFF", stopOpacity: "1" }), _jsx(Stop, { offset: "1", stopColor: "#C57CFF", stopOpacity: "0" })] })] }), _jsx(Path, { d: `M0 ${H} L0 100 Q${W / 2} 60 ${W} 100 L${W} ${H} Z`, fill: "url(#arcGrad)" }), _jsx(Path, { d: `M0 100 Q${W / 2} 60 ${W} 100`, fill: "none", stroke: "url(#arcBorderGrad)", strokeWidth: 4, strokeLinecap: "round" })] }) })), _jsx(StatusBar, { hidden: true }), _jsxs(View, { style: [
+                ], resizeMode: "cover" }), _jsx(View, { pointerEvents: "none", style: StyleSheet.absoluteFill, children: _jsx(RNAnimated.Image, { source: require("../../assets/ellipse.png"), resizeMode: "cover", style: {
+                        position: "absolute",
+                        top: ARC_TOP_OFFSET,
+                        left: 0,
+                        right: 0,
+                        width: "100%",
+                        height: H + ARC_BOTTOM_PAD + ARC_TOP_OFFSET,
+                        opacity: arcOpacity,
+                        transform: [{ translateY: arcTransY }],
+                        zIndex: 30,
+                    } }) }), _jsx(StatusBar, { hidden: true }), _jsxs(View, { style: [
                     globalStyles.containers.gameArea,
                     { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
-                ], children: [showHintButton && (_jsx(Animated.View, { style: [styles.hintButton, hintAnimatedStyle], children: _jsx(TouchableOpacity, { onPress: handleHint, onPressIn: () => (hintScale.value = withTiming(1.1, { duration: 100 })), onPressOut: () => (hintScale.value = withTiming(1, { duration: 100 })), activeOpacity: 1, children: _jsx(View, { style: [styles.hintGlow, { shadowOpacity: 0, elevation: 0 }], children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), cards.length > 0 && (_jsx(View, { style: {
+                ], children: [isGameActive && !showCongrats && !showPlayAgain && (_jsx(RNAnimated.View, { style: {
+                            position: "absolute",
+                            right: 30,
+                            top: hintTop,
+                            zIndex: 1000,
+                            opacity: arcOpacity,
+                            transform: [
+                                { translateY: arcTransY },
+                                { scale: hintScaleRN },
+                            ],
+                        }, children: _jsx(TouchableOpacity, { onPress: handleHint, activeOpacity: 1, onPressIn: () => RNAnimated.timing(hintScaleRN, {
+                                toValue: 1.1,
+                                duration: 100,
+                                useNativeDriver: true,
+                            }).start(), onPressOut: () => RNAnimated.timing(hintScaleRN, {
+                                toValue: 1,
+                                duration: 100,
+                                useNativeDriver: true,
+                            }).start(), children: _jsx(View, { style: [styles.hintGlow, { shadowOpacity: 0, elevation: 0 }], children: _jsx(View, { style: styles.hintBorder, children: _jsx(LinearGradient, { colors: ["#FFB380", "#D16C00"], style: styles.hintButtonInner, children: _jsx(Text, { style: styles.hintText, children: "?" }) }) }) }) }) })), cards.length > 0 && (_jsx(View, { style: {
                             flex: 1,
                             width: "100%",
                             justifyContent: "center",
