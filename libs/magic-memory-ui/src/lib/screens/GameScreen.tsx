@@ -171,7 +171,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
-
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -610,6 +609,13 @@ const GameScreen = () => {
     scalesRef.clear();
     setCards(cardPairs);
 
+    // логируем для диагностики «почему 2 вместо 4»
+    console.log("[cards]", {
+      gridLevel,
+      pairs,
+      total: cardPairs.length,
+    });
+
     if (gridLevel === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
@@ -771,15 +777,9 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
-                  // 🔁 stay at 12 or increase level below 12
-                  if (gridLevel < 12) {
-                    setShowConfetti(false);
-                    setShowCongrats(false);
-                    setShowPlayAgain(false);
-                    setAge(age + 2); // triggers new deal via useEffect
-                  } else {
-                    redealSameLevel(); // re-deal 12 endlessly
-                  }
+                  // stay at 12 after reaching it
+                  const nextAge = gridLevel === 12 ? 12 : age + 2;
+                  setAge(nextAge);
                 }, 3800);
                 completionTimers.current.push(nextTimer);
               } else {
@@ -986,14 +986,6 @@ const GameScreen = () => {
     generateCards();
   };
 
-  // 👇 helper to re-deal the same level (used for endless 12)
-  const redealSameLevel = () => {
-    setShowConfetti(false);
-    setShowCongrats(false);
-    setShowPlayAgain(false);
-    generateCards();
-  };
-
   const cfgOk =
     selectedBackground &&
     selectedBack &&
@@ -1068,7 +1060,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* hint button tied to the arc */}
+        {/* hint button is tied to the arc (opacity/translate) and disappears with it */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1140,7 +1132,12 @@ const GameScreen = () => {
               ]}
               contentContainerStyle={[
                 styles.grid,
-                { paddingTop: 62, width: "100%", overflow: "visible" },
+                {
+                  paddingTop: 62,
+                  width: "100%",
+                  overflow: "visible",
+                  flexGrow: 1,
+                },
               ]}
               style={
                 {
@@ -1149,24 +1146,23 @@ const GameScreen = () => {
                   overflow: "visible",
                 } as StyleProp<ViewStyle>
               }
-              initialNumToRender={2}
-              maxToRenderPerBatch={2}
-              windowSize={1}
-              extraData={cards}
+              /** 🔧 МЯГКАЯ ВИРТУАЛИЗАЦИЯ ДЛЯ МАЛЫХ СЕТОК */
+              initialNumToRender={Math.min(cards.length || 0, 24)}
+              maxToRenderPerBatch={Math.min(cards.length || 0, 24)}
+              windowSize={5}
               removeClippedSubviews={false}
-              getItemLayout={(
-                _data: ArrayLike<Card> | null | undefined,
-                index: number
-              ) => {
-                const itemSize = getCardSize();
-                const cols = getNumColumns();
-                const row = Math.floor(index / cols);
-                return {
-                  length: itemSize,
-                  offset: itemSize * row,
-                  index,
-                };
-              }}
+              /** ❌ УБРАЛИ getItemLayout, чтобы не промахиваться по строкам.
+               * Если нужен, включай аккуратный вариант:
+               *
+               * getItemLayout={(_data, index) => {
+               *   const itemSize = getCardSize();
+               *   const cols = getNumColumns();
+               *   const row = Math.floor(index / cols);
+               *   const rowGap = 0; // если появится вертикальный отступ — добавь сюда
+               *   const rowHeight = itemSize + rowGap;
+               *   return { length: rowHeight, offset: rowHeight * row, index };
+               * }}
+               */
             />
           </View>
         )}
