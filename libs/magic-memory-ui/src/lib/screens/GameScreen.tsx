@@ -14,7 +14,6 @@ import {
   Keyboard,
   GestureResponderEvent,
   Platform,
-  type TransformsStyle,
   Animated as RNAnimated,
   Easing as RNEasing,
 } from "react-native";
@@ -171,6 +170,7 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
+
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -230,6 +230,9 @@ const GameScreen = () => {
   const [age, setAge] = useState<number>(Math.max(2, (cfg as any).age));
   const gridLevel = useMemo(() => toGridLevel(age), [age]);
   const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
+
+  // 🔁 новый счётчик перездачи, чтобы форсить раунд при age=12
+  const [dealNonce, setDealNonce] = useState(0);
 
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
@@ -510,10 +513,10 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
-  // (re)deal
+  // (re)deal — теперь триггерится ещё и по dealNonce
   useEffect(() => {
     generateCards();
-  }, [age, height, width]);
+  }, [age, height, width, dealNonce]);
 
   const playRobotVoice = async (idx: number) => {
     try {
@@ -608,13 +611,6 @@ const GameScreen = () => {
     fadesRef.clear();
     scalesRef.clear();
     setCards(cardPairs);
-
-    // логируем для диагностики «почему 2 вместо 4»
-    console.log("[cards]", {
-      gridLevel,
-      pairs,
-      total: cardPairs.length,
-    });
 
     if (gridLevel === 4) {
       setIsShowingCards(true);
@@ -715,11 +711,6 @@ const GameScreen = () => {
             RNAnimated.parallel(
               pairIds.map((pid) => {
                 const { fade, scale } = ensureAnimFor(pid);
-                fade.stopAnimation();
-                scale.stopAnimation();
-
-                fade.setValue(1);
-                scale.setValue(1);
                 return RNAnimated.parallel([
                   RNAnimated.timing(fade, {
                     toValue: 0,
@@ -742,6 +733,11 @@ const GameScreen = () => {
                 )
               );
 
+              pairIds.forEach((pid) => {
+                fadesRef.delete(pid);
+                scalesRef.delete(pid);
+              });
+
               setSelectedCards([]);
 
               if (newMatched.length === cards.length) {
@@ -761,7 +757,7 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
-                // wait fair time for fanfare, then advance
+                // дождёмся фанфар и либо повышаем уровень, либо крутим 12 ещё раз
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
@@ -777,9 +773,15 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
-                  // stay at 12 after reaching it
-                  const nextAge = gridLevel === 12 ? 12 : age + 2;
-                  setAge(nextAge);
+                  if (gridLevel === 12) {
+                    // 🔁 остаться на 12: форсим новую раздачу тем же age
+                    setShowCongrats(false);
+                    setShowConfetti(false);
+                    setIsGameActive(true);
+                    setDealNonce((n) => n + 1); // <-- триггер нового круга на 12
+                  } else {
+                    setAge(age + 2); // обычный переход на следующий чётный уровень
+                  }
                 }, 3800);
                 completionTimers.current.push(nextTimer);
               } else {
@@ -880,8 +882,18 @@ const GameScreen = () => {
 
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
-    const faceSource = (item as any).__source as any;
 
+    // если скрыта — рисуем пустой слот (фикс мерцания)
+    if (item.isHidden) {
+      return (
+        <View
+          style={{ marginHorizontal: 5, width: cardSize, height: cardSize }}
+          pointerEvents="none"
+        />
+      );
+    }
+
+    const faceSource = (item as any).__source as any;
     const { fade, scale } = ensureAnimFor(item.id);
 
     return (
@@ -899,7 +911,7 @@ const GameScreen = () => {
         }}
         collapsable={false}
       >
-        {item.isMatched && !item.isHidden && (
+        {item.isMatched && (
           <View
             style={{
               position: "absolute",
@@ -911,7 +923,7 @@ const GameScreen = () => {
               borderColor: "#C57CFF",
               borderRadius: 10,
               backgroundColor: "transparent",
-              shadowColor: "rgba(197, 124, 255, 0.3)",
+              shadowColor: "rgba(197,124,255,0.3)",
               shadowOffset: { width: 0, height: 0 },
               shadowOpacity: 0.8,
               shadowRadius: 15,
@@ -922,21 +934,20 @@ const GameScreen = () => {
           />
         )}
 
-        {!item.isHidden && (
-          <MemoryCard
-            item={item}
-            onPress={handleCardPress}
-            getCardSize={getCardSize}
-            disabled={isShowingCards || selectedCards.length >= 2}
-            isHinted={
-              hintActive.includes(item.id) || selectedCards.includes(item.id)
-            }
-            style={{ opacity: 1, zIndex: 0 }}
-            backImage={selectedBack!}
-            frontImage={faceSource}
-          />
-        )}
+        <MemoryCard
+          item={item}
+          onPress={handleCardPress}
+          getCardSize={getCardSize}
+          disabled={isShowingCards || selectedCards.length >= 2}
+          isHinted={
+            hintActive.includes(item.id) || selectedCards.includes(item.id)
+          }
+          style={{ opacity: 1, zIndex: 0 }}
+          backImage={selectedBack!}
+          frontImage={faceSource}
+        />
 
+        {/* смайлик-робот */}
         {smileVisible === item.id &&
           (() => {
             const size = Math.round(getCardSize() * 0.34);
@@ -983,7 +994,8 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    generateCards();
+    // можно дернуть новую раздачу вручную
+    setDealNonce((n) => n + 1);
   };
 
   const cfgOk =
@@ -1060,7 +1072,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* hint button is tied to the arc (opacity/translate) and disappears with it */}
+        {/* hint button tied to the arc */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1096,7 +1108,7 @@ const GameScreen = () => {
               <View
                 style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
               >
-                <View style={styles.hintBorder}>
+                <View className="hintBorder" style={styles.hintBorder}>
                   <LinearGradient
                     colors={["#FFB380", "#D16C00"]}
                     style={styles.hintButtonInner}
@@ -1121,7 +1133,7 @@ const GameScreen = () => {
             }}
           >
             <FlatList<Card>
-              key={`flatlist-${gridLevel}-${age}`}
+              key={`flatlist-${gridLevel}-${age}-${dealNonce}`}
               data={cards}
               renderItem={renderItem}
               keyExtractor={(item) => item.id.toString()}
@@ -1132,12 +1144,7 @@ const GameScreen = () => {
               ]}
               contentContainerStyle={[
                 styles.grid,
-                {
-                  paddingTop: 62,
-                  width: "100%",
-                  overflow: "visible",
-                  flexGrow: 1,
-                },
+                { paddingTop: 62, width: "100%", overflow: "visible" },
               ]}
               style={
                 {
@@ -1146,23 +1153,20 @@ const GameScreen = () => {
                   overflow: "visible",
                 } as StyleProp<ViewStyle>
               }
-              /** 🔧 МЯГКАЯ ВИРТУАЛИЗАЦИЯ ДЛЯ МАЛЫХ СЕТОК */
-              initialNumToRender={Math.min(cards.length || 0, 24)}
-              maxToRenderPerBatch={Math.min(cards.length || 0, 24)}
-              windowSize={5}
+              initialNumToRender={2}
+              maxToRenderPerBatch={2}
+              windowSize={1}
+              extraData={cards}
               removeClippedSubviews={false}
-              /** ❌ УБРАЛИ getItemLayout, чтобы не промахиваться по строкам.
-               * Если нужен, включай аккуратный вариант:
-               *
-               * getItemLayout={(_data, index) => {
-               *   const itemSize = getCardSize();
-               *   const cols = getNumColumns();
-               *   const row = Math.floor(index / cols);
-               *   const rowGap = 0; // если появится вертикальный отступ — добавь сюда
-               *   const rowHeight = itemSize + rowGap;
-               *   return { length: rowHeight, offset: rowHeight * row, index };
-               * }}
-               */
+              getItemLayout={(
+                _data: ArrayLike<Card> | null | undefined,
+                index: number
+              ) => {
+                const itemSize = getCardSize();
+                const cols = getNumColumns();
+                const row = Math.floor(index / cols);
+                return { length: itemSize, offset: itemSize * row, index };
+              }}
             />
           </View>
         )}
