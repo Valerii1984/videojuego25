@@ -171,6 +171,7 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
+
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -213,7 +214,7 @@ const GameScreen = () => {
     return (
       <View
         style={[
-          StyleSheet.absoluteFill,
+          StyleSheet.absoluteFillObject,
           { justifyContent: "center", alignItems: "center", padding: 24 },
         ]}
       >
@@ -353,6 +354,7 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
+  // hide bars
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -376,6 +378,7 @@ const GameScreen = () => {
     };
   }, []);
 
+  // preload sounds
   useEffect(() => {
     if (!isWeb) {
       ScreenOrientation.lockAsync(
@@ -438,6 +441,7 @@ const GameScreen = () => {
     };
   }, []);
 
+  // timer
   useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
@@ -480,6 +484,7 @@ const GameScreen = () => {
     } catch {}
   };
 
+  // play fanfare on congrats
   useEffect(() => {
     if (!(showCongrats && isGameActive)) return;
     if (successPlayedRef.current) return;
@@ -506,6 +511,7 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
+  // (re)deal
   useEffect(() => {
     generateCards();
   }, [age, height, width]);
@@ -533,16 +539,13 @@ const GameScreen = () => {
     }
   };
 
+  // smooth hide per-card
   const fadesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const scalesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const ensureAnimFor = (id: number) => {
     if (!fadesRef.has(id)) fadesRef.set(id, new RNAnimated.Value(1));
     if (!scalesRef.has(id)) scalesRef.set(id, new RNAnimated.Value(1));
     return { fade: fadesRef.get(id)!, scale: scalesRef.get(id)! };
-  };
-  const resetAnimFor = (id: number) => {
-    ensureAnimFor(id).fade.setValue(1);
-    ensureAnimFor(id).scale.setValue(1);
   };
 
   const generateCards = () => {
@@ -605,7 +608,6 @@ const GameScreen = () => {
 
     fadesRef.clear();
     scalesRef.clear();
-
     setCards(cardPairs);
 
     if (gridLevel === 4) {
@@ -743,6 +745,7 @@ const GameScreen = () => {
                 const starsEarned = getStars(gridLevel, time, moves);
                 setTotalStars((prev: number) => prev + starsEarned);
 
+                // hide arc & hint
                 arcOut();
 
                 const congratsTimer: TimeoutId = setTimeout(() => {
@@ -752,20 +755,31 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
+                // wait fair time for fanfare, then advance
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
-                  const start = Date.now();
+                  const started = Date.now();
                   try {
                     let playing = true;
-                    while (playing && Date.now() - start < 6000) {
+                    while (playing && Date.now() - started < 6500) {
                       const s = await fanfareRef.current?.getStatusAsync();
                       playing = !!(s as any)?.isPlaying;
-                      if (playing) await new Promise((r) => setTimeout(r, 150));
+                      if (playing) await new Promise((r) => setTimeout(r, 140));
                     }
                   } catch {}
+
                   setShowPlayAgain(false);
-                  setAge(age + 2);
+
+                  // 🔁 stay at 12 or increase level below 12
+                  if (gridLevel < 12) {
+                    setShowConfetti(false);
+                    setShowCongrats(false);
+                    setShowPlayAgain(false);
+                    setAge(age + 2); // triggers new deal via useEffect
+                  } else {
+                    redealSameLevel(); // re-deal 12 endlessly
+                  }
                 }, 3800);
                 completionTimers.current.push(nextTimer);
               } else {
@@ -972,6 +986,14 @@ const GameScreen = () => {
     generateCards();
   };
 
+  // 👇 helper to re-deal the same level (used for endless 12)
+  const redealSameLevel = () => {
+    setShowConfetti(false);
+    setShowCongrats(false);
+    setShowPlayAgain(false);
+    generateCards();
+  };
+
   const cfgOk =
     selectedBackground &&
     selectedBack &&
@@ -981,7 +1003,7 @@ const GameScreen = () => {
     return (
       <View
         style={[
-          StyleSheet.absoluteFill,
+          StyleSheet.absoluteFillObject,
           { padding: 24, justifyContent: "center" },
         ]}
       >
@@ -1019,7 +1041,8 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+      {/* ellipse overlay */}
+      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <RNAnimated.Image
           source={require("../../assets/ellipse.png")}
           resizeMode="cover"
@@ -1045,6 +1068,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
+        {/* hint button tied to the arc */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1104,7 +1128,7 @@ const GameScreen = () => {
               overflow: "visible",
             }}
           >
-            <FlatList
+            <FlatList<Card>
               key={`flatlist-${gridLevel}-${age}`}
               data={cards}
               renderItem={renderItem}
@@ -1130,16 +1154,24 @@ const GameScreen = () => {
               windowSize={1}
               extraData={cards}
               removeClippedSubviews={false}
-              getItemLayout={(_data, index) => ({
-                length: getCardSize(),
-                offset: getCardSize() * Math.floor(index / getNumColumns()!),
-                index,
-              })}
+              getItemLayout={(
+                _data: ArrayLike<Card> | null | undefined,
+                index: number
+              ) => {
+                const itemSize = getCardSize();
+                const cols = getNumColumns();
+                const row = Math.floor(index / cols);
+                return {
+                  length: itemSize,
+                  offset: itemSize * row,
+                  index,
+                };
+              }}
             />
           </View>
         )}
 
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+        <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
           <Confetti isActive={showConfetti} level={gridLevel} />
         </View>
 
