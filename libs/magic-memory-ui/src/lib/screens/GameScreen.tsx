@@ -170,7 +170,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
   }
   return a;
 };
-
 const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
   const even = age - (age % 2);
   const clamped = Math.min(12, Math.max(4, even));
@@ -231,9 +230,6 @@ const GameScreen = () => {
   const gridLevel = useMemo(() => toGridLevel(age), [age]);
   const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
 
-  // 🔁 новый счётчик перездачи, чтобы форсить раунд при age=12
-  const [dealNonce, setDealNonce] = useState(0);
-
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   const [time, setTime] = useState<number>(0);
@@ -260,6 +256,7 @@ const GameScreen = () => {
     new Array(6).fill(null) as (string | null)[]
   );
 
+  // экраны (без триггера раздачи)
   const [screen, setScreen] = useState(Dimensions.get("window"));
   useEffect(() => {
     const sub = Dimensions.addEventListener("change", ({ window }) => {
@@ -267,12 +264,27 @@ const GameScreen = () => {
     });
     return () => sub?.remove?.();
   }, []);
-  const { width, height } = screen;
+  const { height } = screen;
 
+  // 🔁 тикер для новой раздачи при том же age (исправляет цикл на 12)
+  const [redealTick, setRedealTick] = useState(0);
+
+  // ARC
   const arcTransY = useRef(
     new RNAnimated.Value(height + ARC_BOTTOM_PAD)
   ).current;
   const arcOpacity = useRef(new RNAnimated.Value(0)).current;
+
+  // GRID anti-flicker
+  const gridOpacityRN = useRef(new RNAnimated.Value(0)).current;
+  const revealGridSmoothly = () => {
+    RNAnimated.timing(gridOpacityRN, {
+      toValue: 1,
+      duration: 220,
+      easing: RNEasing.out(RNEasing.cubic),
+      useNativeDriver: true,
+    }).start();
+  };
 
   const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
 
@@ -356,7 +368,7 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
-  // hide bars
+  // system UI
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -387,7 +399,6 @@ const GameScreen = () => {
         ScreenOrientation.OrientationLock.LANDSCAPE
       ).catch(() => {});
     }
-
     (async () => {
       try {
         const assets = await Promise.all(
@@ -398,9 +409,8 @@ const GameScreen = () => {
           })
         );
         robotVoiceUrisRef.current = assets;
-        while (robotVoiceUrisRef.current.length < 6) {
+        while (robotVoiceUrisRef.current.length < 6)
           robotVoiceUrisRef.current.push(null);
-        }
       } catch {
         robotVoiceUrisRef.current = new Array(6).fill(null) as (
           | string
@@ -408,7 +418,6 @@ const GameScreen = () => {
         )[];
       }
     })();
-
     (async () => {
       try {
         await Audio.setAudioModeAsync({
@@ -431,11 +440,7 @@ const GameScreen = () => {
         fanfareLoadedRef.current = false;
       }
     })();
-
-    if (ENABLE_BACKGROUND_MUSIC) {
-      playBackgroundMusic().catch(() => {});
-    }
-
+    if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic().catch(() => {});
     return () => {
       completionTimers.current.forEach(clearTimeout);
       completionTimers.current = [];
@@ -486,12 +491,11 @@ const GameScreen = () => {
     } catch {}
   };
 
-  // play fanfare on congrats
+  // фанфары при поздравлении
   useEffect(() => {
     if (!(showCongrats && isGameActive)) return;
     if (successPlayedRef.current) return;
     successPlayedRef.current = true;
-
     (async () => {
       await playFanfareLocal();
       setTimeout(() => {
@@ -505,7 +509,6 @@ const GameScreen = () => {
           .catch(() => {});
       }, 300);
     })();
-
     congratsPulse.value = withRepeat(
       withTiming(1.2, { duration: 2000 }),
       -1,
@@ -513,10 +516,11 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
-  // (re)deal — теперь триггерится ещё и по dealNonce
+  // ===== Важно: раздаём карты по age И по redealTick (фикс цикла на 12) =====
   useEffect(() => {
     generateCards();
-  }, [age, height, width, dealNonce]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [age, redealTick]);
 
   const playRobotVoice = async (idx: number) => {
     try {
@@ -541,7 +545,7 @@ const GameScreen = () => {
     }
   };
 
-  // smooth hide per-card
+  // мягкое скрытие карт
   const fadesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const scalesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const ensureAnimFor = (id: number) => {
@@ -550,7 +554,16 @@ const GameScreen = () => {
     return { fade: fadesRef.get(id)!, scale: scalesRef.get(id)! };
   };
 
+  // троттл двойной раздачи
+  const lastDealAtRef = useRef(0);
+
   const generateCards = () => {
+    const now = Date.now();
+    if (now - lastDealAtRef.current < 600) {
+      return;
+    }
+    lastDealAtRef.current = now;
+
     completionTimers.current.forEach((t) => clearTimeout(t));
     completionTimers.current = [];
 
@@ -558,6 +571,9 @@ const GameScreen = () => {
       clearInterval(timer.current);
       timer.current = null;
     }
+
+    // анти-рывок: сетка появляется плавно после готовности
+    gridOpacityRN.setValue(0);
 
     const pairs = Math.floor(age / 2);
     const uniqFront = Array.from(new Set(externalFrontList));
@@ -612,14 +628,14 @@ const GameScreen = () => {
     scalesRef.clear();
     setCards(cardPairs);
 
+    requestAnimationFrame(() => revealGridSmoothly());
+
     if (gridLevel === 4) {
       setIsShowingCards(true);
       const showTimer: TimeoutId = setTimeout(() => {
-        const updated = cardPairs.map((c) => ({ ...c, isFlipped: true }));
-        setCards(updated);
+        setCards((prev) => prev.map((c) => ({ ...c, isFlipped: true })));
         const hideTimer: TimeoutId = setTimeout(() => {
-          const closed = cardPairs.map((c) => ({ ...c, isFlipped: false }));
-          setCards(closed);
+          setCards((prev) => prev.map((c) => ({ ...c, isFlipped: false })));
           setIsShowingCards(false);
         }, 3000);
         completionTimers.current.push(hideTimer);
@@ -635,14 +651,14 @@ const GameScreen = () => {
     }
   };
 
-  const getStars = (lvlBucket: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
-    if (lvlBucket < 8) return 0;
-    let maxTime = 30;
-    let maxMoves = 12;
-    if (lvlBucket === 10) {
+  const getStars = (lvl: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
+    if (lvl < 8) return 0;
+    let maxTime = 30,
+      maxMoves = 12;
+    if (lvl === 10) {
       maxTime = 40;
       maxMoves = 18;
-    } else if (lvlBucket === 12) {
+    } else if (lvl === 12) {
       maxTime = 50;
       maxMoves = 24;
     }
@@ -669,7 +685,7 @@ const GameScreen = () => {
       prev.map((c) => (c.id === id ? { ...c, isFlipped: true } : c))
     );
 
-    if (gridLevel >= 8) setMoves((prev: number) => prev + 1);
+    if (gridLevel >= 8) setMoves((prev) => prev + 1);
 
     if (newSelected.length === 2) {
       const [firstId, secondId] = newSelected;
@@ -687,7 +703,6 @@ const GameScreen = () => {
             : [0];
           const robotIdx = order[matchIndex % order.length];
           setActiveRobotIndex(robotIdx);
-
           playRobotVoice(robotIdx).catch(() => {});
 
           const newMatched = [...matchedCards, firstId, secondId];
@@ -711,6 +726,10 @@ const GameScreen = () => {
             RNAnimated.parallel(
               pairIds.map((pid) => {
                 const { fade, scale } = ensureAnimFor(pid);
+                fade.stopAnimation();
+                scale.stopAnimation();
+                fade.setValue(1);
+                scale.setValue(1);
                 return RNAnimated.parallel([
                   RNAnimated.timing(fade, {
                     toValue: 0,
@@ -733,11 +752,6 @@ const GameScreen = () => {
                 )
               );
 
-              pairIds.forEach((pid) => {
-                fadesRef.delete(pid);
-                scalesRef.delete(pid);
-              });
-
               setSelectedCards([]);
 
               if (newMatched.length === cards.length) {
@@ -745,9 +759,9 @@ const GameScreen = () => {
                 setRoundsCompleted(newRounds);
 
                 const starsEarned = getStars(gridLevel, time, moves);
-                setTotalStars((prev: number) => prev + starsEarned);
+                setTotalStars((prev) => prev + starsEarned);
 
-                // hide arc & hint
+                // дуга+подсказка уходят
                 arcOut();
 
                 const congratsTimer: TimeoutId = setTimeout(() => {
@@ -757,7 +771,7 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
-                // дождёмся фанфар и либо повышаем уровень, либо крутим 12 ещё раз
+                // даём фанфарам «доиграть», затем двигаемся дальше
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
@@ -774,13 +788,14 @@ const GameScreen = () => {
                   setShowPlayAgain(false);
 
                   if (gridLevel === 12) {
-                    // 🔁 остаться на 12: форсим новую раздачу тем же age
-                    setShowCongrats(false);
+                    // 🔁 ОСТАЁМСЯ НА 12: триггерим новую раздачу
+                    lastDealAtRef.current = 0; // сброс троттла, чтобы не задерживать
+                    setShowCongrats(false); // чтобы не зависала плашка
                     setShowConfetti(false);
                     setIsGameActive(true);
-                    setDealNonce((n) => n + 1); // <-- триггер нового круга на 12
+                    setRedealTick((t) => t + 1); // <-- ключевой триггер
                   } else {
-                    setAge(age + 2); // обычный переход на следующий чётный уровень
+                    setAge(age + 2); // обычное повышение уровня
                   }
                 }, 3800);
                 completionTimers.current.push(nextTimer);
@@ -847,52 +862,20 @@ const GameScreen = () => {
     }
   };
 
-  const getNumColumns = () => {
-    switch (gridLevel) {
-      case 4:
-        return 2;
-      case 6:
-        return 3;
-      case 8:
-        return 4;
-      case 10:
-        return 5;
-      case 12:
-        return 6;
-      default:
-        return 3;
-    }
-  };
-
-  const getCardSize = () => {
-    switch (gridLevel) {
-      case 4:
-        return 120;
-      case 6:
-        return 120;
-      case 8:
-        return 100;
-      case 10:
-      case 12:
-        return 100;
-      default:
-        return 110;
-    }
-  };
+  const getNumColumns = () =>
+    gridLevel === 4
+      ? 2
+      : gridLevel === 6
+        ? 3
+        : gridLevel === 8
+          ? 4
+          : gridLevel === 10
+            ? 5
+            : 6;
+  const getCardSize = () => (gridLevel <= 6 ? 120 : 100);
 
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
-
-    // если скрыта — рисуем пустой слот (фикс мерцания)
-    if (item.isHidden) {
-      return (
-        <View
-          style={{ marginHorizontal: 5, width: cardSize, height: cardSize }}
-          pointerEvents="none"
-        />
-      );
-    }
-
     const faceSource = (item as any).__source as any;
     const { fade, scale } = ensureAnimFor(item.id);
 
@@ -911,7 +894,7 @@ const GameScreen = () => {
         }}
         collapsable={false}
       >
-        {item.isMatched && (
+        {item.isMatched && !item.isHidden && (
           <View
             style={{
               position: "absolute",
@@ -934,26 +917,26 @@ const GameScreen = () => {
           />
         )}
 
-        <MemoryCard
-          item={item}
-          onPress={handleCardPress}
-          getCardSize={getCardSize}
-          disabled={isShowingCards || selectedCards.length >= 2}
-          isHinted={
-            hintActive.includes(item.id) || selectedCards.includes(item.id)
-          }
-          style={{ opacity: 1, zIndex: 0 }}
-          backImage={selectedBack!}
-          frontImage={faceSource}
-        />
+        {!item.isHidden && (
+          <MemoryCard
+            item={item}
+            onPress={handleCardPress}
+            getCardSize={getCardSize}
+            disabled={isShowingCards || selectedCards.length >= 2}
+            isHinted={
+              hintActive.includes(item.id) || selectedCards.includes(item.id)
+            }
+            style={{ opacity: 1, zIndex: 0 }}
+            backImage={selectedBack!}
+            frontImage={faceSource}
+          />
+        )}
 
-        {/* смайлик-робот */}
         {smileVisible === item.id &&
           (() => {
             const size = Math.round(getCardSize() * 0.34);
             const left = (getCardSize() - size) / 2;
             const top = -size - 18;
-
             return (
               <View
                 style={{
@@ -994,8 +977,9 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    // можно дернуть новую раздачу вручную
-    setDealNonce((n) => n + 1);
+    // не используется в цикле 12, но оставлю
+    lastDealAtRef.current = 0;
+    setRedealTick((t) => t + 1);
   };
 
   const cfgOk =
@@ -1045,7 +1029,7 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* ellipse overlay */}
+      {/* дуга */}
       <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <RNAnimated.Image
           source={require("../../assets/ellipse.png")}
@@ -1072,7 +1056,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* hint button tied to the arc */}
+        {/* подсказка связана с дугой */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1080,7 +1064,7 @@ const GameScreen = () => {
               right: 30,
               top: hintTop,
               zIndex: 1000,
-              opacity: arcOpacity as any,
+              opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
               transform: [
                 { translateY: arcTransY as any },
                 { scale: hintScaleRN as any },
@@ -1108,7 +1092,7 @@ const GameScreen = () => {
               <View
                 style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
               >
-                <View className="hintBorder" style={styles.hintBorder}>
+                <View style={styles.hintBorder}>
                   <LinearGradient
                     colors={["#FFB380", "#D16C00"]}
                     style={styles.hintButtonInner}
@@ -1132,42 +1116,43 @@ const GameScreen = () => {
               overflow: "visible",
             }}
           >
-            <FlatList<Card>
-              key={`flatlist-${gridLevel}-${age}-${dealNonce}`}
-              data={cards}
-              renderItem={renderItem}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={getNumColumns()}
-              columnWrapperStyle={[
-                styles.row,
-                { justifyContent: "center", overflow: "visible" },
-              ]}
-              contentContainerStyle={[
-                styles.grid,
-                { paddingTop: 62, width: "100%", overflow: "visible" },
-              ]}
-              style={
-                {
-                  flex: 1,
-                  width: "100%",
-                  overflow: "visible",
-                } as StyleProp<ViewStyle>
-              }
-              initialNumToRender={2}
-              maxToRenderPerBatch={2}
-              windowSize={1}
-              extraData={cards}
-              removeClippedSubviews={false}
-              getItemLayout={(
-                _data: ArrayLike<Card> | null | undefined,
-                index: number
-              ) => {
-                const itemSize = getCardSize();
-                const cols = getNumColumns();
-                const row = Math.floor(index / cols);
-                return { length: itemSize, offset: itemSize * row, index };
-              }}
-            />
+            <RNAnimated.View
+              style={{ flex: 1, width: "100%", opacity: gridOpacityRN }}
+            >
+              <FlatList<Card>
+                key={`flatlist-${gridLevel}-${age}-${redealTick}`}
+                data={cards}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={getNumColumns()}
+                columnWrapperStyle={[
+                  styles.row,
+                  { justifyContent: "center", overflow: "visible" },
+                ]}
+                contentContainerStyle={[
+                  styles.grid,
+                  { paddingTop: 62, width: "100%", overflow: "visible" },
+                ]}
+                style={
+                  {
+                    flex: 1,
+                    width: "100%",
+                    overflow: "visible",
+                  } as StyleProp<ViewStyle>
+                }
+                initialNumToRender={2}
+                maxToRenderPerBatch={2}
+                windowSize={1}
+                extraData={cards}
+                removeClippedSubviews={false}
+                getItemLayout={(_data, index) => {
+                  const itemSize = getCardSize();
+                  const cols = getNumColumns();
+                  const row = Math.floor(index / cols);
+                  return { length: itemSize, offset: itemSize * row, index };
+                }}
+              />
+            </RNAnimated.View>
           </View>
         )}
 
