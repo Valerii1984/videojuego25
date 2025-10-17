@@ -199,7 +199,6 @@ const getSrc = (c?: Card): string | undefined => {
 };
 
 const ARC_BOTTOM_PAD = 48;
-const ARC_TOP_OFFSET = 44;
 
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
@@ -256,7 +255,7 @@ const GameScreen = () => {
     new Array(6).fill(null) as (string | null)[]
   );
 
-  // экраны (без триггера раздачи)
+  // screen size
   const [screen, setScreen] = useState(Dimensions.get("window"));
   useEffect(() => {
     const sub = Dimensions.addEventListener("change", ({ window }) => {
@@ -266,21 +265,25 @@ const GameScreen = () => {
   }, []);
   const { height } = screen;
 
-  // 🔁 тикер для новой раздачи при том же age (исправляет цикл на 12)
+  // 🔁 ключ раздачи при том же age
   const [redealTick, setRedealTick] = useState(0);
 
-  // ARC
+  // --- ARC state & flags ---
   const arcTransY = useRef(
-    new RNAnimated.Value(height + ARC_BOTTOM_PAD)
+    new RNAnimated.Value(Dimensions.get("window").height + ARC_BOTTOM_PAD)
   ).current;
   const arcOpacity = useRef(new RNAnimated.Value(0)).current;
+
+  // флаги, чтобы после КАЖДОГО раунда поднимать дугу снизу и медленно
+  const arcFromBottomRef = useRef(true);
+  const arcSlowRef = useRef(true);
 
   // GRID anti-flicker
   const gridOpacityRN = useRef(new RNAnimated.Value(0)).current;
   const revealGridSmoothly = () => {
     RNAnimated.timing(gridOpacityRN, {
       toValue: 1,
-      duration: 220,
+      duration: 260,
       easing: RNEasing.out(RNEasing.cubic),
       useNativeDriver: true,
     }).start();
@@ -288,24 +291,40 @@ const GameScreen = () => {
 
   const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
 
+  // дуга: если запрошено «снизу и медленно» — стартуем с высоты экрана и длинной анимацией
   const arcIn = () => {
-    arcTransY.setValue(height + ARC_BOTTOM_PAD);
+    const startY = arcFromBottomRef.current
+      ? Dimensions.get("window").height + 20
+      : 30;
+
+    arcTransY.setValue(startY);
     arcOpacity.setValue(0);
+
+    const dur = arcSlowRef.current ? 1800 : 1200;
+    const opDur = arcSlowRef.current ? 1100 : 800;
+    const opDelay = arcSlowRef.current ? 180 : 80;
+
     RNAnimated.parallel([
       RNAnimated.timing(arcTransY, {
         toValue: 0,
-        duration: 700,
+        duration: dur,
         easing: RNEasing.out(RNEasing.cubic),
         useNativeDriver: true,
       }),
       RNAnimated.timing(arcOpacity, {
         toValue: 1,
-        duration: 700,
-        easing: RNEasing.out(RNEasing.cubic),
+        duration: opDur,
+        delay: opDelay,
+        easing: RNEasing.out(RNEasing.quad),
         useNativeDriver: true,
       }),
-    ]).start();
+    ]).start(() => {
+      // на этот раунд флаги погашаем (чтобы избегать «миганий» в процессе)
+      arcFromBottomRef.current = false;
+      arcSlowRef.current = false;
+    });
   };
+
   const arcOut = (onDone?: () => void) => {
     RNAnimated.parallel([
       RNAnimated.timing(arcTransY, {
@@ -460,9 +479,6 @@ const GameScreen = () => {
       }
       timer.current = setInterval(() => setTime((prev) => prev + 1), 1000);
     }
-    return () => {
-      if (timer.current) clearInterval(timer.current);
-    };
   }, [gridLevel, playBackgroundMusic]);
 
   const playFanfareLocal = async () => {
@@ -516,7 +532,7 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
-  // ===== Важно: раздаём карты по age И по redealTick (фикс цикла на 12) =====
+  // ===== раздаём карты по age И по redealTick =====
   useEffect(() => {
     generateCards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -572,7 +588,7 @@ const GameScreen = () => {
       timer.current = null;
     }
 
-    // анти-рывок: сетка появляется плавно после готовности
+    // сетка появляется плавно после готовности
     gridOpacityRN.setValue(0);
 
     const pairs = Math.floor(age / 2);
@@ -599,6 +615,7 @@ const GameScreen = () => {
     setIsGameActive(true);
     successPlayedRef.current = false;
 
+    // вход дуги — с учётом флагов «снизу и медленно»
     arcIn();
 
     const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
@@ -761,7 +778,7 @@ const GameScreen = () => {
                 const starsEarned = getStars(gridLevel, time, moves);
                 setTotalStars((prev) => prev + starsEarned);
 
-                // дуга+подсказка уходят
+                // дуга уходит вниз
                 arcOut();
 
                 const congratsTimer: TimeoutId = setTimeout(() => {
@@ -771,7 +788,7 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
-                // даём фанфарам «доиграть», затем двигаемся дальше
+                // ждём фанфары, затем запускаем СЛЕД. РАУНД:
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
@@ -787,15 +804,20 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
+                  // ✨ КЛЮЧ: перед новой раздачей принудительно просим дугу
+                  // появляться СНИЗУ и МЕДЛЕННО.
+                  arcFromBottomRef.current = true;
+                  arcSlowRef.current = true;
+
                   if (gridLevel === 12) {
-                    // 🔁 ОСТАЁМСЯ НА 12: триггерим новую раздачу
-                    lastDealAtRef.current = 0; // сброс троттла, чтобы не задерживать
-                    setShowCongrats(false); // чтобы не зависала плашка
+                    // остаёмся на 12 — новая раздача
+                    lastDealAtRef.current = 0;
+                    setShowCongrats(false);
                     setShowConfetti(false);
                     setIsGameActive(true);
-                    setRedealTick((t) => t + 1); // <-- ключевой триггер
+                    setRedealTick((t) => t + 1);
                   } else {
-                    setAge(age + 2); // обычное повышение уровня
+                    setAge(age + 2);
                   }
                 }, 3800);
                 completionTimers.current.push(nextTimer);
@@ -823,9 +845,10 @@ const GameScreen = () => {
         completionTimers.current.push(flipBackTimer);
       }
     } else {
+      // быстрый второй тап
       const unlockTimer: TimeoutId = setTimeout(
         () => setIsFlipping(false),
-        500
+        120
       );
       completionTimers.current.push(unlockTimer);
     }
@@ -977,7 +1000,9 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    // не используется в цикле 12, но оставлю
+    // следующий раунд — просим дугу «снизу и медленно»
+    arcFromBottomRef.current = true;
+    arcSlowRef.current = true;
     lastDealAtRef.current = 0;
     setRedealTick((t) => t + 1);
   };
@@ -1029,21 +1054,21 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* дуга */}
+      {/* дуга: top 60, как просил; всегда управляется arcTransY/arcOpacity */}
       <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <RNAnimated.Image
           source={require("../../assets/ellipse.png")}
           resizeMode="cover"
           style={{
             position: "absolute",
-            top: ARC_TOP_OFFSET,
+            top: 60,
             left: 0,
             right: 0,
             width: "100%",
-            height: H + ARC_BOTTOM_PAD + ARC_TOP_OFFSET,
+            height: Dimensions.get("window").height,
+            zIndex: 0,
             opacity: arcOpacity as any,
             transform: [{ translateY: arcTransY as any }],
-            zIndex: 30,
           }}
         />
       </View>
@@ -1056,7 +1081,7 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* подсказка связана с дугой */}
+        {/* подсказка двигается вместе с дугой */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1092,7 +1117,7 @@ const GameScreen = () => {
               <View
                 style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
               >
-                <View style={styles.hintBorder}>
+                <View className="" style={styles.hintBorder}>
                   <LinearGradient
                     colors={["#FFB380", "#D16C00"]}
                     style={styles.hintButtonInner}
