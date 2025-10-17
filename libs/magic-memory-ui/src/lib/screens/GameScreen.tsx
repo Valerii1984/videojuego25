@@ -1061,7 +1061,7 @@ const GameScreen = () => {
           resizeMode="cover"
           style={{
             position: "absolute",
-            top: 60,
+            top: 80,
             left: 0,
             right: 0,
             width: "100%",
