@@ -199,6 +199,7 @@ const getSrc = (c?: Card): string | undefined => {
 };
 
 const ARC_BOTTOM_PAD = 48;
+const ELLIPSE_TOP = 50; // позиция как в TicTacToe
 
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
@@ -268,13 +269,13 @@ const GameScreen = () => {
   // 🔁 ключ раздачи при том же age
   const [redealTick, setRedealTick] = useState(0);
 
-  // --- ARC state & flags ---
+  // --- ARC state ---
   const arcTransY = useRef(
     new RNAnimated.Value(Dimensions.get("window").height + ARC_BOTTOM_PAD)
   ).current;
   const arcOpacity = useRef(new RNAnimated.Value(0)).current;
 
-  // флаги, чтобы после КАЖДОГО раунда поднимать дугу снизу и медленно
+  // Эти флаги оставляем (на будущее), но arcIn теперь всегда ведёт себя как в TicTacToe
   const arcFromBottomRef = useRef(true);
   const arcSlowRef = useRef(true);
 
@@ -291,52 +292,38 @@ const GameScreen = () => {
 
   const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
 
-  // дуга: если запрошено «снизу и медленно» — стартуем с высоты экрана и длинной анимацией
+  // === СИНХРОНИЗИРОВАННО С TICTACTOE ===
   const arcIn = () => {
-    const startY = arcFromBottomRef.current
-      ? Dimensions.get("window").height + 20
-      : 30;
-
-    arcTransY.setValue(startY);
+    const H = Dimensions.get("window").height;
+    arcTransY.setValue(H);
     arcOpacity.setValue(0);
-
-    const dur = arcSlowRef.current ? 1800 : 1200;
-    const opDur = arcSlowRef.current ? 1100 : 800;
-    const opDelay = arcSlowRef.current ? 180 : 80;
-
     RNAnimated.parallel([
       RNAnimated.timing(arcTransY, {
         toValue: 0,
-        duration: dur,
-        easing: RNEasing.out(RNEasing.cubic),
+        duration: 1500,
+        easing: RNEasing.out(RNEasing.quad),
         useNativeDriver: true,
       }),
       RNAnimated.timing(arcOpacity, {
         toValue: 1,
-        duration: opDur,
-        delay: opDelay,
+        duration: 1000,
         easing: RNEasing.out(RNEasing.quad),
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      // на этот раунд флаги погашаем (чтобы избегать «миганий» в процессе)
-      arcFromBottomRef.current = false;
-      arcSlowRef.current = false;
-    });
+    ]).start();
   };
 
   const arcOut = (onDone?: () => void) => {
     RNAnimated.parallel([
       RNAnimated.timing(arcTransY, {
         toValue: height + ARC_BOTTOM_PAD,
-        duration: 700,
+        duration: 600,
         easing: RNEasing.in(RNEasing.cubic),
         useNativeDriver: true,
       }),
       RNAnimated.timing(arcOpacity, {
         toValue: 0,
-        duration: 700,
-        easing: RNEasing.in(RNEasing.cubic),
+        duration: 400,
         useNativeDriver: true,
       }),
     ]).start(() => onDone?.());
@@ -615,7 +602,7 @@ const GameScreen = () => {
     setIsGameActive(true);
     successPlayedRef.current = false;
 
-    // вход дуги — с учётом флагов «снизу и медленно»
+    // вход дуги — теперь всегда снизу и с параметрами как в TicTacToe
     arcIn();
 
     const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
@@ -788,7 +775,7 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
-                // ждём фанфары, затем запускаем СЛЕД. РАУНД:
+                // ждём фанфары, затем следующий раунд
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
@@ -804,13 +791,11 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
-                  // ✨ КЛЮЧ: перед новой раздачей принудительно просим дугу
-                  // появляться СНИЗУ и МЕДЛЕННО.
+                  // перед новой раздачей — снова снизу/медленно (флаги оставлены для совместимости)
                   arcFromBottomRef.current = true;
                   arcSlowRef.current = true;
 
                   if (gridLevel === 12) {
-                    // остаёмся на 12 — новая раздача
                     lastDealAtRef.current = 0;
                     setShowCongrats(false);
                     setShowConfetti(false);
@@ -845,7 +830,6 @@ const GameScreen = () => {
         completionTimers.current.push(flipBackTimer);
       }
     } else {
-      // быстрый второй тап
       const unlockTimer: TimeoutId = setTimeout(
         () => setIsFlipping(false),
         120
@@ -1000,7 +984,6 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    // следующий раунд — просим дугу «снизу и медленно»
     arcFromBottomRef.current = true;
     arcSlowRef.current = true;
     lastDealAtRef.current = 0;
@@ -1054,14 +1037,14 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* дуга: top 60, как просил; всегда управляется arcTransY/arcOpacity */}
+      {/* ДУГА: позиция и анимации синхронизированы с TicTacToe */}
       <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <RNAnimated.Image
           source={require("../../assets/ellipse.png")}
           resizeMode="cover"
           style={{
             position: "absolute",
-            top: 80,
+            top: ELLIPSE_TOP,
             left: 0,
             right: 0,
             width: "100%",
