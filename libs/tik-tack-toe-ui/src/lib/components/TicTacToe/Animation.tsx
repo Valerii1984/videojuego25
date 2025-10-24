@@ -1,13 +1,26 @@
-import React, { useRef, useEffect } from "react";
-import { Animated, StyleSheet, Dimensions, Easing, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import {
+  Animated,
+  StyleSheet,
+  Dimensions,
+  Easing,
+  View,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import Star from "../../assets/svg/star";
 import WhiteStar from "../../assets/svg/whiteStart";
 
 const { width } = Dimensions.get("window");
 const CELL_SIZE = Math.floor(width / 12);
 
+// Интерфейс пропсов для VictoryGlow
+interface VictoryGlowProps {
+  style?: StyleProp<ViewStyle>;
+}
+
 // Компонент для анимации победы с золотистым свечением
-export const VictoryGlow: React.FC = () => {
+export const VictoryGlow: React.FC<VictoryGlowProps> = ({ style }) => {
   const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -36,6 +49,7 @@ export const VictoryGlow: React.FC = () => {
           backgroundColor: "#F3B63A", // золотистый свет
           opacity: glow,
         },
+        style,
       ]}
     />
   );
@@ -151,8 +165,6 @@ export const RotationAnimation: React.FC = () => {
     />
   );
 };
-
-// ===== PlayerAvatar extracted animations =====
 
 // Animated star that flies away and fades
 export const AnimatedStar: React.FC<{

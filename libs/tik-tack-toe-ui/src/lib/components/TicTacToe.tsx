@@ -24,10 +24,16 @@ import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
 
+const { height: screenHeight } = Dimensions.get("window");
+const baseHeight = 375;
+const scale = screenHeight / baseHeight;
+const scaled = (size: number) => Math.round(size * scale);
+
 const ENABLE_BACKGROUND_MUSIC = false;
 const SHOW_LANG_BADGE = false;
+const ARC_BOTTOM_PAD = scaled(48);
+const ELLIPSE_TOP = scaled(50) + 30;
 
-/** ——— локали как в Magic Memory ——— */
 type LocaleTag =
   | "en-US"
   | "de-DE"
@@ -94,8 +100,8 @@ const DEFAULTS = {
     require("../assets/WTP_BGS_ALL_0048.png") as ImageSourcePropType,
   name1: "Player 1",
   name2: "Player 2",
-  photo1: require("../assets/6.png") as ImageSourcePropType,
-  photo2: require("../assets/81.png") as ImageSourcePropType,
+  photo1: require("../assets/9.png") as ImageSourcePropType,
+  photo2: require("../assets/82.png") as ImageSourcePropType,
   winGif: require("../assets/animations/success-animation.json") as any,
   lang: "en" as Language,
 };
@@ -115,12 +121,10 @@ type ShortProps = {
     userAvatar?: string;
     enemyCard?: string;
   };
-
   lang?: Language;
   background?: string;
   userAvatar?: string;
   enemyCard?: string;
-
   backgroundImage?: ImageSourcePropType;
   name1?: string;
   name2?: string;
@@ -135,7 +139,7 @@ const EMPTY_BOARD: (null | "X" | "O")[][] = [
   [null, null, null],
 ];
 
-const TicTacToe: React.FC<ShortProps> = (rawProps) => {
+const TicTacToe: React.FC<ShortProps> = (rawProps): JSX.Element => {
   const p = (rawProps.props ?? rawProps) as Required<ShortProps>["props"] &
     Omit<ShortProps, "props">;
 
@@ -171,8 +175,9 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
   const [boardHeight, setBoardHeight] = useState<number>(0);
   const [roundKey, setRoundKey] = useState(0);
   const [showBoard, setShowBoard] = useState(true);
-  const [suppressContent, setSuppressContent] = useState(false); // прячем фишки/эффекты полностью
+  const [suppressContent, setSuppressContent] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
@@ -233,6 +238,8 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     new Animated.Value(Dimensions.get("window").height)
   ).current;
   const ellipseOpacity = useRef(new Animated.Value(0)).current;
+  const gameContainerTranslateY = useRef(new Animated.Value(0)).current;
+  const gameContainerOpacity = useRef(new Animated.Value(1)).current;
 
   const hintScale = useRef(new Animated.Value(1)).current;
   const hintAnimatedStyle = { transform: [{ scale: hintScale }], opacity: 1 };
@@ -244,7 +251,68 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     }).start();
   };
 
-  /** системные бары */
+  // Анимация ухода дуги и игрового поля
+  const ellipseOut = (onDone?: () => void) => {
+    Animated.parallel([
+      Animated.timing(ellipseTranslateY, {
+        toValue: screenHeight + ARC_BOTTOM_PAD,
+        duration: 800,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(ellipseOpacity, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(gameContainerTranslateY, {
+        toValue: screenHeight + ARC_BOTTOM_PAD,
+        duration: 800,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(gameContainerOpacity, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start(() => onDone?.());
+  };
+
+  // Анимация входа дуги и игрового поля
+  const ellipseIn = () => {
+    ellipseTranslateY.setValue(screenHeight);
+    ellipseOpacity.setValue(0);
+    gameContainerTranslateY.setValue(screenHeight);
+    gameContainerOpacity.setValue(0);
+    Animated.parallel([
+      Animated.timing(ellipseTranslateY, {
+        toValue: 0,
+        duration: 1500,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(ellipseOpacity, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(gameContainerTranslateY, {
+        toValue: 0,
+        duration: 1500,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(gameContainerOpacity, {
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   useEffect(() => {
     StatusBar.setHidden(true, "none");
 
@@ -288,7 +356,6 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     };
   }, []);
 
-  /** старт анимаций/музыки */
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -310,22 +377,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
         if (mounted) resetAnimations();
       });
 
-      ellipseTranslateY.setValue(Dimensions.get("window").height);
-      ellipseOpacity.setValue(0);
-      Animated.parallel([
-        Animated.timing(ellipseTranslateY, {
-          toValue: 0,
-          duration: 1500,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(ellipseOpacity, {
-          toValue: 1,
-          duration: 1000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start();
+      ellipseIn();
     })();
 
     return () => {
@@ -335,33 +387,42 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
     };
   }, []);
 
-  /** как только партия закончилась — мгновенно скрываем всё содержимое доски */
   useEffect(() => {
-    if (gameComplete) setSuppressContent(true);
+    if (gameComplete) {
+      console.log("Game complete, starting ellipseOut");
+      setSuppressContent(true);
+      const timer = setTimeout(() => {
+        ellipseOut(() => {
+          setShowGameOver(true);
+        });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+    return () => {};
   }, [gameComplete]);
 
-  /** новый раунд */
   const handleResetGame = () => {
+    console.log("handleResetGame triggered, resetting game state");
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setShowHint(false);
-
-    // 1) мгновенно убираем содержимое + переключаем ключ раунда
+    setShowGameOver(false);
     setSuppressContent(true);
     setShowBoard(false);
     setRoundKey((k) => k + 1);
 
-    // 2) сбрасываем внутреннее состояние
+    console.log("Calling resetGame");
     resetGame();
     resetAnimations();
     hintScale.setValue(1);
     setIsGameStarted(true);
     if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
 
-    // 3) возвращаем чистую доску на следующий кадр и разрешаем контент
-    requestAnimationFrame(() => {
+    setTimeout(() => {
+      console.log("Restoring board and content, gameState:", gameState);
       setShowBoard(true);
       setSuppressContent(false);
-    });
+      ellipseIn();
+    }, 200);
 
     introAnim.setValue(0);
     Animated.timing(introAnim, {
@@ -369,25 +430,18 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
       duration: 400,
       useNativeDriver: true,
     }).start();
-
-    ellipseTranslateY.setValue(20);
-    Animated.parallel([
-      Animated.timing(ellipseTranslateY, {
-        toValue: 0,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(ellipseOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
   };
 
-  // пока board скрыт — отдаём пустую матрицу (ни кадра старого стейта)
-  const displayedBoard = showBoard ? gameState.board : (EMPTY_BOARD as any);
+  const displayedBoard: (null | "X" | "O")[][] = showBoard
+    ? gameState.board
+    : EMPTY_BOARD;
+
+  console.log("GameBoard props:", {
+    photo1: resolvedPhoto1,
+    photo2: resolvedPhoto2,
+    suppressContent,
+    board: displayedBoard,
+  });
 
   return (
     <ImageBackground
@@ -395,82 +449,86 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
       style={styles.container}
       testID="tic-tac-toe-game"
     >
+      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+        <Animated.Image
+          source={require("../assets/ellipse.png")}
+          style={{
+            position: "absolute",
+            top: ELLIPSE_TOP,
+            left: 0,
+            right: 0,
+            width: "100%",
+            height: Dimensions.get("window").height,
+            resizeMode: "cover",
+            zIndex: 0,
+            opacity: ellipseOpacity,
+            transform: [{ translateY: ellipseTranslateY }],
+          }}
+        />
+      </View>
+
       <Animated.View
-        style={[styles.gameContainer, introStyle, gameContainerStyle]}
+        style={[
+          styles.gameContainer,
+          introStyle,
+          gameContainerStyle,
+          {
+            opacity: gameContainerOpacity,
+            transform: [{ translateY: gameContainerTranslateY }],
+          },
+        ]}
         testID="game-content"
       >
-        <View>
-          <Animated.Image
-            source={require("../assets/ellipse.png")}
-            style={{
-              position: "absolute",
-              top: 50,
-              left: 0,
-              right: 0,
-              width: "100%",
-              height: Dimensions.get("window").height,
-              resizeMode: "cover",
-              zIndex: 0,
-              opacity: ellipseOpacity,
-              transform: [{ translateY: ellipseTranslateY }],
-            }}
+        <Animated.View style={[styles.playersContainer]}>
+          <View style={{ marginRight: scaled(20), opacity: 1 }}>
+            <PlayerAvatar
+              key={`p1-${roundKey}`}
+              photo={resolvedPhoto1}
+              name={finalName1}
+              player="X"
+              currentPlayer={gameState.currentPlayer}
+              winner={gameState.winner}
+              animatedStyle={player1Style}
+              testID="player1-container"
+              boardHeight={boardHeight}
+              isFirstPlayer={true}
+              lang={lang}
+            />
+          </View>
+
+          <GameBoard
+            key={`board-${roundKey}`}
+            board={displayedBoard}
+            onCellPress={handleCellPress}
+            winningLine={gameState.winningLine}
+            bestMove={bestMove}
+            photo1={resolvedPhoto1}
+            photo2={resolvedPhoto2}
+            onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
+            showHint={showHint}
+            onHintUsed={() => setShowHint(false)}
+            onVictory={playVictorySound}
+            onBotVictory={() => playSadGameSound()}
+            suppressContent={suppressContent}
+            roundKey={roundKey} // Передаём roundKey
           />
 
-          <Animated.View
-            style={[
-              styles.playersContainer,
-              { transform: [{ translateY: ellipseTranslateY }] },
-            ]}
-          >
-            <View style={{ marginRight: 20 }}>
-              <PlayerAvatar
-                key={`p1-${roundKey}`}
-                photo={resolvedPhoto1}
-                name={finalName1}
-                player="X"
-                currentPlayer={gameState.currentPlayer}
-                winner={gameState.winner}
-                animatedStyle={player1Style}
-                testID="player1-container"
-                boardHeight={boardHeight}
-                isFirstPlayer={true}
-                lang={lang}
-              />
-            </View>
-
-            <GameBoard
-              key={`board-${roundKey}`}
-              board={displayedBoard}
-              onCellPress={handleCellPress}
-              winningLine={gameState.winningLine}
-              bestMove={bestMove}
-              photo1={resolvedPhoto1}
-              photo2={resolvedPhoto2}
-              onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
-              showHint={showHint}
-              onHintUsed={() => setShowHint(false)}
-              onVictory={playVictorySound}
-              onBotVictory={() => playSadGameSound()}
-              suppressContent={suppressContent}
+          <View style={{ marginLeft: scaled(20), opacity: 1 }}>
+            <PlayerAvatar
+              key={`p2-${roundKey}`}
+              photo={resolvedPhoto2}
+              name={finalName2}
+              player="O"
+              currentPlayer={gameState.currentPlayer}
+              winner={gameState.winner}
+              animatedStyle={player2Style}
+              testID="player2-container"
+              boardHeight={boardHeight}
+              isFirstPlayer={false}
+              lang={lang}
             />
-
-            <View style={{ marginLeft: 20 }}>
-              <PlayerAvatar
-                key={`p2-${roundKey}`}
-                photo={resolvedPhoto2}
-                name={finalName2}
-                player="O"
-                currentPlayer={gameState.currentPlayer}
-                winner={gameState.winner}
-                animatedStyle={player2Style}
-                testID="player2-container"
-                boardHeight={boardHeight}
-                isFirstPlayer={false}
-                lang={lang}
-              />
-            </View>
-          </Animated.View>
-        </View>
+          </View>
+        </Animated.View>
 
         <View style={styles.topBar} pointerEvents="box-none">
           {SHOW_LANG_BADGE && !!lang && (
@@ -484,27 +542,19 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
           <Animated.View
             style={[
               styles.hintButton,
-              { transform: [{ scale: hintAnimatedStyle.transform[0].scale }] },
-              { top: Math.max(34, Math.round(screenH / 2 - 20)) },
+              hintAnimatedStyle,
+              {
+                top: Math.max(scaled(34), Math.round(screenH / 2 - scaled(20))),
+              },
             ]}
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPressIn={() =>
-                (
-                  hintAnimatedStyle.transform[0].scale as Animated.Value
-                ).setValue(0.9)
-              }
-              onPressOut={() =>
-                (
-                  hintAnimatedStyle.transform[0].scale as Animated.Value
-                ).setValue(1)
-              }
+              onPressIn={() => animateHintButton(0.9)}
+              onPressOut={() => animateHintButton(1)}
               onPress={() => {
                 playNotificationSound();
-                (
-                  hintAnimatedStyle.transform[0].scale as Animated.Value
-                ).setValue(1.08);
+                animateHintButton(1.08);
                 setShowHint(true);
                 if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
                 hintTimerRef.current = setTimeout(
@@ -528,28 +578,30 @@ const TicTacToe: React.FC<ShortProps> = (rawProps) => {
         </View>
       </Animated.View>
 
-      <GameOverScreen
-        winner={gameState.winner}
-        gameComplete={gameComplete}
-        winGif={resolveImage(winGif, DEFAULTS.winGif)}
-        onPlayAgain={handleResetGame}
-        animatedStyle={congratsContainerStyle}
-        onPauseBackground={pauseBackgroundMusic}
-        onResumeBackground={resumeBackgroundMusic}
-        lang={lang}
-      />
+      {showGameOver && (
+        <GameOverScreen
+          winner={gameState.winner}
+          gameComplete={gameComplete}
+          winGif={resolveImage(winGif, DEFAULTS.winGif)}
+          onPlayAgain={handleResetGame}
+          animatedStyle={congratsContainerStyle}
+          onPauseBackground={pauseBackgroundMusic}
+          onResumeBackground={resumeBackgroundMusic}
+          lang={lang}
+        />
+      )}
     </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, width: "100%", height: "100%" },
-  gameContainer: { flex: 1, justifyContent: "center", height: "80%" },
+  gameContainer: { flex: 1, justifyContent: "center" },
   playersContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    paddingHorizontal: 20,
-    marginTop: "10%",
+    paddingHorizontal: scaled(20),
+    marginTop: scaled(62),
   },
   topBar: {
     position: "absolute",
@@ -572,7 +624,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 980,
   },
-  /** КНОПКА ПОДСКАЗКИ — без «торчащей» тени */
   hintButton: {
     position: "absolute",
     width: 40,
@@ -582,7 +633,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 1000,
     right: 30,
-    overflow: "hidden", // режем любое свечение
+    overflow: "hidden",
   },
   hintGlow: {
     width: 70,
@@ -590,8 +641,8 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 0, // Android: тени нет
-    shadowOpacity: 0, // iOS: тени нет
+    elevation: 0,
+    shadowOpacity: 0,
     shadowColor: "transparent",
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 0,

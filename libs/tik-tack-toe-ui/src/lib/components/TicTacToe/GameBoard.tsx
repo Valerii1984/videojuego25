@@ -21,14 +21,13 @@ import {
 } from "./Animation";
 import { StarAdvise } from "../../assets/svg/star-advise";
 
-/** ——— Аватар, умеющий отрисовать себя мгновенно (без анимаций) ——— */
 type AnimatedAvatarProps = {
   source: ImageSourcePropType;
   row: number;
   col: number;
   style?: StyleProp<ImageStyle>;
   cellSize: number;
-  instant?: boolean; // если true — без анимации появления
+  instant?: boolean;
 };
 
 const AnimatedAvatar: React.FC<AnimatedAvatarProps> = ({
@@ -79,6 +78,7 @@ const AnimatedAvatar: React.FC<AnimatedAvatarProps> = ({
           opacity,
           transform: [{ translateX }, { scale }],
           borderRadius: (cellSize * 0.8) / 2,
+          zIndex: 2,
         },
       ]}
     />
@@ -89,7 +89,7 @@ interface GameBoardProps {
   board: Board;
   onCellPress: (row: number, col: number) => void;
   winningLine: number[][] | null;
-  bestMove: number[] | null; // [row, col] | null
+  bestMove: number[] | null;
   photo1: ImageSourcePropType;
   photo2: ImageSourcePropType;
   onLayout?: (event: any) => void;
@@ -98,7 +98,8 @@ interface GameBoardProps {
   onHintUsed: () => void;
   onVictory?: () => void;
   onBotVictory?: () => void;
-  suppressContent?: boolean; // когда true — внутри клеток ничего не рисуем
+  suppressContent?: boolean;
+  roundKey?: number;
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({
@@ -115,6 +116,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   onVictory,
   onBotVictory,
   suppressContent = false,
+  roundKey,
 }) => {
   const countMoves = board
     .flat()
@@ -126,8 +128,27 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
   const intervalRef = useRef<number | null>(null);
+  const [hasPlayedVictorySound, setHasPlayedVictorySound] = useState(false);
 
   const hintScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    setElapsedSeconds(0);
+    setHasPlayedVictorySound(false);
+    if (intervalRef.current != null) {
+      clearInterval(intervalRef.current as number);
+      intervalRef.current = null;
+    }
+    intervalRef.current = setInterval(() => {
+      setElapsedSeconds((prev) => prev + 1);
+    }, 1000) as unknown as number;
+    return () => {
+      if (intervalRef.current != null) {
+        clearInterval(intervalRef.current as number);
+        intervalRef.current = null;
+      }
+    };
+  }, [roundKey]);
 
   useEffect(() => {
     if (bestMove && showHint) {
@@ -162,22 +183,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
     b.some((row) => row.some((cell) => cell === null));
   const isGameOver = (b: Board, win: number[][] | null) =>
     win !== null || !hasAnyEmpty(b);
-
-  useEffect(() => {
-    if (intervalRef.current == null) {
-      intervalRef.current = setInterval(() => {
-        setElapsedSeconds((prev) => prev + 1);
-      }, 1000) as unknown as number;
-    }
-    return () => {
-      if (intervalRef.current != null) {
-        clearInterval(intervalRef.current as number);
-        intervalRef.current = null;
-      }
-    };
-  }, []);
-
-  const [hasPlayedVictorySound, setHasPlayedVictorySound] = useState(false);
 
   useEffect(() => {
     if (isGameOver(board, winningLine)) {
@@ -246,6 +251,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             ],
             width: cellSize + 20,
             height: cellSize + 20,
+            zIndex: 0,
           },
         ]}
       >
@@ -280,6 +286,15 @@ const GameBoard: React.FC<GameBoardProps> = ({
     const isHintCell =
       hintVisible && hintCell?.[0] === row && hintCell?.[1] === col;
 
+    console.log("renderCell:", {
+      row,
+      col,
+      cell,
+      isWinningCell,
+      isHintCell,
+      suppressContent,
+    });
+
     const handleCellPress = () => {
       onHintUsed();
       onCellPress(row, col);
@@ -292,6 +307,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         onPress={handleCellPress}
         activeOpacity={0.7}
         testID={`cell-${row}-${col}`}
+        disabled={suppressContent || cell !== null}
       >
         <View
           style={[
@@ -305,7 +321,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         >
           {!suppressContent && isWinningCell && (
             <>
-              <VictoryGlow />
+              <VictoryGlow style={{ zIndex: 0 }} />
               <WinningCellEffects
                 isActive={true}
                 isFirstPlayer={cell === "X"}
@@ -319,13 +335,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
               row={row}
               col={col}
               cellSize={cellSize}
-              instant={suppressContent}
+              instant={suppressContent || isWinningCell}
               style={[
                 styles.photo1Cell,
                 {
                   width: cellSize * 0.8,
                   height: cellSize * 0.8,
                   borderRadius: (cellSize * 0.8) / 2,
+                  zIndex: 2,
                 },
               ]}
             />
@@ -336,13 +353,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
               row={row}
               col={col}
               cellSize={cellSize}
-              instant={suppressContent}
+              instant={suppressContent || isWinningCell}
               style={[
                 styles.photo2Cell,
                 {
                   width: cellSize * 0.8,
                   height: cellSize * 0.8,
                   borderRadius: (cellSize * 0.8) / 2,
+                  zIndex: 2,
                 },
               ]}
             />
@@ -393,7 +411,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </View>
       </View>
 
-      {/* горизонтальные линии */}
       {[1, 2].map((i: number) => (
         <Image
           key={`h-${i}`}
@@ -409,7 +426,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
         />
       ))}
 
-      {/* вертикальные линии */}
       {[1, 2].map((i: number) => (
         <LinearGradient
           key={`v-${i}`}
@@ -434,7 +450,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
 
       {board.map((row: Board[number], rowIndex: number) => (
         <View key={`row-${rowIndex}`} style={styles.row}>
-          {row.map((_: Player, colIndex: number) => (
+          {row.map((cell: Player, colIndex: number) => (
             <View
               key={`cell-${rowIndex}-${colIndex}`}
               style={styles.cellWrapper}

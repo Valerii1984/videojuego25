@@ -43,6 +43,11 @@ import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
+const { height } = Dimensions.get("window");
+const baseHeight = 375;
+const scale = height / baseHeight;
+const scaled = (size: number) => Math.round(size * scale);
+
 const ENABLE_BACKGROUND_MUSIC = false;
 const FANFARE = require("../../assets/sounds/success-fanfare-trumpets.mp3");
 
@@ -198,8 +203,8 @@ const getSrc = (c?: Card): string | undefined => {
     : anyCard.__source.uri;
 };
 
-const ARC_BOTTOM_PAD = 48;
-const ELLIPSE_TOP = 50; // позиция как в TicTacToe
+const ARC_BOTTOM_PAD = scaled(48);
+const ELLIPSE_TOP = scaled(50) + 30;
 
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
@@ -266,20 +271,16 @@ const GameScreen = () => {
   }, []);
   const { height } = screen;
 
-  // 🔁 ключ раздачи при том же age
   const [redealTick, setRedealTick] = useState(0);
 
-  // --- ARC state ---
   const arcTransY = useRef(
     new RNAnimated.Value(Dimensions.get("window").height + ARC_BOTTOM_PAD)
   ).current;
   const arcOpacity = useRef(new RNAnimated.Value(0)).current;
 
-  // Эти флаги оставляем (на будущее), но arcIn теперь всегда ведёт себя как в TicTacToe
   const arcFromBottomRef = useRef(true);
   const arcSlowRef = useRef(true);
 
-  // GRID anti-flicker
   const gridOpacityRN = useRef(new RNAnimated.Value(0)).current;
   const revealGridSmoothly = () => {
     RNAnimated.timing(gridOpacityRN, {
@@ -292,7 +293,6 @@ const GameScreen = () => {
 
   const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
 
-  // === СИНХРОНИЗИРОВАННО С TICTACTOE ===
   const arcIn = () => {
     const H = Dimensions.get("window").height;
     arcTransY.setValue(H);
@@ -374,7 +374,6 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
-  // system UI
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -398,7 +397,6 @@ const GameScreen = () => {
     };
   }, []);
 
-  // preload sounds
   useEffect(() => {
     if (!isWeb) {
       ScreenOrientation.lockAsync(
@@ -454,7 +452,6 @@ const GameScreen = () => {
     };
   }, []);
 
-  // timer
   useEffect(() => {
     if (timer.current) {
       clearInterval(timer.current);
@@ -494,7 +491,6 @@ const GameScreen = () => {
     } catch {}
   };
 
-  // фанфары при поздравлении
   useEffect(() => {
     if (!(showCongrats && isGameActive)) return;
     if (successPlayedRef.current) return;
@@ -519,10 +515,8 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
-  // ===== раздаём карты по age И по redealTick =====
   useEffect(() => {
     generateCards();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [age, redealTick]);
 
   const playRobotVoice = async (idx: number) => {
@@ -548,7 +542,6 @@ const GameScreen = () => {
     }
   };
 
-  // мягкое скрытие карт
   const fadesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const scalesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const ensureAnimFor = (id: number) => {
@@ -557,7 +550,6 @@ const GameScreen = () => {
     return { fade: fadesRef.get(id)!, scale: scalesRef.get(id)! };
   };
 
-  // троттл двойной раздачи
   const lastDealAtRef = useRef(0);
 
   const generateCards = () => {
@@ -575,7 +567,6 @@ const GameScreen = () => {
       timer.current = null;
     }
 
-    // сетка появляется плавно после готовности
     gridOpacityRN.setValue(0);
 
     const pairs = Math.floor(age / 2);
@@ -602,7 +593,6 @@ const GameScreen = () => {
     setIsGameActive(true);
     successPlayedRef.current = false;
 
-    // вход дуги — теперь всегда снизу и с параметрами как в TicTacToe
     arcIn();
 
     const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
@@ -765,7 +755,6 @@ const GameScreen = () => {
                 const starsEarned = getStars(gridLevel, time, moves);
                 setTotalStars((prev) => prev + starsEarned);
 
-                // дуга уходит вниз
                 arcOut();
 
                 const congratsTimer: TimeoutId = setTimeout(() => {
@@ -775,7 +764,6 @@ const GameScreen = () => {
                 }, 900);
                 completionTimers.current.push(congratsTimer);
 
-                // ждём фанфары, затем следующий раунд
                 const nextTimer: TimeoutId = setTimeout(async () => {
                   if (!isGameActive) return;
 
@@ -791,7 +779,6 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
-                  // перед новой раздачей — снова снизу/медленно (флаги оставлены для совместимости)
                   arcFromBottomRef.current = true;
                   arcSlowRef.current = true;
 
@@ -1020,7 +1007,7 @@ const GameScreen = () => {
   }
 
   const { height: H } = screen;
-  const hintTop = Math.max(34, Math.round(H / 2 - 20));
+  const hintTop = Math.max(scaled(34), Math.round(H / 2 - scaled(20)));
 
   return (
     <View
@@ -1037,7 +1024,6 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      {/* ДУГА: позиция и анимации синхронизированы с TicTacToe */}
       <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
         <RNAnimated.Image
           source={require("../../assets/ellipse.png")}
@@ -1064,7 +1050,6 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
-        {/* подсказка двигается вместе с дугой */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
@@ -1139,7 +1124,11 @@ const GameScreen = () => {
                 ]}
                 contentContainerStyle={[
                   styles.grid,
-                  { paddingTop: 62, width: "100%", overflow: "visible" },
+                  {
+                    paddingTop: scaled(62),
+                    width: "100%",
+                    overflow: "visible",
+                  },
                 ]}
                 style={
                   {
