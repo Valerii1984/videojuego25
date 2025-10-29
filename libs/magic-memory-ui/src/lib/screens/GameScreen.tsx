@@ -1085,7 +1085,7 @@ const GameScreen = () => {
               <View
                 style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
               >
-                <View className="" style={styles.hintBorder}>
+                <View style={styles.hintBorder}>
                   <LinearGradient
                     colors={["#FFB380", "#D16C00"]}
                     style={styles.hintButtonInner}

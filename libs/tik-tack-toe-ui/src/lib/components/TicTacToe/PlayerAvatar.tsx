@@ -124,7 +124,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   const TTURN = TURN_STR[locale];
 
   // <<< ТУТ была проблема TS7030 — теперь явный тип и return во всех ветках
-  const renderTurnIndicator = (): JSX.Element | null => {
+  const renderTurnIndicator = (): React.ReactElement | null => {
     const isPlayersTurn = !winner && currentPlayer === player;
     if (!isPlayersTurn) {
       return null;

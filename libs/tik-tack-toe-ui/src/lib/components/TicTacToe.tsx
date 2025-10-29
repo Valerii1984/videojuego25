@@ -139,7 +139,7 @@ const EMPTY_BOARD: (null | "X" | "O")[][] = [
   [null, null, null],
 ];
 
-const TicTacToe: React.FC<ShortProps> = (rawProps): JSX.Element => {
+const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
   const p = (rawProps.props ?? rawProps) as Required<ShortProps>["props"] &
     Omit<ShortProps, "props">;
 
