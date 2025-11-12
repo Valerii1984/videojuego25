@@ -11,10 +11,9 @@ import {
   ImageSourcePropType,
   StatusBar,
   Platform,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-
-import type { TicTacToeProps } from "../types/tic-tac-toe";
 import type { Language } from "../types/props";
 import GameBoard from "./TicTacToe/GameBoard";
 import PlayerAvatar from "./TicTacToe/PlayerAvatar";
@@ -27,21 +26,87 @@ import * as ScreenOrientation from "expo-screen-orientation";
 const { height: screenHeight } = Dimensions.get("window");
 const baseHeight = 375;
 const scale = screenHeight / baseHeight;
-const scaled = (size: number) => Math.round(size * scale);
+const scaled = (n: number) => Math.round(n * scale);
 
 const ENABLE_BACKGROUND_MUSIC = false;
 const SHOW_LANG_BADGE = false;
 const ARC_BOTTOM_PAD = scaled(48);
 const ELLIPSE_TOP = scaled(50) + 30;
 
-type LocaleTag =
-  | "en-US"
-  | "de-DE"
-  | "es-ES"
-  | "es-419"
-  | "fr-FR"
-  | "it-IT"
-  | "pt-BR";
+const TIMINGS = {
+  AI_THINK_MS: 400,
+  BETWEEN_TURNS_MS: 300,
+  LAST_MOVE_FREEZE_MS: 1200,
+  AVATAR_HOLD_MS: 1500,
+  GAMEOVER_XFADE_MS: 700,
+};
+
+type Timings = {
+  aiThink: number;
+  betweenTurns: number;
+  lastMoveFreeze: number;
+  avatarHold: number;
+  gameOverXFade: number;
+};
+
+type TicTacToeInputProps = {
+  lang?: Language;
+  background?: string;
+  userAvatar?: string;
+  enemyCard?: string;
+  backgroundImage?: ImageSourcePropType;
+  name1?: string;
+  name2?: string;
+  photo1?: ImageSourcePropType;
+  photo2?: ImageSourcePropType;
+  winGif?: any;
+  timings?: Partial<Timings>;
+};
+
+type Props =
+  | TicTacToeInputProps
+  | {
+      props?: TicTacToeInputProps;
+    };
+
+const I18N = {
+  "en-US": {
+    player1: "Player 1",
+    player2: "Player 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "de-DE": {
+    player1: "Spieler 1",
+    player2: "Spieler 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "es-ES": {
+    player1: "Jugador 1",
+    player2: "Jugador 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "es-419": {
+    player1: "Jugador 1",
+    player2: "Jugador 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "fr-FR": {
+    player1: "Joueur 1",
+    player2: "Joueur 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "it-IT": {
+    player1: "Giocatore 1",
+    player2: "Giocatore 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+  "pt-BR": {
+    player1: "Jogador 1",
+    player2: "Jogador 2",
+    badge: (c: string) => c.toUpperCase(),
+  },
+} as const;
+type LocaleTag = keyof typeof I18N;
 
 const normalizeLocale = (raw?: string): LocaleTag => {
   const s = (raw || "").toLowerCase().replace("_", "-");
@@ -52,47 +117,6 @@ const normalizeLocale = (raw?: string): LocaleTag => {
   if (s.startsWith("it")) return "it-IT";
   if (s === "pt-br" || s.startsWith("pt")) return "pt-BR";
   return "en-US";
-};
-
-const I18N: Record<
-  LocaleTag,
-  { player1: string; player2: string; badge: (c: string) => string }
-> = {
-  "en-US": {
-    player1: "Player 1",
-    player2: "Player 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "de-DE": {
-    player1: "Spieler 1",
-    player2: "Spieler 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "es-ES": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "es-419": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "fr-FR": {
-    player1: "Joueur 1",
-    player2: "Joueur 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "it-IT": {
-    player1: "Giocatore 1",
-    player2: "Giocatore 2",
-    badge: (c) => c.toUpperCase(),
-  },
-  "pt-BR": {
-    player1: "Jogador 1",
-    player2: "Jogador 2",
-    badge: (c) => c.toUpperCase(),
-  },
 };
 
 const DEFAULTS = {
@@ -109,28 +133,9 @@ const DEFAULTS = {
 const resolveImage = (
   src?: string | ImageSourcePropType,
   fallback?: ImageSourcePropType
-): ImageSourcePropType => {
+) => {
   if (typeof src === "string") return { uri: src };
   return src ?? (fallback as ImageSourcePropType);
-};
-
-type ShortProps = {
-  props?: {
-    lang?: Language;
-    background?: string;
-    userAvatar?: string;
-    enemyCard?: string;
-  };
-  lang?: Language;
-  background?: string;
-  userAvatar?: string;
-  enemyCard?: string;
-  backgroundImage?: ImageSourcePropType;
-  name1?: string;
-  name2?: string;
-  photo1?: ImageSourcePropType;
-  photo2?: ImageSourcePropType;
-  winGif?: any;
 };
 
 const EMPTY_BOARD: (null | "X" | "O")[][] = [
@@ -139,9 +144,28 @@ const EMPTY_BOARD: (null | "X" | "O")[][] = [
   [null, null, null],
 ];
 
-const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
-  const p = (rawProps.props ?? rawProps) as Required<ShortProps>["props"] &
-    Omit<ShortProps, "props">;
+const eyePng = require("../assets/eye.png");
+
+/** Figma specs */
+const BTN_SIZE = 60;
+const BORDER_W = 3;
+const EYE_SIZE = 30;
+const SHADOW_BLUR = 25;
+const PURPLE_GLOW = "rgba(144, 33, 232, 0.8)";
+const BORDER_COLOR = "#C57CFF";
+const GRADIENT_COLORS = ["#C780FF", "#7500D1"] as const;
+
+const TicTacToe: React.FC<Props> = (rawProps) => {
+  const base = (rawProps as any).props ? (rawProps as any).props : rawProps;
+  const p: TicTacToeInputProps = base || {};
+
+  const T = {
+    aiThink: p.timings?.aiThink ?? TIMINGS.AI_THINK_MS,
+    betweenTurns: p.timings?.betweenTurns ?? TIMINGS.BETWEEN_TURNS_MS,
+    lastMoveFreeze: p.timings?.lastMoveFreeze ?? TIMINGS.LAST_MOVE_FREEZE_MS,
+    avatarHold: p.timings?.avatarHold ?? TIMINGS.AVATAR_HOLD_MS,
+    gameOverXFade: p.timings?.gameOverXFade ?? TIMINGS.GAMEOVER_XFADE_MS,
+  };
 
   const lang: Language = (p.lang as Language) ?? DEFAULTS.lang;
   const locale = normalizeLocale(lang);
@@ -157,7 +181,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
     photo1 = DEFAULTS.photo1,
     photo2 = DEFAULTS.photo2,
     winGif = DEFAULTS.winGif,
-  } = p as any;
+  } = p;
 
   const finalName1 = name1 === DEFAULTS.name1 ? L.player1 : name1;
   const finalName2 = name2 === DEFAULTS.name2 ? L.player2 : name2;
@@ -182,9 +206,9 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
 
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
   useEffect(() => {
-    const sub = Dimensions.addEventListener("change", ({ window }) => {
-      setScreenH(window.height);
-    });
+    const sub = Dimensions.addEventListener("change", ({ window }) =>
+      setScreenH(window.height)
+    );
     return () => sub?.remove?.();
   }, []);
 
@@ -234,12 +258,15 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
     ],
   };
 
+  // дуга выключена; но её анимационные значения мы используем для контейнера
   const ellipseTranslateY = useRef(
     new Animated.Value(Dimensions.get("window").height)
   ).current;
   const ellipseOpacity = useRef(new Animated.Value(0)).current;
   const gameContainerTranslateY = useRef(new Animated.Value(0)).current;
   const gameContainerOpacity = useRef(new Animated.Value(1)).current;
+
+  const playersFade = useRef(new Animated.Value(1)).current;
 
   const hintScale = useRef(new Animated.Value(1)).current;
   const hintAnimatedStyle = { transform: [{ scale: hintScale }], opacity: 1 };
@@ -251,71 +278,45 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
     }).start();
   };
 
-  // Анимация ухода дуги и игрового поля
   const ellipseOut = (onDone?: () => void) => {
     Animated.parallel([
       Animated.timing(ellipseTranslateY, {
         toValue: screenHeight + ARC_BOTTOM_PAD,
-        duration: 800,
+        duration: 850,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(ellipseOpacity, {
         toValue: 0,
-        duration: 600,
+        duration: 650,
         useNativeDriver: true,
       }),
+      // уводим СЦЕНУ вниз
       Animated.timing(gameContainerTranslateY, {
         toValue: screenHeight + ARC_BOTTOM_PAD,
-        duration: 800,
+        duration: 850,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(gameContainerOpacity, {
         toValue: 0,
-        duration: 600,
+        duration: 650,
         useNativeDriver: true,
       }),
     ]).start(() => onDone?.());
   };
 
-  // Анимация входа дуги и игрового поля
-  const ellipseIn = () => {
-    ellipseTranslateY.setValue(screenHeight);
+  // мгновенный «сброс сцены» без показа дуги — важно при рестарте
+  const resetStage = () => {
+    playersFade.setValue(1);
+    gameContainerTranslateY.setValue(0);
+    gameContainerOpacity.setValue(1);
+    ellipseTranslateY.setValue(0);
     ellipseOpacity.setValue(0);
-    gameContainerTranslateY.setValue(screenHeight);
-    gameContainerOpacity.setValue(0);
-    Animated.parallel([
-      Animated.timing(ellipseTranslateY, {
-        toValue: 0,
-        duration: 1500,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(ellipseOpacity, {
-        toValue: 1,
-        duration: 1000,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(gameContainerTranslateY, {
-        toValue: 0,
-        duration: 1500,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(gameContainerOpacity, {
-        toValue: 1,
-        duration: 1000,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
   };
 
   useEffect(() => {
     StatusBar.setHidden(true, "none");
-
     (async () => {
       if (Platform.OS === "android") {
         try {
@@ -376,72 +377,69 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
       }).start(() => {
         if (mounted) resetAnimations();
       });
-
-      ellipseIn();
     })();
 
     return () => {
       stopBackgroundMusic();
-      let t = hintTimerRef.current;
+      const t = hintTimerRef.current;
       if (t) clearTimeout(t);
     };
   }, []);
 
   useEffect(() => {
-    if (gameComplete) {
-      console.log("Game complete, starting ellipseOut");
-      setSuppressContent(true);
-      const timer = setTimeout(() => {
-        ellipseOut(() => {
-          setShowGameOver(true);
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-    return () => {};
-  }, [gameComplete]);
+    if (!gameComplete) return;
+    const holdTimer = setTimeout(() => {
+      Animated.timing(playersFade, {
+        toValue: 0,
+        duration: T.gameOverXFade,
+        useNativeDriver: true,
+      }).start(() => {
+        setSuppressContent(true);
+        ellipseOut(() => setShowGameOver(true));
+      });
+    }, T.avatarHold);
+    return () => clearTimeout(holdTimer);
+  }, [gameComplete, T.avatarHold, T.gameOverXFade, playersFade]);
 
+  // --- рестарт новой партии ---
   const handleResetGame = () => {
-    console.log("handleResetGame triggered, resetting game state");
+    // 1) сразу возвращаем сцену на место (мы уводили её в ellipseOut)
+    resetStage();
+
+    // 2) чистим таймер подсказки и состояние
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setShowHint(false);
     setShowGameOver(false);
     setSuppressContent(true);
     setShowBoard(false);
+
+    // 3) новый ключ ДО показа доски — чтобы пересоздать GameBoard
     setRoundKey((k) => k + 1);
 
-    console.log("Calling resetGame");
+    // 4) полный сброс логики игры и анимаций
     resetGame();
     resetAnimations();
-    hintScale.setValue(1);
     setIsGameStarted(true);
     if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
 
+    // 5) короткая пауза и плавный вход
     setTimeout(() => {
-      console.log("Restoring board and content, gameState:", gameState);
       setShowBoard(true);
       setSuppressContent(false);
-      ellipseIn();
-    }, 200);
 
-    introAnim.setValue(0);
-    Animated.timing(introAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
+      introAnim.setValue(0);
+      Animated.timing(introAnim, {
+        toValue: 1,
+        duration: 420,
+        useNativeDriver: true,
+      }).start();
+    }, 150);
   };
+  // --- конец рестарта ---
 
   const displayedBoard: (null | "X" | "O")[][] = showBoard
     ? gameState.board
     : EMPTY_BOARD;
-
-  console.log("GameBoard props:", {
-    photo1: resolvedPhoto1,
-    photo2: resolvedPhoto2,
-    suppressContent,
-    board: displayedBoard,
-  });
 
   return (
     <ImageBackground
@@ -449,24 +447,7 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
       style={styles.container}
       testID="tic-tac-toe-game"
     >
-      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-        <Animated.Image
-          source={require("../assets/ellipse.png")}
-          style={{
-            position: "absolute",
-            top: ELLIPSE_TOP,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: Dimensions.get("window").height,
-            resizeMode: "cover",
-            zIndex: 0,
-            opacity: ellipseOpacity,
-            transform: [{ translateY: ellipseTranslateY }],
-          }}
-        />
-      </View>
-
+      {/* дуга спрятана, но контейнер анимируем */}
       <Animated.View
         style={[
           styles.gameContainer,
@@ -479,8 +460,10 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
         ]}
         testID="game-content"
       >
-        <Animated.View style={[styles.playersContainer]}>
-          <View style={{ marginRight: scaled(20), opacity: 1 }}>
+        <Animated.View
+          style={[styles.playersContainer, { opacity: playersFade }]}
+        >
+          <View style={{ marginRight: scaled(22), opacity: 1 }}>
             <PlayerAvatar
               key={`p1-${roundKey}`}
               photo={resolvedPhoto1}
@@ -496,24 +479,26 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
             />
           </View>
 
-          <GameBoard
-            key={`board-${roundKey}`}
-            board={displayedBoard}
-            onCellPress={handleCellPress}
-            winningLine={gameState.winningLine}
-            bestMove={bestMove}
-            photo1={resolvedPhoto1}
-            photo2={resolvedPhoto2}
-            onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
-            showHint={showHint}
-            onHintUsed={() => setShowHint(false)}
-            onVictory={playVictorySound}
-            onBotVictory={() => playSadGameSound()}
-            suppressContent={suppressContent}
-            roundKey={roundKey} // Передаём roundKey
-          />
+          <Animated.View style={{ opacity: playersFade }}>
+            <GameBoard
+              key={`board-${roundKey}`}
+              board={displayedBoard}
+              onCellPress={handleCellPress}
+              winningLine={gameState.winningLine}
+              bestMove={bestMove}
+              photo1={resolvedPhoto1}
+              photo2={resolvedPhoto2}
+              onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
+              showHint={showHint}
+              onHintUsed={() => setShowHint(false)}
+              onVictory={playVictorySound}
+              onBotVictory={() => playSadGameSound()}
+              suppressContent={suppressContent}
+              roundKey={roundKey}
+            />
+          </Animated.View>
 
-          <View style={{ marginLeft: scaled(20), opacity: 1 }}>
+          <View style={{ marginLeft: scaled(22), opacity: 1 }}>
             <PlayerAvatar
               key={`p2-${roundKey}`}
               photo={resolvedPhoto2}
@@ -530,52 +515,43 @@ const TicTacToe: React.FC<ShortProps> = (rawProps): React.ReactElement => {
           </View>
         </Animated.View>
 
-        <View style={styles.topBar} pointerEvents="box-none">
-          {SHOW_LANG_BADGE && !!lang && (
-            <View style={styles.centerTopBar}>
-              <Text style={{ color: "#fff", fontFamily: "Fredoka" }}>
-                {I18N[locale].badge(lang)}
-              </Text>
-            </View>
-          )}
-
-          <Animated.View
-            style={[
-              styles.hintButton,
-              hintAnimatedStyle,
-              {
-                top: Math.max(scaled(34), Math.round(screenH / 2 - scaled(20))),
-              },
-            ]}
-          >
-            <TouchableOpacity
-              activeOpacity={1}
-              onPressIn={() => animateHintButton(0.9)}
-              onPressOut={() => animateHintButton(1)}
-              onPress={() => {
-                playNotificationSound();
-                animateHintButton(1.08);
-                setShowHint(true);
-                if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-                hintTimerRef.current = setTimeout(
-                  () => setShowHint(false),
-                  2500
-                );
-              }}
+        {/* Кнопка-подсказка 60×60 (как в ТикТак) */}
+        <Animated.View
+          style={[
+            { position: "absolute", bottom: 22, right: 22 },
+            hintStyles.wrap,
+            hintAnimatedStyle,
+          ]}
+        >
+          <View style={hintStyles.glow} pointerEvents="none" />
+          <View style={hintStyles.ring}>
+            <LinearGradient
+              colors={GRADIENT_COLORS}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={hintStyles.gradient}
             >
-              <View style={styles.hintGlow}>
-                <View style={styles.hintBorder}>
-                  <LinearGradient
-                    colors={["#FFB380", "#D16C00"]}
-                    style={styles.hintButtonInner}
-                  >
-                    <Text style={styles.hintText}>?</Text>
-                  </LinearGradient>
-                </View>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPressIn={() => animateHintButton(0.94)}
+                onPressOut={() => animateHintButton(1)}
+                onPress={() => {
+                  playNotificationSound();
+                  animateHintButton(1.06);
+                  setShowHint(true);
+                  if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+                  hintTimerRef.current = setTimeout(
+                    () => setShowHint(false),
+                    2500
+                  );
+                }}
+                style={hintStyles.touch}
+              >
+                <Image source={eyePng} style={hintStyles.eye} />
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        </Animated.View>
       </Animated.View>
 
       {showGameOver && (
@@ -603,74 +579,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: scaled(20),
     marginTop: scaled(62),
   },
-  topBar: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1100,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+});
+
+const hintStyles = StyleSheet.create({
+  wrap: {
+    width: BTN_SIZE,
+    height: BTN_SIZE,
   },
-  centerTopBar: {
+  glow: {
     position: "absolute",
-    left: 0,
-    right: 0,
-    height: 50,
-    transform: [{ translateY: -26 }],
-    top: 54,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 980,
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
+    shadowColor: PURPLE_GLOW,
+    shadowOpacity: 1,
+    shadowRadius: SHADOW_BLUR / 2,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
   },
-  hintButton: {
-    position: "absolute",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-    right: 30,
+  ring: {
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
+    borderWidth: BORDER_W,
+    borderColor: BORDER_COLOR,
     overflow: "hidden",
   },
-  hintGlow: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: "center",
+  gradient: {
+    flex: 1,
+    borderRadius: BTN_SIZE / 2,
+  },
+  touch: {
+    flex: 1,
     alignItems: "center",
-    elevation: 0,
-    shadowOpacity: 0,
-    shadowColor: "transparent",
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 0,
-  },
-  hintBorder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 3,
-    borderColor: "rgba(255, 229, 124, 1)",
     justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1002,
-    backgroundColor: "transparent",
   },
-  hintButtonInner: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  hintText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontFamily: "FredokaSemiBold",
-    textAlign: "center",
-  },
+  eye: {
+    width: EYE_SIZE,
+    height: EYE_SIZE,
+    tintColor: "#FFFFFF",
+    resizeMode: "contain",
+  } as const,
 });
 
 export default TicTacToe;

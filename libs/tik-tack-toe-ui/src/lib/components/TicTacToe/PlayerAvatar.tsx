@@ -17,7 +17,7 @@ import {
 } from "./Animation";
 
 const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 60;
+const AVATAR_SIZE = 70; // чуть больше аватар (по просьбе клиента)
 
 type LocaleTag =
   | "en-US"
@@ -58,11 +58,10 @@ interface PlayerAvatarProps {
   player: Player;
   currentPlayer: Player;
   winner: Player | "draw" | null;
-  animatedStyle: any; // анимация подъёма аватара
+  animatedStyle: any;
   testID: string;
   boardHeight?: number;
   isFirstPlayer?: boolean;
-  /** язык для бейджа хода */
   lang?: string;
 }
 
@@ -78,40 +77,34 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   isFirstPlayer,
   lang,
 }) => {
-  // Активность: ход текущего игрока ИЛИ уже победитель
   const isActive = (!winner && currentPlayer === player) || winner === player;
-
   const [showBackground, setShowBackground] = useState(false);
 
   const { activeStars, starTriggers, removeStar } = useAvatarStars(
     isActive && showBackground,
-    {
-      maxStars: 5,
-      minIntervalMs: 500,
-      maxIntervalMs: 1500,
-    }
+    { maxStars: 5, minIntervalMs: 500, maxIntervalMs: 1500 }
   );
 
   const rotation = useLoopingRotation(isActive && showBackground, {
     durationMs: 18000,
   });
+
+  // Сделал мигание медленнее — спокойнее для детей
   const blinkingOpacity = useBlinkingOpacity(
     !winner && currentPlayer === player,
-    { lowOpacity: 0.3, durationMs: 200 }
+    { lowOpacity: 0.4, durationMs: 350 }
   );
 
-  // чистим звёзды при деактивации
   useEffect(() => {
     if (!isActive || !showBackground) {
       activeStars.forEach((starId) => removeStar(starId));
     }
   }, [isActive, showBackground, activeStars, removeStar]);
 
-  // единый cleanup — без разных return по веткам
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     if (isActive) {
-      timer = setTimeout(() => setShowBackground(true), 100);
+      timer = setTimeout(() => setShowBackground(true), 120);
     } else {
       setShowBackground(false);
     }
@@ -123,12 +116,9 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   const locale = normalizeLocale(lang);
   const TTURN = TURN_STR[locale];
 
-  // <<< ТУТ была проблема TS7030 — теперь явный тип и return во всех ветках
   const renderTurnIndicator = (): React.ReactElement | null => {
     const isPlayersTurn = !winner && currentPlayer === player;
-    if (!isPlayersTurn) {
-      return null;
-    }
+    if (!isPlayersTurn) return null;
 
     const text = player === "X" ? TTURN.yourTurn : TTURN.otherTurn(name);
 
@@ -181,7 +171,6 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         )}
 
         <View style={[styles.contentContainer, { overflow: "visible" }]}>
-          {/* фон-ромашка + звёзды только для активного/победителя */}
           {isActive && showBackground && (
             <Animated.View
               pointerEvents="none"
@@ -190,7 +179,9 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                 {
                   transform: [
                     {
-                      rotate: rotation.interpolate({
+                      rotate: (
+                        rotation as unknown as Animated.AnimatedInterpolation<number>
+                      ).interpolate({
                         inputRange: [0, 1],
                         outputRange: ["0deg", "360deg"],
                       }),
@@ -232,11 +223,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                   : styles.secondPlayerAvatar,
               winner
                 ? {
-                    transform: [
-                      {
-                        translateY: winner === player ? -40 : 0,
-                      },
-                    ],
+                    transform: [{ translateY: winner === player ? -40 : 0 }],
                     borderWidth: winner === player ? 6 : 3,
                   }
                 : animatedStyle,
@@ -263,7 +250,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
 const styles = StyleSheet.create({
   playerContainer: {
     alignItems: "center",
-    width: width * 0.2,
+    width: width * 0.22,
     justifyContent: "flex-end",
   },
   gradientBackground: {
@@ -274,7 +261,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     alignItems: "center",
-    minWidth: AVATAR_SIZE * 1.5,
+    minWidth: AVATAR_SIZE * 1.55,
     justifyContent: "flex-end",
   },
   avatarContainer: {
@@ -296,10 +283,8 @@ const styles = StyleSheet.create({
     position: "relative",
     fontFamily: "Fredoka",
     textTransform: "uppercase",
-    width: 90,
+    width: 100,
     textAlign: "center",
-    height: "auto",
-    fontStyle: "normal",
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
@@ -333,30 +318,25 @@ const styles = StyleSheet.create({
     height: "100%",
     zIndex: 701,
   },
-
   turnTextAboveAvatar: {
     color: "#FFE97C",
     fontFamily: "Fredoka",
     fontSize: 15,
     lineHeight: 18.3,
-    letterSpacing: 0,
     textAlign: "center",
     textShadowColor: "#B14EFF",
-    textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 4,
     paddingHorizontal: 2,
   },
   turnTextSecondPlayer: {
     color: "white",
     textShadowColor: "#B14EFF",
-    textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 4,
   },
   firstPlayerAvatar: {
     borderWidth: 3,
     borderColor: "#FFE97C",
     shadowColor: "#C57CFF",
-    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     borderRadius: 50,
     shadowRadius: 10,
@@ -374,7 +354,6 @@ const styles = StyleSheet.create({
     borderWidth: 6,
     borderColor: "#FFE97C",
     shadowColor: "#C57CFF",
-    shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 10,
@@ -398,7 +377,6 @@ const styles = StyleSheet.create({
   bgImage: {
     width: "100%",
     height: "100%",
-    overflow: "hidden",
   },
 });
 

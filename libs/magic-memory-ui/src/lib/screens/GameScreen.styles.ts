@@ -14,85 +14,40 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginVertical: 5,
   },
-  statsPanel: {
-    position: "absolute",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    top: 60,
-    width: "90%",
-    alignSelf: "center",
-    zIndex: 1000,
-    padding: 10,
-    flexWrap: "wrap",
-  },
-  statsItem: {
-    backgroundColor: "#C57CFF",
-    padding: 10,
-    borderRadius: 10,
-    marginHorizontal: 5,
-    minWidth: 100,
-    flexShrink: 0,
-    flexGrow: 0,
-    alignItems: "center",
-  },
-  statsText: {
-    color: "#FFF",
-    fontSize: 16,
-    fontFamily: "FredokaSemiBold",
-    textAlign: "center",
-  },
 
-  /** ───────── Hint button (без торчащей тени) ───────── */
-  hintButton: {
-    position: "absolute",
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+  /** ───────── Hint pill (фиолетовая, как в ТикТак) ───────── */
+  // стало
+  hintGlowPurple: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1000,
-    top: "50%",
-    right: 30,
-    transform: [{ translateY: -22.5 }],
-    overflow: "hidden", // обрезаем любое свечение/тень внутри
-  },
-  hintGlow: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: "center",
-    alignItems: "center",
-    // ВАЖНО: полностью убираем тени/свечение, чтобы ничего не «выпирало»
-    elevation: 0, // Android
-    shadowColor: "transparent",
+    // чуть мягче и ровнее свет
+    shadowColor: "rgba(144,33,232,0.8)",
+    shadowOpacity: 1,
+    shadowRadius: 25,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
+    elevation: 12, // Android свет
   },
-  hintBorder: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+  hintBorderPurple: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 3,
-    borderColor: "rgba(255, 229, 124, 1)",
+    borderColor: "#C57CFF",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 1002,
-    backgroundColor: "transparent",
+    backgroundColor: "#8E3BFF", // ← сплошной фон под градиентом, чтобы ничего не просвечивало
+    overflow: "hidden",
   },
-  hintButtonInner: {
-    width: 39,
-    height: 39,
-    borderRadius: 19.5,
+  hintButtonInnerPurple: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
-  },
-  hintText: {
-    color: "#FFF",
-    fontSize: 18,
-    fontFamily: "FredokaSemiBold",
-    textAlign: "center",
+    backgroundColor: "#8E3BFF", // ← запасной сплошной фон
   },
 
   backButton: {
@@ -183,8 +138,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     gap: 6,
-    backgroundColor: "transparent",
-    borderRadius: 0,
   },
   playAgainText: {
     fontFamily: "FredokaSemiBold",
@@ -197,6 +150,7 @@ const styles = StyleSheet.create({
     height: 24,
     resizeMode: "contain",
   },
+
   overlay: {
     position: "absolute",
     width: "100%",

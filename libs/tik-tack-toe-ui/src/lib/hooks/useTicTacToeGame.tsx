@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Board, Player } from "../types/tic-tac-toe";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const BOT_MODE: "easy" | "humanlike" | "strong" = "humanlike";
+export type Cell = null | "X" | "O";
+export type Player = "X" | "O";
+export type Board = Cell[][];
+export type Winner = Player | "draw" | null;
 
 type GameState = {
   board: Board;
   currentPlayer: Player;
-  winner: Player | "draw" | null;
-  winningLine: number[][] | null;
+  winner: Winner;
+  winningLine: [number, number][] | null;
 };
 
 const EMPTY_BOARD: Board = [
@@ -16,64 +18,63 @@ const EMPTY_BOARD: Board = [
   [null, null, null],
 ];
 
-const LINES: number[][][] = [
-  [
-    [0, 0],
-    [0, 1],
-    [0, 2],
-  ],
-  [
-    [1, 0],
-    [1, 1],
-    [1, 2],
-  ],
-  [
-    [2, 0],
-    [2, 1],
-    [2, 2],
-  ],
-  // cols
-  [
-    [0, 0],
-    [1, 0],
-    [2, 0],
-  ],
-  [
-    [0, 1],
-    [1, 1],
-    [2, 1],
-  ],
-  [
-    [0, 2],
-    [1, 2],
-    [2, 2],
-  ],
+// UX тайминги
+const AI_THINK_DELAY_MS = 400;
+const BETWEEN_TURNS_DELAY_MS = 300;
+const LAST_MOVE_FREEZE_MS = 1200;
 
-  [
-    [0, 0],
-    [1, 1],
-    [2, 2],
-  ],
-  [
-    [0, 2],
-    [1, 1],
-    [2, 0],
-  ],
-];
-
-function clone(b: Board): Board {
-  return b.map((r) => r.slice()) as Board;
-}
-
-function rand(): number {
-  return Math.random();
+function cloneBoard(b: Board): Board {
+  return b.map((r) => [...r]);
 }
 
 function checkWinner(board: Board): {
-  winner: Player | "draw" | null;
-  line: number[][] | null;
+  winner: Winner;
+  line: [number, number][] | null;
 } {
-  for (const line of LINES) {
+  const lines: [[number, number], [number, number], [number, number]][] = [
+    [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+    ],
+    [
+      [0, 2],
+      [1, 1],
+      [2, 0],
+    ],
+  ];
+
+  for (const line of lines) {
     const [a, b, c] = line;
     const v1 = board[a[0]][a[1]];
     const v2 = board[b[0]][b[1]];
@@ -82,264 +83,146 @@ function checkWinner(board: Board): {
       return { winner: v1, line };
     }
   }
-  const anyEmpty = board.some((row) => row.some((cell) => cell === null));
-  return { winner: anyEmpty ? null : "draw", line: null };
+
+  const hasEmpty = board.some((row) => row.some((c) => c === null));
+  if (!hasEmpty) return { winner: "draw", line: null };
+  return { winner: null, line: null };
 }
 
-function getEmptyCells(board: Board): number[][] {
-  const cells: number[][] = [];
-  for (let r = 0; r < 3; r++)
-    for (let c = 0; c < 3; c++) if (board[r][c] === null) cells.push([r, c]);
-  return cells;
+function isDraw(board: Board) {
+  return checkWinner(board).winner === "draw";
 }
 
-function computeHintMoveForX(board: Board): number[] | null {
-  const empties = getEmptyCells(board);
-  if (empties.length === 0) return null;
-
-  for (const [r, c] of empties) {
-    const tmp = clone(board);
-    tmp[r][c] = "X";
-    const { winner } = checkWinner(tmp);
-    if (winner === "X") return [r, c];
-  }
-
-  for (const [r, c] of empties) {
-    const tmp = clone(board);
-    tmp[r][c] = "O";
-    const { winner } = checkWinner(tmp);
-    if (winner === "O") return [r, c];
-  }
-
-  return empties[0] ?? null;
-}
-
-function computeStrongMoveForO(board: Board): number[] | null {
-  const empties = getEmptyCells(board);
-  if (empties.length === 0) return null;
-
-  for (const [r, c] of empties) {
-    const tmp = clone(board);
-    tmp[r][c] = "O";
-    const { winner } = checkWinner(tmp);
-    if (winner === "O") return [r, c];
-  }
-
-  for (const [r, c] of empties) {
-    const tmp = clone(board);
-    tmp[r][c] = "X";
-    const { winner } = checkWinner(tmp);
-    if (winner === "X") return [r, c];
-  }
-
-  return empties[0] ?? null;
-}
-
-function computeEasyMoveForO(board: Board): number[] | null {
-  const empties = getEmptyCells(board);
-  if (empties.length === 0) return null;
-  const idx = Math.floor(rand() * empties.length);
-  return empties[idx] ?? null;
-}
-
-function computeHumanlikeMoveForO(board: Board): number[] | null {
-  const empties = getEmptyCells(board);
-  if (empties.length === 0) return null;
-
-  const takeWinProb = 0.7;
-  const blockProb = 0.7;
-  const preferGoodProb = 0.6;
-
-  const strongWin = computeStrongMoveForO(board);
-  if (strongWin) {
-    if (rand() < takeWinProb) return strongWin;
-  }
-
-  let blockMove: number[] | null = null;
-  for (const [r, c] of empties) {
-    const tmp = clone(board);
-    tmp[r][c] = "X";
-    const { winner } = checkWinner(tmp);
-    if (winner === "X") {
-      blockMove = [r, c];
-      break;
+// Возвращаем уже в формате [row, col] | null
+function computeBestMove(board: Board): [number, number] | null {
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if (board[r][c] === null) return [r, c];
     }
   }
-  if (blockMove) {
-    if (rand() < blockProb) return blockMove;
-  }
-
-  const center: number[][] = [[1, 1]];
-  const corners: number[][] = [
-    [0, 0],
-    [0, 2],
-    [2, 0],
-    [2, 2],
-  ];
-  const sides: number[][] = [
-    [0, 1],
-    [1, 0],
-    [1, 2],
-    [2, 1],
-  ];
-
-  const emptyCenter = center.filter(([r, c]) => board[r][c] === null);
-  const emptyCorners = corners.filter(([r, c]) => board[r][c] === null);
-  const emptySides = sides.filter(([r, c]) => board[r][c] === null);
-
-  if (rand() < preferGoodProb) {
-    if (emptyCenter.length) return emptyCenter[0];
-    if (emptyCorners.length)
-      return emptyCorners[Math.floor(rand() * emptyCorners.length)];
-    if (emptySides.length)
-      return emptySides[Math.floor(rand() * emptySides.length)];
-  }
-
-  const idx = Math.floor(rand() * empties.length);
-  return empties[idx] ?? null;
+  return null;
 }
 
-function pickBotMove(board: Board): number[] | null {
-  switch (BOT_MODE) {
-    case "easy":
-      return computeEasyMoveForO(board);
-    case "humanlike":
-      return computeHumanlikeMoveForO(board);
-    case "strong":
-    default:
-      return computeStrongMoveForO(board);
-  }
-}
-
-export function useTicTacToeGame(playNotification?: () => void) {
-  const [state, setState] = useState<GameState>({
-    board: clone(EMPTY_BOARD),
+export function useTicTacToeGame(onTick?: () => void) {
+  const [gameState, setGameState] = useState<GameState>({
+    board: cloneBoard(EMPTY_BOARD),
     currentPlayer: "X",
     winner: null,
     winningLine: null,
   });
 
-  const botTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isProcessingBot = useRef(false);
+  const [gameComplete, setGameComplete] = useState(false);
+  const [isInputLocked, setIsInputLocked] = useState(false);
+  const [isGameStarted, setIsGameStarted] = useState(false);
 
-  const gameComplete = state.winner !== null;
+  const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const bestMove = useMemo(
-    () => computeHintMoveForX(state.board),
-    [state.board]
+  const bestMove = computeBestMove(gameState.board);
+
+  const applyMove = useCallback(
+    (row: number, col: number, by: Player) => {
+      setGameState((prev) => {
+        if (prev.board[row][col] != null || prev.winner) return prev;
+
+        const next: GameState = {
+          board: cloneBoard(prev.board),
+          currentPlayer: prev.currentPlayer,
+          winner: prev.winner,
+          winningLine: prev.winningLine,
+        };
+
+        next.board[row][col] = by;
+
+        const { winner, line } = checkWinner(next.board);
+
+        if (winner) {
+          next.winner = winner;
+          next.winningLine = line;
+          if (endTimerRef.current) clearTimeout(endTimerRef.current);
+          endTimerRef.current = setTimeout(() => {
+            setGameComplete(true);
+          }, LAST_MOVE_FREEZE_MS);
+        } else if (isDraw(next.board)) {
+          next.winner = "draw";
+          next.winningLine = null;
+          if (endTimerRef.current) clearTimeout(endTimerRef.current);
+          endTimerRef.current = setTimeout(() => {
+            setGameComplete(true);
+          }, LAST_MOVE_FREEZE_MS);
+        } else {
+          next.currentPlayer = by === "X" ? "O" : "X";
+        }
+
+        return next;
+      });
+
+      onTick?.();
+    },
+    [onTick]
   );
 
   const handleCellPress = useCallback(
     (row: number, col: number) => {
-      if (gameComplete) return;
-      if (state.currentPlayer !== "X") return;
-      if (state.board[row][col] !== null) return;
-
-      setState((prev) => {
-        const next = clone(prev.board);
-        next[row][col] = "X";
-        const { winner, line } = checkWinner(next);
-        return {
-          board: next,
-          currentPlayer: winner ? null : "O",
-          winner,
-          winningLine: line,
-        };
-      });
-
-      if (playNotification) playNotification();
+      if (isInputLocked || gameComplete) return;
+      setIsInputLocked(true);
+      applyMove(row, col, "X");
+      setTimeout(() => setIsInputLocked(false), BETWEEN_TURNS_DELAY_MS);
     },
-    [state.board, state.currentPlayer, gameComplete, playNotification]
+    [applyMove, gameComplete, isInputLocked]
   );
 
-  const undoLastTwoMoves = useCallback(() => {
+  useEffect(() => {
+    if (!isGameStarted) return;
     if (gameComplete) return;
+    if (gameState.winner) return;
+    if (gameState.currentPlayer !== "O") return;
 
-    const next = clone(state.board);
-    let removed = 0;
-    for (let r = 2; r >= 0; r--) {
-      for (let c = 2; c >= 0; c--) {
-        if (next[r][c] !== null && removed < 2) {
-          next[r][c] = null;
-          removed++;
-        }
-      }
-    }
-    const { winner, line } = checkWinner(next);
-    setState({
-      board: next,
-      currentPlayer: "X",
-      winner,
-      winningLine: line,
-    });
-  }, [state.board, gameComplete]);
+    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    aiTimerRef.current = setTimeout(() => {
+      const move = computeBestMove(gameState.board);
+      if (move) applyMove(move[0], move[1], "O");
+    }, AI_THINK_DELAY_MS);
+
+    return () => {
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    };
+  }, [
+    gameState.currentPlayer,
+    gameState.board,
+    gameState.winner,
+    gameComplete,
+    isGameStarted,
+    applyMove,
+  ]);
 
   const resetGame = useCallback(() => {
-    if (botTimer.current) {
-      clearTimeout(botTimer.current);
-      botTimer.current = null;
-    }
-    isProcessingBot.current = false;
-    setState({
-      board: clone(EMPTY_BOARD),
+    if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+    if (endTimerRef.current) clearTimeout(endTimerRef.current);
+    setGameState({
+      board: cloneBoard(EMPTY_BOARD),
       currentPlayer: "X",
       winner: null,
       winningLine: null,
     });
+    setGameComplete(false);
+    setIsInputLocked(false);
   }, []);
 
   useEffect(() => {
-    if (gameComplete) return;
-    if (state.currentPlayer !== "O") return;
-    if (isProcessingBot.current) return;
-
-    isProcessingBot.current = true;
-    botTimer.current = setTimeout(() => {
-      setState((prev) => {
-        if (prev.currentPlayer !== "O" || prev.winner) {
-          isProcessingBot.current = false;
-          return prev;
-        }
-        const move = pickBotMove(prev.board);
-        if (!move) {
-          const { winner, line } = checkWinner(prev.board);
-          isProcessingBot.current = false;
-          return { ...prev, winner: winner ?? "draw", winningLine: line };
-        }
-        const [r, c] = move;
-        const next = clone(prev.board);
-        next[r][c] = "O";
-        const { winner, line } = checkWinner(next);
-        isProcessingBot.current = false;
-        return {
-          board: next,
-          currentPlayer: winner ? null : "X",
-          winner,
-          winningLine: line,
-        };
-      });
-    }, 450);
-
     return () => {
-      if (botTimer.current) {
-        clearTimeout(botTimer.current);
-        botTimer.current = null;
-      }
-      isProcessingBot.current = false;
+      if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
+      if (endTimerRef.current) clearTimeout(endTimerRef.current);
     };
-  }, [state.currentPlayer, state.board, gameComplete]);
-
-  const isGameStarted = true;
-  const setIsGameStarted = (_: boolean) => {};
+  }, []);
 
   return {
-    isGameStarted,
     setIsGameStarted,
-    gameState: state,
-    bestMove,
+    isGameStarted,
+    gameState,
+    bestMove, // [row, col] | null
     gameComplete,
     handleCellPress,
-    undoLastTwoMoves,
     resetGame,
   };
 }

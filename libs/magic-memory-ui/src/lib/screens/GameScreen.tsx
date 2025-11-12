@@ -43,6 +43,7 @@ import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
+// ───────── helpers & consts ─────────
 const { height } = Dimensions.get("window");
 const baseHeight = 375;
 const scale = height / baseHeight;
@@ -57,6 +58,9 @@ const SAFE_SPRITES = (ROBOT_SPRITES ?? []).map(
     m || (console.warn("[robots] missing sprite", i + 1), HERO_FALLBACK)
 );
 const SAFE_VOICES = (ROBOT_VOICES ?? []).filter(Boolean) as any[];
+
+// глазик для подсказки
+const EYE_PNG = require("../../assets/eye.png");
 
 type LocaleTag =
   | "en-US"
@@ -163,6 +167,17 @@ const normalizeLocale = (raw?: string): LocaleTag => {
   return "en-US";
 };
 
+// уровни только 6/8/10/12
+const toGridLevel = (age: number): 6 | 8 | 10 | 12 => {
+  const even = age - (age % 2);
+  const clamped = Math.min(12, Math.max(6, even));
+  return (clamped === 6 || clamped === 8 || clamped === 10 ? clamped : 12) as
+    | 6
+    | 8
+    | 10
+    | 12;
+};
+
 const asArray = (val?: string | string[]): string[] | undefined =>
   !val ? undefined : Array.isArray(val) ? val : [val];
 const pickRandom = <T,>(arr: T[]): T =>
@@ -174,15 +189,6 @@ const shuffle = <T,>(arr: T[]): T[] => {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-};
-const toGridLevel = (age: number): 4 | 6 | 8 | 10 | 12 => {
-  const even = age - (age % 2);
-  const clamped = Math.min(12, Math.max(4, even));
-  return (
-    clamped === 4 || clamped === 6 || clamped === 8 || clamped === 10
-      ? clamped
-      : 12
-  ) as 4 | 6 | 8 | 10 | 12;
 };
 
 type IntervalId = ReturnType<typeof setInterval>;
@@ -203,9 +209,7 @@ const getSrc = (c?: Card): string | undefined => {
     : anyCard.__source.uri;
 };
 
-const ARC_BOTTOM_PAD = scaled(48);
-const ELLIPSE_TOP = scaled(50) + 30;
-
+// ───────── component ─────────
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
     useSound();
@@ -231,9 +235,12 @@ const GameScreen = () => {
   const locale = normalizeLocale((cfg as any).lang);
   const t = (key: TKey) => (STRINGS[locale] || STRINGS["en-US"])[key];
 
-  const [age, setAge] = useState<number>(Math.max(2, (cfg as any).age));
+  // стартуем не ниже 6
+  const [age, setAge] = useState<number>(Math.max(6, (cfg as any).age));
   const gridLevel = useMemo(() => toGridLevel(age), [age]);
-  const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
+
+  // нужно пар = половина текущего уровня
+  const pairsNeeded = useMemo(() => Math.floor(gridLevel / 2), [gridLevel]);
 
   const [cards, setCards] = useState<Card[]>([]);
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
@@ -243,7 +250,7 @@ const GameScreen = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [roundsCompleted, setRoundsCompleted] = useState<number>(0);
   const [totalStars, setTotalStars] = useState<number>(0);
-  const [isShowingCards, setIsShowingCards] = useState(false);
+  const [isShowingCards] = useState(false);
   const [isFlipping, setIsFlipping] = useState(false);
 
   const timer = useRef<IntervalId | null>(null);
@@ -269,17 +276,15 @@ const GameScreen = () => {
     });
     return () => sub?.remove?.();
   }, []);
-  const { height } = screen;
+  const { height: scrH } = screen;
 
   const [redealTick, setRedealTick] = useState(0);
 
-  const arcTransY = useRef(
-    new RNAnimated.Value(Dimensions.get("window").height + ARC_BOTTOM_PAD)
-  ).current;
-  const arcOpacity = useRef(new RNAnimated.Value(0)).current;
-
-  const arcFromBottomRef = useRef(true);
-  const arcSlowRef = useRef(true);
+  // (ДУГА) было — теперь не используем, оставлено закомментированным:
+  // const arcTransY = useRef(
+  //   new RNAnimated.Value(Dimensions.get("window").height + scaled(48))
+  // ).current;
+  // const arcOpacity = useRef(new RNAnimated.Value(0)).current;
 
   const gridOpacityRN = useRef(new RNAnimated.Value(0)).current;
   const revealGridSmoothly = () => {
@@ -292,42 +297,6 @@ const GameScreen = () => {
   };
 
   const hintScaleRN = useRef(new RNAnimated.Value(1)).current;
-
-  const arcIn = () => {
-    const H = Dimensions.get("window").height;
-    arcTransY.setValue(H);
-    arcOpacity.setValue(0);
-    RNAnimated.parallel([
-      RNAnimated.timing(arcTransY, {
-        toValue: 0,
-        duration: 1500,
-        easing: RNEasing.out(RNEasing.quad),
-        useNativeDriver: true,
-      }),
-      RNAnimated.timing(arcOpacity, {
-        toValue: 1,
-        duration: 1000,
-        easing: RNEasing.out(RNEasing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const arcOut = (onDone?: () => void) => {
-    RNAnimated.parallel([
-      RNAnimated.timing(arcTransY, {
-        toValue: height + ARC_BOTTOM_PAD,
-        duration: 600,
-        easing: RNEasing.in(RNEasing.cubic),
-        useNativeDriver: true,
-      }),
-      RNAnimated.timing(arcOpacity, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onDone?.());
-  };
 
   const playAgainScale = useSharedValue(1);
   const playAgainOpacity = useSharedValue(1);
@@ -348,8 +317,8 @@ const GameScreen = () => {
   const PLAY_AGAIN_OFFSET = 110;
   const PLAY_AGAIN_CAP = 0.78;
   const playAgainTop = Math.min(
-    height * PLAY_AGAIN_CAP,
-    height * 0.6 + PLAY_AGAIN_OFFSET
+    scrH * PLAY_AGAIN_CAP,
+    scrH * 0.6 + PLAY_AGAIN_OFFSET
   );
 
   const selectedBackground = useMemo(() => {
@@ -374,6 +343,7 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
+  // UI bars
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -397,6 +367,7 @@ const GameScreen = () => {
     };
   }, []);
 
+  // orientation & audio preloads
   useEffect(() => {
     if (!isWeb) {
       ScreenOrientation.lockAsync(
@@ -515,33 +486,7 @@ const GameScreen = () => {
     );
   }, [showCongrats, isGameActive]);
 
-  useEffect(() => {
-    generateCards();
-  }, [age, redealTick]);
-
-  const playRobotVoice = async (idx: number) => {
-    try {
-      const uri = robotVoiceUrisRef.current[idx] ?? null;
-      if (!uri) {
-        await playNotificationSound().catch(() => {});
-        return;
-      }
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.setVolumeAsync(1.0);
-      await sound.playAsync();
-      setTimeout(() => sound.unloadAsync().catch(() => {}), 2500);
-    } catch {
-      playNotificationSound().catch(() => {});
-    }
-  };
-
+  // раздача
   const fadesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const scalesRef = useRef(new Map<number, RNAnimated.Value>()).current;
   const ensureAnimFor = (id: number) => {
@@ -549,14 +494,16 @@ const GameScreen = () => {
     if (!scalesRef.has(id)) scalesRef.set(id, new RNAnimated.Value(1));
     return { fade: fadesRef.get(id)!, scale: scalesRef.get(id)! };
   };
-
   const lastDealAtRef = useRef(0);
+
+  useEffect(() => {
+    generateCards();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [age, redealTick]);
 
   const generateCards = () => {
     const now = Date.now();
-    if (now - lastDealAtRef.current < 600) {
-      return;
-    }
+    if (now - lastDealAtRef.current < 500) return;
     lastDealAtRef.current = now;
 
     completionTimers.current.forEach((t) => clearTimeout(t));
@@ -569,7 +516,9 @@ const GameScreen = () => {
 
     gridOpacityRN.setValue(0);
 
-    const pairs = Math.floor(age / 2);
+    // pairs от ТЕКУЩЕГО УРОВНЯ (6→3 пары, 8→4, 10→5, 12→6)
+    const pairs = Math.floor(gridLevel / 2);
+
     const uniqFront = Array.from(new Set(externalFrontList));
     const backOk = !!selectedBack?.uri;
     const bgOk = !!selectedBackground?.source?.uri;
@@ -592,8 +541,6 @@ const GameScreen = () => {
     setShowPlayAgain(false);
     setIsGameActive(true);
     successPlayedRef.current = false;
-
-    arcIn();
 
     const availableIdx = SAFE_SPRITES.map((m, i) => (m ? i : -1)).filter(
       (i) => i >= 0
@@ -624,19 +571,6 @@ const GameScreen = () => {
 
     requestAnimationFrame(() => revealGridSmoothly());
 
-    if (gridLevel === 4) {
-      setIsShowingCards(true);
-      const showTimer: TimeoutId = setTimeout(() => {
-        setCards((prev) => prev.map((c) => ({ ...c, isFlipped: true })));
-        const hideTimer: TimeoutId = setTimeout(() => {
-          setCards((prev) => prev.map((c) => ({ ...c, isFlipped: false })));
-          setIsShowingCards(false);
-        }, 3000);
-        completionTimers.current.push(hideTimer);
-      }, 1000);
-      completionTimers.current.push(showTimer);
-    }
-
     if (ENABLE_BACKGROUND_MUSIC) {
       playBackgroundMusic().catch(() => {});
     }
@@ -645,7 +579,7 @@ const GameScreen = () => {
     }
   };
 
-  const getStars = (lvl: 4 | 6 | 8 | 10 | 12, t: number, m: number) => {
+  const getStars = (lvl: 6 | 8 | 10 | 12, t: number, m: number) => {
     if (lvl < 8) return 0;
     let maxTime = 30,
       maxMoves = 12;
@@ -663,7 +597,6 @@ const GameScreen = () => {
 
   const handleCardPress = (id: number) => {
     if (
-      isShowingCards ||
       selectedCards.length >= 2 ||
       selectedCards.includes(id) ||
       isFlipping ||
@@ -697,7 +630,7 @@ const GameScreen = () => {
             : [0];
           const robotIdx = order[matchIndex % order.length];
           setActiveRobotIndex(robotIdx);
-          playRobotVoice(robotIdx).catch(() => {});
+          playNotificationSound().catch(() => {}); // короткий звук
 
           const newMatched = [...matchedCards, firstId, secondId];
           setMatchedCards(newMatched);
@@ -755,13 +688,11 @@ const GameScreen = () => {
                 const starsEarned = getStars(gridLevel, time, moves);
                 setTotalStars((prev) => prev + starsEarned);
 
-                arcOut();
-
                 const congratsTimer: TimeoutId = setTimeout(() => {
                   if (!isGameActive) return;
                   setShowCongrats(true);
                   setShowConfetti(true);
-                }, 900);
+                }, 600);
                 completionTimers.current.push(congratsTimer);
 
                 const nextTimer: TimeoutId = setTimeout(async () => {
@@ -779,19 +710,13 @@ const GameScreen = () => {
 
                   setShowPlayAgain(false);
 
-                  arcFromBottomRef.current = true;
-                  arcSlowRef.current = true;
-
-                  if (gridLevel === 12) {
-                    lastDealAtRef.current = 0;
-                    setShowCongrats(false);
-                    setShowConfetti(false);
-                    setIsGameActive(true);
-                    setRedealTick((t) => t + 1);
-                  } else {
-                    setAge(age + 2);
-                  }
-                }, 3800);
+                  // строгая прогрессия 6→8→10→12
+                  setAge((prev) => {
+                    const next = toGridLevel(prev + 2);
+                    if (prev < 12) return next;
+                    return 12;
+                  });
+                }, 3200);
                 completionTimers.current.push(nextTimer);
               } else {
                 setIsFlipping(false);
@@ -857,16 +782,17 @@ const GameScreen = () => {
   };
 
   const getNumColumns = () =>
-    gridLevel === 4
-      ? 2
-      : gridLevel === 6
-        ? 3
-        : gridLevel === 8
-          ? 4
-          : gridLevel === 10
-            ? 5
-            : 6;
-  const getCardSize = () => (gridLevel <= 6 ? 120 : 100);
+    gridLevel === 6 ? 3 : gridLevel === 8 ? 4 : gridLevel === 10 ? 5 : 6;
+
+  // УВЕЛИЧИЛ размеры для 8/10/12
+  const getCardSize = () =>
+    gridLevel === 6
+      ? 128
+      : gridLevel === 8
+        ? 120
+        : gridLevel === 10
+          ? 112
+          : 104;
 
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
@@ -900,12 +826,6 @@ const GameScreen = () => {
               borderColor: "#C57CFF",
               borderRadius: 10,
               backgroundColor: "transparent",
-              shadowColor: "rgba(197,124,255,0.3)",
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.8,
-              shadowRadius: 15,
-              elevation: 2,
-              zIndex: 1,
             }}
             pointerEvents="none"
           />
@@ -916,7 +836,7 @@ const GameScreen = () => {
             item={item}
             onPress={handleCardPress}
             getCardSize={getCardSize}
-            disabled={isShowingCards || selectedCards.length >= 2}
+            disabled={selectedCards.length >= 2}
             isHinted={
               hintActive.includes(item.id) || selectedCards.includes(item.id)
             }
@@ -943,9 +863,6 @@ const GameScreen = () => {
                   elevation: 50,
                 }}
                 pointerEvents="none"
-                collapsable={false}
-                renderToHardwareTextureAndroid
-                needsOffscreenAlphaCompositing
               >
                 <ExpoImage
                   source={SAFE_SPRITES[activeRobotIndex] || HERO_FALLBACK}
@@ -971,8 +888,6 @@ const GameScreen = () => {
     setShowConfetti(false);
     setShowCongrats(false);
     setShowPlayAgain(false);
-    arcFromBottomRef.current = true;
-    arcSlowRef.current = true;
     lastDealAtRef.current = 0;
     setRedealTick((t) => t + 1);
   };
@@ -1006,8 +921,7 @@ const GameScreen = () => {
     );
   }
 
-  const { height: H } = screen;
-  const hintTop = Math.max(scaled(34), Math.round(H / 2 - scaled(20)));
+  const hintBottom = 22;
 
   return (
     <View
@@ -1024,23 +938,10 @@ const GameScreen = () => {
         resizeMode="cover"
       />
 
-      <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-        <RNAnimated.Image
-          source={require("../../assets/ellipse.png")}
-          resizeMode="cover"
-          style={{
-            position: "absolute",
-            top: ELLIPSE_TOP,
-            left: 0,
-            right: 0,
-            width: "100%",
-            height: Dimensions.get("window").height,
-            zIndex: 0,
-            opacity: arcOpacity as any,
-            transform: [{ translateY: arcTransY as any }],
-          }}
-        />
-      </View>
+      {/* ДУГА УБРАНА */}
+      {/* <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+        <RNAnimated.Image ... />
+      </View> */}
 
       <StatusBar hidden />
 
@@ -1050,18 +951,16 @@ const GameScreen = () => {
           { flex: 1, width: "100%", opacity: 1, overflow: "visible" },
         ]}
       >
+        {/* фиолетовая «пилюля» подсказки внизу справа (как в ТикТак) */}
         {isGameActive && !showCongrats && !showPlayAgain && (
           <RNAnimated.View
             style={{
               position: "absolute",
-              right: 30,
-              top: hintTop,
-              zIndex: 1000,
-              opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
-              transform: [
-                { translateY: arcTransY as any },
-                { scale: hintScaleRN as any },
-              ],
+              right: 22,
+              bottom: hintBottom,
+              zIndex: 1200,
+              transform: [{ scale: hintScaleRN as any }],
+              opacity: 1,
             }}
           >
             <TouchableOpacity
@@ -1069,7 +968,7 @@ const GameScreen = () => {
               activeOpacity={1}
               onPressIn={() =>
                 RNAnimated.timing(hintScaleRN, {
-                  toValue: 1.1,
+                  toValue: 0.92,
                   duration: 100,
                   useNativeDriver: true,
                 }).start()
@@ -1082,15 +981,19 @@ const GameScreen = () => {
                 }).start()
               }
             >
-              <View
-                style={[styles.hintGlow, { shadowOpacity: 0, elevation: 0 }]}
-              >
-                <View style={styles.hintBorder}>
+              <View style={styles.hintGlowPurple}>
+                <View style={styles.hintBorderPurple}>
                   <LinearGradient
-                    colors={["#FFB380", "#D16C00"]}
-                    style={styles.hintButtonInner}
+                    colors={["#C780FF", "#7500D1"] as const}
+                    start={{ x: 0.5, y: 0 }}
+                    end={{ x: 0.5, y: 1 }}
+                    style={styles.hintButtonInnerPurple}
                   >
-                    <Text style={styles.hintText}>?</Text>
+                    <Image
+                      source={EYE_PNG}
+                      style={{ width: 30, height: 30, tintColor: "#FFFFFF" }}
+                      resizeMode="contain"
+                    />
                   </LinearGradient>
                 </View>
               </View>
@@ -1126,6 +1029,7 @@ const GameScreen = () => {
                   styles.grid,
                   {
                     paddingTop: scaled(62),
+                    paddingBottom: scaled(72), // поднял область (карты дальше от низа)
                     width: "100%",
                     overflow: "visible",
                   },
