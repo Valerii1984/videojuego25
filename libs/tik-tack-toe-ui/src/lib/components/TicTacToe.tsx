@@ -14,6 +14,7 @@ import {
   Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { BlurView } from "expo-blur"; // ⬅️ добавил
 import type { Language } from "../types/props";
 import GameBoard from "./TicTacToe/GameBoard";
 import PlayerAvatar from "./TicTacToe/PlayerAvatar";
@@ -205,12 +206,36 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
+  const [screenW, setScreenW] = useState(Dimensions.get("window").width);
   useEffect(() => {
-    const sub = Dimensions.addEventListener("change", ({ window }) =>
-      setScreenH(window.height)
-    );
+    const sub = Dimensions.addEventListener("change", ({ window }) => {
+      setScreenH(window.height);
+      setScreenW(window.width);
+    });
     return () => sub?.remove?.();
   }, []);
+
+  // ---- tablet/layout helpers ----
+  const shorter = Math.min(screenW, screenH);
+  const isTablet = shorter >= 600;
+
+  // сценическая максимальная ширина и размер квадрата под доску
+  // сценическая максимальная ширина и размер квадрата под доску
+  const stageMaxWidth = Math.min(
+    screenW * (isTablet ? 0.9 : 0.98),
+    shorter * (isTablet ? 1.08 : 1.0)
+  );
+  const boardSide = Math.min(
+    shorter * (isTablet ? 0.66 : 0.58),
+    stageMaxWidth * (isTablet ? 0.6 : 0.54)
+  );
+
+  // размазанный прямоугольник:
+  // – по ширине чуть меньше всей сцены, чтобы захватывал аватары + доску
+  // – по высоте примерно доска + небольшой отступ сверху/снизу
+  const blurWidth = stageMaxWidth * (isTablet ? 0.9 : 0.92);
+  const blurHeight = boardSide * (isTablet ? 1.2 : 1.25);
+  const blurRadius = isTablet ? 34 : 26;
 
   const {
     playBackgroundMusic,
@@ -291,7 +316,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         duration: 650,
         useNativeDriver: true,
       }),
-      // уводим СЦЕНУ вниз
       Animated.timing(gameContainerTranslateY, {
         toValue: screenHeight + ARC_BOTTOM_PAD,
         duration: 850,
@@ -306,7 +330,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     ]).start(() => onDone?.());
   };
 
-  // мгновенный «сброс сцены» без показа дуги — важно при рестарте
   const resetStage = () => {
     playersFade.setValue(1);
     gameContainerTranslateY.setValue(0);
@@ -403,30 +426,20 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
 
   // --- рестарт новой партии ---
   const handleResetGame = () => {
-    // 1) сразу возвращаем сцену на место (мы уводили её в ellipseOut)
     resetStage();
-
-    // 2) чистим таймер подсказки и состояние
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
     setShowHint(false);
     setShowGameOver(false);
     setSuppressContent(true);
     setShowBoard(false);
-
-    // 3) новый ключ ДО показа доски — чтобы пересоздать GameBoard
     setRoundKey((k) => k + 1);
-
-    // 4) полный сброс логики игры и анимаций
     resetGame();
     resetAnimations();
     setIsGameStarted(true);
     if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
-
-    // 5) короткая пауза и плавный вход
     setTimeout(() => {
       setShowBoard(true);
       setSuppressContent(false);
-
       introAnim.setValue(0);
       Animated.timing(introAnim, {
         toValue: 1,
@@ -447,7 +460,32 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
       style={styles.container}
       testID="tic-tac-toe-game"
     >
-      {/* дуга спрятана, но контейнер анимируем */}
+      {/* Размытый прямоугольник за аватарами и доской */}
+      <Animated.View
+        pointerEvents="none"
+        style={{
+          ...StyleSheet.absoluteFillObject,
+          justifyContent: "center",
+          alignItems: "center",
+
+          // 🔥 добавили синхронизацию с уходом доски
+          opacity: gameContainerOpacity,
+          transform: [{ translateY: gameContainerTranslateY }],
+        }}
+      >
+        <BlurView
+          intensity={55}
+          tint="dark"
+          style={{
+            width: blurWidth,
+            height: blurHeight,
+            borderRadius: blurRadius,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            overflow: "hidden",
+          }}
+        />
+      </Animated.View>
+
       <Animated.View
         style={[
           styles.gameContainer,
@@ -456,14 +494,22 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
           {
             opacity: gameContainerOpacity,
             transform: [{ translateY: gameContainerTranslateY }],
+            alignItems: "center",
           },
         ]}
         testID="game-content"
       >
         <Animated.View
-          style={[styles.playersContainer, { opacity: playersFade }]}
+          style={[
+            styles.playersContainer,
+            {
+              opacity: playersFade,
+              width: stageMaxWidth,
+              alignSelf: "center",
+            },
+          ]}
         >
-          <View style={{ marginRight: scaled(22), opacity: 1 }}>
+          <View style={{ marginRight: scaled(isTablet ? 28 : 22), opacity: 1 }}>
             <PlayerAvatar
               key={`p1-${roundKey}`}
               photo={resolvedPhoto1}
@@ -479,7 +525,16 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
             />
           </View>
 
-          <Animated.View style={{ opacity: playersFade }}>
+          {/* Квадратная область под большую доску */}
+          <Animated.View
+            style={{
+              opacity: playersFade,
+              alignItems: "center",
+              justifyContent: "center",
+              width: boardSide,
+              aspectRatio: 1,
+            }}
+          >
             <GameBoard
               key={`board-${roundKey}`}
               board={displayedBoard}
@@ -492,13 +547,13 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
               showHint={showHint}
               onHintUsed={() => setShowHint(false)}
               onVictory={playVictorySound}
-              onBotVictory={() => playSadGameSound()}
+              onBotVictory={playSadGameSound}
               suppressContent={suppressContent}
               roundKey={roundKey}
             />
           </Animated.View>
 
-          <View style={{ marginLeft: scaled(22), opacity: 1 }}>
+          <View style={{ marginLeft: scaled(isTablet ? 28 : 22), opacity: 1 }}>
             <PlayerAvatar
               key={`p2-${roundKey}`}
               photo={resolvedPhoto2}
@@ -515,7 +570,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
           </View>
         </Animated.View>
 
-        {/* Кнопка-подсказка 60×60 (как в ТикТак) */}
+        {/* Кнопка-подсказка 60×60 */}
         <Animated.View
           style={[
             { position: "absolute", bottom: 22, right: 22 },
@@ -572,20 +627,24 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, width: "100%", height: "100%" },
-  gameContainer: { flex: 1, justifyContent: "center" },
+  gameContainer: {
+    flex: 1,
+    justifyContent: "center", // вертикальный центр всей сцены
+    alignItems: "center",
+  },
   playersContainer: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: scaled(20),
-    marginTop: scaled(62),
+    marginTop: scaled(32),
+    marginBottom: scaled(24),
+    gap: scaled(18),
   },
 });
 
 const hintStyles = StyleSheet.create({
-  wrap: {
-    width: BTN_SIZE,
-    height: BTN_SIZE,
-  },
+  wrap: { width: BTN_SIZE, height: BTN_SIZE },
   glow: {
     position: "absolute",
     width: BTN_SIZE,
@@ -605,15 +664,8 @@ const hintStyles = StyleSheet.create({
     borderColor: BORDER_COLOR,
     overflow: "hidden",
   },
-  gradient: {
-    flex: 1,
-    borderRadius: BTN_SIZE / 2,
-  },
-  touch: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  gradient: { flex: 1, borderRadius: BTN_SIZE / 2 },
+  touch: { flex: 1, alignItems: "center", justifyContent: "center" },
   eye: {
     width: EYE_SIZE,
     height: EYE_SIZE,
