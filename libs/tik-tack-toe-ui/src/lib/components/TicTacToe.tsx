@@ -1,3 +1,4 @@
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -14,7 +15,7 @@ import {
   Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { BlurView } from "expo-blur"; // ⬅️ добавил
+import { BlurView } from "expo-blur";
 import type { Language } from "../types/props";
 import GameBoard from "./TicTacToe/GameBoard";
 import PlayerAvatar from "./TicTacToe/PlayerAvatar";
@@ -30,9 +31,7 @@ const scale = screenHeight / baseHeight;
 const scaled = (n: number) => Math.round(n * scale);
 
 const ENABLE_BACKGROUND_MUSIC = false;
-const SHOW_LANG_BADGE = false;
 const ARC_BOTTOM_PAD = scaled(48);
-const ELLIPSE_TOP = scaled(50) + 30;
 
 const TIMINGS = {
   AI_THINK_MS: 400,
@@ -147,7 +146,6 @@ const EMPTY_BOARD: (null | "X" | "O")[][] = [
 
 const eyePng = require("../assets/eye.png");
 
-/** Figma specs */
 const BTN_SIZE = 60;
 const BORDER_W = 3;
 const EYE_SIZE = 30;
@@ -215,27 +213,31 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     return () => sub?.remove?.();
   }, []);
 
-  // ---- tablet/layout helpers ----
   const shorter = Math.min(screenW, screenH);
   const isTablet = shorter >= 600;
 
-  // сценическая максимальная ширина и размер квадрата под доску
-  // сценическая максимальная ширина и размер квадрата под доску
-  const stageMaxWidth = Math.min(
-    screenW * (isTablet ? 0.9 : 0.98),
-    shorter * (isTablet ? 1.08 : 1.0)
-  );
-  const boardSide = Math.min(
-    shorter * (isTablet ? 0.66 : 0.58),
-    stageMaxWidth * (isTablet ? 0.6 : 0.54)
-  );
+  const targetBoard = shorter * (isTablet ? 0.7 : 0.78);
+  const maxBoardByWidth = screenW * (isTablet ? 0.72 : 0.9);
+  let boardSide = Math.min(targetBoard, maxBoardByWidth);
 
-  // размазанный прямоугольник:
-  // – по ширине чуть меньше всей сцены, чтобы захватывал аватары + доску
-  // – по высоте примерно доска + небольшой отступ сверху/снизу
-  const blurWidth = stageMaxWidth * (isTablet ? 0.9 : 0.92);
-  const blurHeight = boardSide * (isTablet ? 1.2 : 1.25);
-  const blurRadius = isTablet ? 34 : 26;
+  const AVATAR_RATIO = isTablet ? 0.32 : 0.4;
+  const MIN_AVATAR_PX = isTablet ? 150 : 130;
+  let avatarColumnWidth = boardSide * AVATAR_RATIO;
+  if (avatarColumnWidth < MIN_AVATAR_PX) avatarColumnWidth = MIN_AVATAR_PX;
+
+  let gap = scaled(isTablet ? 26 : 20);
+
+  let stageWidth = boardSide + avatarColumnWidth * 2 + gap * 2;
+
+  const maxStageWidth = screenW * (isTablet ? 0.98 : 0.99);
+
+  if (stageWidth > maxStageWidth) {
+    const k = maxStageWidth / stageWidth;
+    boardSide *= k;
+    avatarColumnWidth *= k;
+    gap *= k;
+    stageWidth = maxStageWidth;
+  }
 
   const {
     playBackgroundMusic,
@@ -263,7 +265,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     player2Style,
     gameContainerStyle,
     congratsContainerStyle,
-    resetAnimations,
   } = useTicTacToeAnimations(
     gameState.currentPlayer,
     gameState.winner,
@@ -283,7 +284,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     ],
   };
 
-  // дуга выключена; но её анимационные значения мы используем для контейнера
   const ellipseTranslateY = useRef(
     new Animated.Value(Dimensions.get("window").height)
   ).current;
@@ -339,13 +339,14 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
   };
 
   useEffect(() => {
-    StatusBar.setHidden(true, "none");
+    StatusBar.setHidden(true, "fade");
+
     (async () => {
       if (Platform.OS === "android") {
         try {
           const NB: any = await import("expo-navigation-bar");
           try {
-            await NB.setBackgroundColorAsync("#16103E");
+            await NB.setBackgroundColorAsync("transparent");
           } catch {}
           try {
             await NB.setVisibilityAsync("hidden");
@@ -367,7 +368,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     });
 
     return () => {
-      StatusBar.setHidden(false, "none");
+      StatusBar.setHidden(false, "fade");
       if (Platform.OS === "android") {
         (async () => {
           try {
@@ -398,7 +399,8 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         duration: 500,
         useNativeDriver: true,
       }).start(() => {
-        if (mounted) resetAnimations();
+        if (mounted) {
+        }
       });
     })();
 
@@ -424,7 +426,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     return () => clearTimeout(holdTimer);
   }, [gameComplete, T.avatarHold, T.gameOverXFade, playersFade]);
 
-  // --- рестарт новой партии ---
   const handleResetGame = () => {
     resetStage();
     if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
@@ -434,7 +435,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     setShowBoard(false);
     setRoundKey((k) => k + 1);
     resetGame();
-    resetAnimations();
     setIsGameStarted(true);
     if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
     setTimeout(() => {
@@ -448,7 +448,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
       }).start();
     }, 150);
   };
-  // --- конец рестарта ---
 
   const displayedBoard: (null | "X" | "O")[][] = showBoard
     ? gameState.board
@@ -460,31 +459,11 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
       style={styles.container}
       testID="tic-tac-toe-game"
     >
-      {/* Размытый прямоугольник за аватарами и доской */}
-      <Animated.View
-        pointerEvents="none"
-        style={{
-          ...StyleSheet.absoluteFillObject,
-          justifyContent: "center",
-          alignItems: "center",
-
-          // 🔥 добавили синхронизацию с уходом доски
-          opacity: gameContainerOpacity,
-          transform: [{ translateY: gameContainerTranslateY }],
-        }}
-      >
-        <BlurView
-          intensity={55}
-          tint="dark"
-          style={{
-            width: blurWidth,
-            height: blurHeight,
-            borderRadius: blurRadius,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            overflow: "hidden",
-          }}
-        />
-      </Animated.View>
+      <ExpoStatusBar
+        hidden={true}
+        translucent={true}
+        backgroundColor="transparent"
+      />
 
       <Animated.View
         style={[
@@ -504,73 +483,95 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
             styles.playersContainer,
             {
               opacity: playersFade,
-              width: stageMaxWidth,
+              width: stageWidth,
               alignSelf: "center",
             },
           ]}
         >
-          <View style={{ marginRight: scaled(isTablet ? 28 : 22), opacity: 1 }}>
-            <PlayerAvatar
-              key={`p1-${roundKey}`}
-              photo={resolvedPhoto1}
-              name={finalName1}
-              player="X"
-              currentPlayer={gameState.currentPlayer}
-              winner={gameState.winner}
-              animatedStyle={player1Style}
-              testID="player1-container"
-              boardHeight={boardHeight}
-              isFirstPlayer={true}
-              lang={lang}
+          <View style={styles.bandBlurWrapper}>
+            <BlurView
+              intensity={40}
+              tint="dark"
+              experimentalBlurMethod="dimezisBlurView"
+              style={StyleSheet.absoluteFill}
             />
-          </View>
 
-          {/* Квадратная область под большую доску */}
-          <Animated.View
-            style={{
-              opacity: playersFade,
-              alignItems: "center",
-              justifyContent: "center",
-              width: boardSide,
-              aspectRatio: 1,
-            }}
-          >
-            <GameBoard
-              key={`board-${roundKey}`}
-              board={displayedBoard}
-              onCellPress={handleCellPress}
-              winningLine={gameState.winningLine}
-              bestMove={bestMove}
-              photo1={resolvedPhoto1}
-              photo2={resolvedPhoto2}
-              onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
-              showHint={showHint}
-              onHintUsed={() => setShowHint(false)}
-              onVictory={playVictorySound}
-              onBotVictory={playSadGameSound}
-              suppressContent={suppressContent}
-              roundKey={roundKey}
-            />
-          </Animated.View>
+            <View style={styles.bandInner}>
+              <View
+                style={{
+                  width: avatarColumnWidth,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <PlayerAvatar
+                  key={`p1-${roundKey}`}
+                  photo={resolvedPhoto1}
+                  name={finalName1}
+                  player="X"
+                  currentPlayer={gameState.currentPlayer}
+                  winner={gameState.winner}
+                  animatedStyle={player1Style}
+                  testID="player1-container"
+                  boardHeight={boardHeight}
+                  isFirstPlayer={true}
+                  lang={lang}
+                />
+              </View>
 
-          <View style={{ marginLeft: scaled(isTablet ? 28 : 22), opacity: 1 }}>
-            <PlayerAvatar
-              key={`p2-${roundKey}`}
-              photo={resolvedPhoto2}
-              name={finalName2}
-              player="O"
-              currentPlayer={gameState.currentPlayer}
-              winner={gameState.winner}
-              animatedStyle={player2Style}
-              testID="player2-container"
-              boardHeight={boardHeight}
-              isFirstPlayer={false}
-              lang={lang}
-            />
+              <View
+                style={[
+                  styles.boardWrapper,
+                  {
+                    width: boardSide,
+                    marginHorizontal: gap,
+                  },
+                ]}
+              >
+                <GameBoard
+                  key={`board-${roundKey}`}
+                  board={displayedBoard}
+                  onCellPress={handleCellPress}
+                  winningLine={gameState.winningLine}
+                  bestMove={bestMove}
+                  photo1={resolvedPhoto1}
+                  photo2={resolvedPhoto2}
+                  onLayout={(e) => setBoardHeight(e.nativeEvent.layout.height)}
+                  showHint={showHint}
+                  onHintUsed={() => setShowHint(false)}
+                  onVictory={playVictorySound}
+                  onBotVictory={playSadGameSound}
+                  suppressContent={suppressContent}
+                  roundKey={roundKey}
+                />
+              </View>
+
+              <View
+                style={{
+                  width: avatarColumnWidth,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <PlayerAvatar
+                  key={`p2-${roundKey}`}
+                  photo={resolvedPhoto2}
+                  name={finalName2}
+                  player="O"
+                  currentPlayer={gameState.currentPlayer}
+                  winner={gameState.winner}
+                  animatedStyle={player2Style}
+                  testID="player2-container"
+                  boardHeight={boardHeight}
+                  isFirstPlayer={false}
+                  lang={lang}
+                />
+              </View>
+            </View>
           </View>
         </Animated.View>
 
-        {/* Кнопка-подсказка 60×60 */}
+        {/* Кнопка-подсказка */}
         <Animated.View
           style={[
             { position: "absolute", bottom: 22, right: 22 },
@@ -629,17 +630,35 @@ const styles = StyleSheet.create({
   container: { flex: 1, width: "100%", height: "100%" },
   gameContainer: {
     flex: 1,
-    justifyContent: "center", // вертикальный центр всей сцены
+    justifyContent: "center",
     alignItems: "center",
   },
   playersContainer: {
-    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: scaled(20),
-    marginTop: scaled(32),
-    marginBottom: scaled(24),
-    gap: scaled(18),
+    paddingHorizontal: scaled(12),
+    marginTop: scaled(18),
+    marginBottom: scaled(16),
+  },
+  bandBlurWrapper: {
+    width: "100%",
+    borderRadius: scaled(40),
+    overflow: "hidden",
+    backgroundColor: "rgba(0,0,0,0.14)",
+  },
+  bandInner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: scaled(16),
+    paddingVertical: scaled(12),
+  },
+  boardWrapper: {
+    aspectRatio: 1,
+    borderRadius: scaled(40),
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

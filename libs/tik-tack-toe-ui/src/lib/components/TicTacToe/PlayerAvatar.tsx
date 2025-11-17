@@ -17,7 +17,7 @@ import {
 } from "./Animation";
 
 const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 70; // чуть больше аватар (по просьбе клиента)
+const AVATAR_SIZE = 70;
 
 type LocaleTag =
   | "en-US"
@@ -89,7 +89,6 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     durationMs: 18000,
   });
 
-  // Сделал мигание медленнее — спокойнее для детей
   const blinkingOpacity = useBlinkingOpacity(
     !winner && currentPlayer === player,
     { lowOpacity: 0.4, durationMs: 350 }
