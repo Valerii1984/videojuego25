@@ -19,9 +19,9 @@ const EMPTY_BOARD: Board = [
 ];
 
 // UX тайминги
-const AI_THINK_DELAY_MS = 400;
-const BETWEEN_TURNS_DELAY_MS = 300;
-const LAST_MOVE_FREEZE_MS = 1200;
+const AI_THINK_DELAY_MS = 600;
+const BETWEEN_TURNS_DELAY_MS = 400;
+const LAST_MOVE_FREEZE_MS = 1500;
 
 function cloneBoard(b: Board): Board {
   return b.map((r) => [...r]);
@@ -94,12 +94,103 @@ function isDraw(board: Board) {
 }
 
 // Возвращаем уже в формате [row, col] | null
-function computeBestMove(board: Board): [number, number] | null {
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      if (board[r][c] === null) return [r, c];
+// function computeBestMove(board: Board): [number, number] | null {
+//   for (let r = 0; r < 3; r++) {
+//     for (let c = 0; c < 3; c++) {
+//       if (board[r][c] === null) return [r, c];
+//     }
+//   }
+//   return null;
+// }
+
+function computeBestMove(
+  board: Board,
+  ai: Player = "O",
+  human: Player = "X"
+): [number, number] | null {
+  const lines: [number, number][][] = [
+    [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [2, 0],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+    ],
+    [
+      [0, 0],
+      [1, 1],
+      [2, 2],
+    ],
+    [
+      [0, 2],
+      [1, 1],
+      [2, 0],
+    ],
+  ];
+
+  const clone = (b: Board) => b.map((r) => [...r]);
+
+  for (const line of lines) {
+    const [[r1, c1], [r2, c2], [r3, c3]] = line;
+    const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
+    if (cells.filter((v) => v === ai).length === 2 && cells.includes(null)) {
+      const idx = cells.indexOf(null);
+      return line[idx];
     }
   }
+
+  for (const line of lines) {
+    const [[r1, c1], [r2, c2], [r3, c3]] = line;
+    const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
+    if (cells.filter((v) => v === human).length === 2 && cells.includes(null)) {
+      const idx = cells.indexOf(null);
+      return line[idx];
+    }
+  }
+
+  if (board[1][1] === null) return [1, 1];
+
+  const corners: [number, number][] = [
+    [0, 0],
+    [0, 2],
+    [2, 0],
+    [2, 2],
+  ];
+  const freeCorner = corners.find(([r, c]) => board[r][c] === null);
+  if (freeCorner) return freeCorner;
+
+  const edges: [number, number][] = [
+    [0, 1],
+    [1, 0],
+    [1, 2],
+    [2, 1],
+  ];
+  const freeEdge = edges.find(([r, c]) => board[r][c] === null);
+  if (freeEdge) return freeEdge;
+
   return null;
 }
 

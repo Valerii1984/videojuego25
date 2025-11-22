@@ -18,7 +18,7 @@ import {
 import StarCrown from "./litlecomponent/StarCrown";
 
 const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 150;
+const AVATAR_SIZE = 120;
 
 type LocaleTag =
   | "en-US"
@@ -172,47 +172,46 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
 
       <View style={[styles.contentContainer, { overflow: "visible" }]}>
         {isActive && showBackground && (
-          <StarCrown isFirstPlayer={!!isFirstPlayer}>
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.rotatingBackground,
-                {
-                  transform: [
-                    {
-                      rotate: (
-                        rotation as unknown as Animated.AnimatedInterpolation<number>
-                      ).interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["0deg", "360deg"],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <Image
-                source={
-                  isFirstPlayer
-                    ? require("../../assets/bg_player.png")
-                    : require("../../assets/bg_player2.png")
-                }
-                style={styles.bgImage}
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.rotatingBackground,
+              {
+                transform: [
+                  {
+                    rotate: (
+                      rotation as unknown as Animated.AnimatedInterpolation<number>
+                    ).interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0deg", "360deg"],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <Image
+              source={
+                isFirstPlayer
+                  ? require("../../assets/bg_player.png")
+                  : require("../../assets/bg_player2.png")
+              }
+              style={styles.bgImage}
+            />
+            {activeStars.map((starId) => (
+              <AnimatedStar
+                key={starId}
+                isActive={starTriggers.includes(starId)}
+                onComplete={() => removeStar(starId)}
+                isFirstPlayer={!!isFirstPlayer}
               />
-              {activeStars.map((starId) => (
-                <AnimatedStar
-                  key={starId}
-                  isActive={starTriggers.includes(starId)}
-                  onComplete={() => removeStar(starId)}
-                  isFirstPlayer={!!isFirstPlayer}
-                />
-              ))}
-            </Animated.View>
-          </StarCrown>
+            ))}
+          </Animated.View>
         )}
 
         {renderTurnIndicator()}
 
+        <StarCrown isActive={isActive} isFirstPlayer={!!isFirstPlayer} />
         <Animated.View
           style={[
             styles.avatarContainer,
@@ -241,10 +240,8 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
             ]}
           />
         </Animated.View>
-
         <Text style={styles.playerName}>{name}</Text>
       </View>
-      {/* </LinearGradient> */}
     </Animated.View>
   );
 };
@@ -371,10 +368,10 @@ const styles = StyleSheet.create({
   },
   rotatingBackground: {
     position: "absolute",
-    top: -90,
-    left: 0,
-    width: AVATAR_SIZE + 110,
-    height: AVATAR_SIZE + 110,
+    top: -60,
+    left: -10,
+    width: AVATAR_SIZE + 50,
+    height: AVATAR_SIZE + 50,
     zIndex: 700,
   },
   bgImage: {

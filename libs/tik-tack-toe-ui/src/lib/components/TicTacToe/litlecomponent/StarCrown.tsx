@@ -12,12 +12,19 @@ import React from "react";
 
 interface StarCrownProps {
   isFirstPlayer: boolean;
+  isActive: boolean;
   children?: React.ReactNode;
 }
 
 const { width } = Dimensions.get("window");
 
-export default function StarCrown({ isFirstPlayer, children }: StarCrownProps) {
+const skaleFactor = width / 1500;
+
+export default function StarCrown({
+  isFirstPlayer,
+  isActive,
+  children,
+}: StarCrownProps) {
   const starImage = isFirstPlayer
     ? require("../../../assets/star-yellow.png")
     : require("../../../assets/star-purple.png");
@@ -82,38 +89,41 @@ export default function StarCrown({ isFirstPlayer, children }: StarCrownProps) {
   ];
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.starWrapper}>
-        {stars.map((star, i) => {
-          const animatedStyle = star.even
-            ? { opacity: blinkingOpacityEven }
-            : { opacity: blinkingOpacityOdd };
-          return (
-            <Animated.View
-              key={i}
-              pointerEvents="none"
-              style={[
-                styles.star,
-                animatedStyle,
-                {
-                  position: "absolute",
-                  top: star.top,
-                  [star.side === "left" ? "left" : "right"]: star.offset,
-                  transform: [{ scale: star.scale }, { rotate: star.rotate }],
-                },
-              ]}
-            >
-              <Image
-                source={starImage}
-                style={styles.bgImage}
-                resizeMode="contain"
-              />
-            </Animated.View>
-          );
-        })}
+    isActive && (
+      <View style={styles.wrapper}>
+        <View style={styles.starWrapper}>
+          {stars.map((star, i) => {
+            const animatedStyle = star.even
+              ? { opacity: blinkingOpacityEven }
+              : { opacity: blinkingOpacityOdd };
+            return (
+              <Animated.View
+                key={i}
+                pointerEvents="none"
+                style={[
+                  styles.star,
+                  animatedStyle,
+                  {
+                    position: "absolute",
+                    top: star.top * skaleFactor,
+                    [star.side === "left" ? "left" : "right"]:
+                      star.offset * skaleFactor,
+                    transform: [{ scale: star.scale }, { rotate: star.rotate }],
+                  },
+                ]}
+              >
+                <Image
+                  source={starImage}
+                  style={styles.bgImage}
+                  resizeMode="contain"
+                />
+              </Animated.View>
+            );
+          })}
+        </View>
+        <View style={styles.childrenContainer}>{children}</View>
       </View>
-      <View>{children}</View>
-    </View>
+    )
   );
 }
 
@@ -122,15 +132,18 @@ const styles = StyleSheet.create({
     width: width * 0.22,
   },
   starWrapper: {
-    backgroundColor: "green",
     position: "relative",
   },
   star: {
-    height: 100,
-    width: 150,
+    height: 100 * skaleFactor,
+    width: 150 * skaleFactor,
   },
   bgImage: {
     width: "100%",
     height: "100%",
+  },
+  childrenContainer: {
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

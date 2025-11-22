@@ -24,6 +24,8 @@ import { useTicTacToeGame } from "../hooks/useTicTacToeGame";
 import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
+import BackgroundWrapper from "./TicTacToe/litlecomponent/BackgroundWrapper";
+import EclipsBackGround from "./TicTacToe/litlecomponent/EclipsBackGround";
 
 const { height: screenHeight } = Dimensions.get("window");
 const baseHeight = 375;
@@ -366,7 +368,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         } catch {}
       }
     });
-    
+
     return () => {
       StatusBar.setHidden(false, "fade");
       if (Platform.OS === "android") {
@@ -464,30 +466,30 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         translucent={true}
         backgroundColor="transparent"
       />
-
-      <Animated.View
-        style={[
-          styles.gameContainer,
-          introStyle,
-          gameContainerStyle,
-          {
-            opacity: gameContainerOpacity,
-            transform: [{ translateY: gameContainerTranslateY }],
-            alignItems: "center",
-          },
-        ]}
-        testID="game-content"
-      >
+      <EclipsBackGround isGameDone={gameComplete}>
         <Animated.View
           style={[
-            styles.playersContainer,
+            styles.gameContainer,
+            introStyle,
+            gameContainerStyle,
             {
-              opacity: playersFade,
-              width: stageWidth,
-              alignSelf: "center",
+              opacity: gameContainerOpacity,
+              transform: [{ translateY: gameContainerTranslateY }],
+              alignItems: "center",
             },
           ]}
+          testID="game-content"
         >
+          <Animated.View
+            style={[
+              styles.playersContainer,
+              {
+                opacity: playersFade,
+                width: stageWidth,
+                alignSelf: "center",
+              },
+            ]}
+          >
             <View style={styles.bandInner}>
               <View
                 style={{
@@ -558,48 +560,49 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   lang={lang}
                 />
               </View>
-          </View>
-        </Animated.View>
+            </View>
+          </Animated.View>
 
-        {/* Кнопка-подсказка */}
-        <Animated.View
-          style={[
-            { position: "absolute", bottom: 22, right: 22 },
-            hintStyles.wrap,
-            hintAnimatedStyle,
-          ]}
-        >
-          <View style={hintStyles.glow} pointerEvents="none" />
-          <View style={hintStyles.ring}>
-            <LinearGradient
-              colors={GRADIENT_COLORS}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              style={hintStyles.gradient}
-            >
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPressIn={() => animateHintButton(0.94)}
-                onPressOut={() => animateHintButton(1)}
-                onPress={() => {
-                  playNotificationSound();
-                  animateHintButton(1.06);
-                  setShowHint(true);
-                  if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-                  hintTimerRef.current = setTimeout(
-                    () => setShowHint(false),
-                    2500
-                  );
-                }}
-                style={hintStyles.touch}
+          {/* Кнопка-подсказка */}
+          <Animated.View
+            style={[
+              { position: "absolute", bottom: 22, right: 22 },
+              hintStyles.wrap,
+              hintAnimatedStyle,
+            ]}
+          >
+            <View style={hintStyles.glow} pointerEvents="none" />
+            <View style={hintStyles.ring}>
+              <LinearGradient
+                colors={GRADIENT_COLORS}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={hintStyles.gradient}
               >
-                <Image source={eyePng} style={hintStyles.eye} />
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPressIn={() => animateHintButton(0.94)}
+                  onPressOut={() => animateHintButton(1)}
+                  onPress={() => {
+                    playNotificationSound();
+                    animateHintButton(1.06);
+                    setShowHint(true);
+                    if (hintTimerRef.current)
+                      clearTimeout(hintTimerRef.current);
+                    hintTimerRef.current = setTimeout(
+                      () => setShowHint(false),
+                      2500
+                    );
+                  }}
+                  style={hintStyles.touch}
+                >
+                  <Image source={eyePng} style={hintStyles.eye} />
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-
+      </EclipsBackGround>
       {showGameOver && (
         <GameOverScreen
           winner={gameState.winner}
