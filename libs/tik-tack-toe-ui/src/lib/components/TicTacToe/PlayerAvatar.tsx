@@ -15,9 +15,10 @@ import {
   useLoopingRotation,
   useAvatarStars,
 } from "./Animation";
+import StarCrown from "./litlecomponent/StarCrown";
 
 const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 70;
+const AVATAR_SIZE = 150;
 
 type LocaleTag =
   | "en-US"
@@ -149,28 +150,29 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
       ]}
       testID={testID}
     >
-      <LinearGradient
+      {/* <LinearGradient
         colors={["rgba(43, 23, 178, 0)", "rgba(39, 25, 135, 0.3)"]}
         style={[styles.gradientBackground, { overflow: "visible" }]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-      >
-        {isFirstPlayer ? (
-          <Image
-            source={require("../../assets/border_player.png")}
-            style={[styles.leftBorderImage]}
-            resizeMode="stretch"
-          />
-        ) : (
-          <Image
-            source={require("../../assets/border_player.png")}
-            style={[styles.rightBorderImage]}
-            resizeMode="stretch"
-          />
-        )}
+      > */}
+      {isFirstPlayer ? (
+        <Image
+          source={require("../../assets/border_player.png")}
+          style={[styles.leftBorderImage]}
+          resizeMode="stretch"
+        />
+      ) : (
+        <Image
+          source={require("../../assets/border_player.png")}
+          style={[styles.rightBorderImage]}
+          resizeMode="stretch"
+        />
+      )}
 
-        <View style={[styles.contentContainer, { overflow: "visible" }]}>
-          {isActive && showBackground && (
+      <View style={[styles.contentContainer, { overflow: "visible" }]}>
+        {isActive && showBackground && (
+          <StarCrown isFirstPlayer={!!isFirstPlayer}>
             <Animated.View
               pointerEvents="none"
               style={[
@@ -206,42 +208,43 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                 />
               ))}
             </Animated.View>
-          )}
+          </StarCrown>
+        )}
 
-          {renderTurnIndicator()}
+        {renderTurnIndicator()}
 
-          <Animated.View
+        <Animated.View
+          style={[
+            styles.avatarContainer,
+            currentPlayer === player || winner === player
+              ? isFirstPlayer
+                ? styles.activeFirstPlayerContainer
+                : styles.activeSecondPlayerContainer
+              : isFirstPlayer
+                ? styles.firstPlayerAvatar
+                : styles.secondPlayerAvatar,
+            winner
+              ? {
+                  transform: [{ translateY: winner === player ? -40 : 0 }],
+                  borderWidth: winner === player ? 6 : 3,
+                }
+              : animatedStyle,
+          ]}
+        >
+          <Image
+            source={photo}
             style={[
-              styles.avatarContainer,
-              currentPlayer === player || winner === player
-                ? isFirstPlayer
-                  ? styles.activeFirstPlayerContainer
-                  : styles.activeSecondPlayerContainer
-                : isFirstPlayer
-                  ? styles.firstPlayerAvatar
-                  : styles.secondPlayerAvatar,
-              winner
-                ? {
-                    transform: [{ translateY: winner === player ? -40 : 0 }],
-                    borderWidth: winner === player ? 6 : 3,
-                  }
-                : animatedStyle,
+              styles.avatar,
+              isFirstPlayer
+                ? { backgroundColor: "#dc851b" }
+                : { backgroundColor: "#3d4ab0" },
             ]}
-          >
-            <Image
-              source={photo}
-              style={[
-                styles.avatar,
-                isFirstPlayer
-                  ? { backgroundColor: "#dc851b" }
-                  : { backgroundColor: "#3d4ab0" },
-              ]}
-            />
-          </Animated.View>
+          />
+        </Animated.View>
 
-          <Text style={styles.playerName}>{name}</Text>
-        </View>
-      </LinearGradient>
+        <Text style={styles.playerName}>{name}</Text>
+      </View>
+      {/* </LinearGradient> */}
     </Animated.View>
   );
 };
@@ -264,7 +267,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   avatarContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     marginBottom: 10,
     position: "relative",
@@ -273,7 +276,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: 50,
+    borderRadius: 150,
     resizeMode: "cover",
     zIndex: 999,
   },
@@ -281,8 +284,9 @@ const styles = StyleSheet.create({
     color: "white",
     position: "relative",
     fontFamily: "Fredoka",
+    fontSize: 25,
     textTransform: "uppercase",
-    width: 100,
+    width: 150,
     textAlign: "center",
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
@@ -320,7 +324,7 @@ const styles = StyleSheet.create({
   turnTextAboveAvatar: {
     color: "#FFE97C",
     fontFamily: "Fredoka",
-    fontSize: 15,
+    fontSize: 25,
     lineHeight: 18.3,
     textAlign: "center",
     textShadowColor: "#B14EFF",
@@ -337,17 +341,17 @@ const styles = StyleSheet.create({
     borderColor: "#FFE97C",
     shadowColor: "#C57CFF",
     shadowOpacity: 1,
-    borderRadius: 50,
+    borderRadius: 150,
     shadowRadius: 10,
     elevation: 10,
   },
   secondPlayerAvatar: {
-    borderRadius: 50,
+    borderRadius: 150,
     borderWidth: 3,
     borderColor: "#ADEFFF",
   },
   activeFirstPlayerContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     position: "relative",
     borderWidth: 6,
@@ -358,19 +362,19 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   activeSecondPlayerContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     marginBottom: 10,
     position: "relative",
     borderWidth: 6,
-    borderColor: "#B5F1FF",
+    borderColor: "#C57CFF",
   },
   rotatingBackground: {
     position: "absolute",
-    top: -60,
-    left: -10,
-    width: AVATAR_SIZE + 50,
-    height: AVATAR_SIZE + 50,
+    top: -90,
+    left: 0,
+    width: AVATAR_SIZE + 110,
+    height: AVATAR_SIZE + 110,
     zIndex: 700,
   },
   bgImage: {

@@ -71,38 +71,38 @@ type Props =
 
 const I18N = {
   "en-US": {
-    player1: "Player 1",
-    player2: "Player 2",
+    player1: "Quinn",
+    player2: "Pooh",
     badge: (c: string) => c.toUpperCase(),
   },
   "de-DE": {
-    player1: "Spieler 1",
-    player2: "Spieler 2",
+    player1: "Quinn",
+    player2: "Puuh",
     badge: (c: string) => c.toUpperCase(),
   },
   "es-ES": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "es-419": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "fr-FR": {
-    player1: "Joueur 1",
-    player2: "Joueur 2",
+    player1: "Quinn",
+    player2: "Pouh",
     badge: (c: string) => c.toUpperCase(),
   },
   "it-IT": {
-    player1: "Giocatore 1",
-    player2: "Giocatore 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "pt-BR": {
-    player1: "Jogador 1",
-    player2: "Jogador 2",
+    player1: "Quinn",
+    player2: "Puff",
     badge: (c: string) => c.toUpperCase(),
   },
 } as const;
@@ -122,8 +122,8 @@ const normalizeLocale = (raw?: string): LocaleTag => {
 const DEFAULTS = {
   backgroundImage:
     require("../assets/WTP_BGS_ALL_0048.png") as ImageSourcePropType,
-  name1: "Player 1",
-  name2: "Player 2",
+  name1: "Quinn",
+  name2: "Pooh",
   photo1: require("../assets/9.png") as ImageSourcePropType,
   photo2: require("../assets/82.png") as ImageSourcePropType,
   winGif: require("../assets/animations/success-animation.json") as any,
@@ -366,7 +366,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         } catch {}
       }
     });
-
+    
     return () => {
       StatusBar.setHidden(false, "fade");
       if (Platform.OS === "android") {
@@ -488,14 +488,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
             },
           ]}
         >
-          <View style={styles.bandBlurWrapper}>
-            <BlurView
-              intensity={40}
-              tint="dark"
-              experimentalBlurMethod="dimezisBlurView"
-              style={StyleSheet.absoluteFill}
-            />
-
             <View style={styles.bandInner}>
               <View
                 style={{
@@ -518,7 +510,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   lang={lang}
                 />
               </View>
-
               <View
                 style={[
                   styles.boardWrapper,
@@ -567,7 +558,6 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   lang={lang}
                 />
               </View>
-            </View>
           </View>
         </Animated.View>
 
