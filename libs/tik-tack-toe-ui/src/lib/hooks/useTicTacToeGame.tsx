@@ -18,10 +18,10 @@ const EMPTY_BOARD: Board = [
   [null, null, null],
 ];
 
-// UX тайминги – делаем ИИ чуть "задумчивее"
+// UX тайминги
 const AI_THINK_DELAY_MS = 800;
-const BETWEEN_TURNS_DELAY_MS = 300;
-const LAST_MOVE_FREEZE_MS = 1200;
+const BETWEEN_TURNS_DELAY_MS = 400;
+const LAST_MOVE_FREEZE_MS = 1500;
 
 function cloneBoard(b: Board): Board {
   return b.map((r) => [...r]);
@@ -94,9 +94,7 @@ function isDraw(board: Board) {
 }
 
 // ──────────────────────────────────────
-// Умный ИИ: minimax для произвольного игрока
-// playerToMove — за кого сейчас считаем лучший ход ("X" или "O")
-// для ИИ мы вызываем с "O", а для подсказки/хинта — с "X"
+// Вспомогательные функции для minimax
 // ──────────────────────────────────────
 
 function otherPlayer(p: Player): Player {
@@ -163,9 +161,9 @@ function minimax(
 }
 
 /**
- * ЛУЧШИЙ ход для указанного игрока.
+ * Лучший ход для указанного игрока.
  * - Для ИИ: player = "O"
- * - Для хинта: player = "X"
+ * - Для подсказки: player = "X"
  */
 function computeBestMoveFor(
   board: Board,
@@ -193,7 +191,7 @@ export function useTicTacToeGame(onTick?: () => void) {
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // bestMove используем как подсказку для ИГРОКА, поэтому считаем для "X"
+  // bestMove используем как подсказку для ИГРОКА (X)
   const bestMove = computeBestMoveFor(gameState.board, "X");
 
   const applyMove = useCallback(
@@ -256,7 +254,7 @@ export function useTicTacToeGame(onTick?: () => void) {
 
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     aiTimerRef.current = setTimeout(() => {
-      const move = computeBestMoveFor(gameState.board, "O"); // УМНЫЙ ход ИИ
+      const move = computeBestMoveFor(gameState.board, "O"); // умный ход ИИ
       if (move) applyMove(move[0], move[1], "O");
     }, AI_THINK_DELAY_MS);
 
@@ -296,7 +294,7 @@ export function useTicTacToeGame(onTick?: () => void) {
     setIsGameStarted,
     isGameStarted,
     gameState,
-    bestMove, // [row, col] | null – теперь реально лучший ход для X
+    bestMove, // [row, col] | null
     gameComplete,
     handleCellPress,
     resetGame,

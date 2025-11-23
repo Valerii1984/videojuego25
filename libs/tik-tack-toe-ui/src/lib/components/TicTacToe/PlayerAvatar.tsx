@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Player } from "../../types/tic-tac-toe";
@@ -17,7 +19,8 @@ import {
 } from "./Animation";
 
 const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 70;
+const AVATAR_SIZE = 120;
+const skaleFactor = width / 1500;
 
 type LocaleTag =
   | "en-US"
@@ -63,6 +66,7 @@ interface PlayerAvatarProps {
   boardHeight?: number;
   isFirstPlayer?: boolean;
   lang?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
@@ -76,9 +80,14 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   boardHeight,
   isFirstPlayer,
   lang,
+  style,
 }) => {
   const isActive = (!winner && currentPlayer === player) || winner === player;
   const [showBackground, setShowBackground] = useState(false);
+
+  const starImage = isFirstPlayer
+    ? require("../../assets/star-yellow.png")
+    : require("../../assets/star-purple.png");
 
   const { activeStars, starTriggers, removeStar } = useAvatarStars(
     isActive && showBackground,
@@ -93,6 +102,66 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     !winner && currentPlayer === player,
     { lowOpacity: 0.4, durationMs: 350 }
   );
+
+  const blinkingOpacityOdd = useBlinkingOpacity(isActive, {
+    lowOpacity: 0.4,
+    durationMs: 2550,
+  });
+  const blinkingOpacityEven = useBlinkingOpacity(isActive, {
+    lowOpacity: 0.45,
+    durationMs: 2050,
+  });
+
+  const stars = [
+    {
+      top: -130,
+      offset: 0,
+      scale: 0.7,
+      rotate: "-8deg",
+      even: false,
+      side: "left",
+    },
+    {
+      top: 0,
+      offset: -40,
+      scale: 0.5,
+      rotate: "60deg",
+      even: true,
+      side: "left",
+    },
+    {
+      top: 100,
+      offset: -15,
+      scale: 0.5,
+      rotate: "20deg",
+      even: false,
+      side: "left",
+    },
+    {
+      top: -130,
+      offset: 0,
+      scale: 0.6,
+      rotate: "30deg",
+      even: true,
+      side: "right",
+    },
+    {
+      top: 0,
+      offset: -45,
+      scale: 0.5,
+      rotate: "35deg",
+      even: false,
+      side: "right",
+    },
+    {
+      top: 100,
+      offset: -15,
+      scale: 0.4,
+      rotate: "0deg",
+      even: true,
+      side: "right",
+    },
+  ];
 
   useEffect(() => {
     if (!isActive || !showBackground) {
@@ -146,102 +215,138 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         styles.playerContainer,
         { overflow: "visible" },
         boardHeight ? { height: boardHeight } : undefined,
+        style,
       ]}
       testID={testID}
     >
-      <LinearGradient
+      {/* <LinearGradient
         colors={["rgba(43, 23, 178, 0)", "rgba(39, 25, 135, 0.3)"]}
         style={[styles.gradientBackground, { overflow: "visible" }]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-      >
-        {isFirstPlayer ? (
-          <Image
-            source={require("../../assets/border_player.png")}
-            style={[styles.leftBorderImage]}
-            resizeMode="stretch"
-          />
-        ) : (
-          <Image
-            source={require("../../assets/border_player.png")}
-            style={[styles.rightBorderImage]}
-            resizeMode="stretch"
-          />
-        )}
+      > */}
+      {isFirstPlayer ? (
+        <Image
+          source={require("../../assets/border_player.png")}
+          style={[styles.leftBorderImage]}
+          resizeMode="stretch"
+        />
+      ) : (
+        <Image
+          source={require("../../assets/border_player.png")}
+          style={[styles.rightBorderImage]}
+          resizeMode="stretch"
+        />
+      )}
 
-        <View style={[styles.contentContainer, { overflow: "visible" }]}>
-          {isActive && showBackground && (
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.rotatingBackground,
-                {
-                  transform: [
-                    {
-                      rotate: (
-                        rotation as unknown as Animated.AnimatedInterpolation<number>
-                      ).interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["0deg", "360deg"],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <Image
-                source={
-                  isFirstPlayer
-                    ? require("../../assets/bg_player.png")
-                    : require("../../assets/bg_player2.png")
-                }
-                style={styles.bgImage}
-              />
-              {activeStars.map((starId) => (
-                <AnimatedStar
-                  key={starId}
-                  isActive={starTriggers.includes(starId)}
-                  onComplete={() => removeStar(starId)}
-                  isFirstPlayer={!!isFirstPlayer}
-                />
-              ))}
-            </Animated.View>
-          )}
-
-          {renderTurnIndicator()}
-
+      <View style={[styles.contentContainer, { overflow: "visible" }]}>
+        {isActive && showBackground && (
           <Animated.View
+            pointerEvents="none"
             style={[
-              styles.avatarContainer,
-              currentPlayer === player || winner === player
-                ? isFirstPlayer
-                  ? styles.activeFirstPlayerContainer
-                  : styles.activeSecondPlayerContainer
-                : isFirstPlayer
-                  ? styles.firstPlayerAvatar
-                  : styles.secondPlayerAvatar,
-              winner
-                ? {
-                    transform: [{ translateY: winner === player ? -40 : 0 }],
-                    borderWidth: winner === player ? 6 : 3,
-                  }
-                : animatedStyle,
+              styles.rotatingBackground,
+              {
+                transform: [
+                  {
+                    rotate: (
+                      rotation as unknown as Animated.AnimatedInterpolation<number>
+                    ).interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0deg", "360deg"],
+                    }),
+                  },
+                ],
+              },
             ]}
           >
             <Image
-              source={photo}
-              style={[
-                styles.avatar,
+              source={
                 isFirstPlayer
-                  ? { backgroundColor: "#dc851b" }
-                  : { backgroundColor: "#3d4ab0" },
-              ]}
+                  ? require("../../assets/bg_player.png")
+                  : require("../../assets/bg_player2.png")
+              }
+              style={styles.bgImage}
             />
+            {activeStars.map((starId) => (
+              <AnimatedStar
+                key={starId}
+                isActive={starTriggers.includes(starId)}
+                onComplete={() => removeStar(starId)}
+                isFirstPlayer={!!isFirstPlayer}
+              />
+            ))}
           </Animated.View>
+        )}
 
-          <Text style={styles.playerName}>{name}</Text>
-        </View>
-      </LinearGradient>
+        {renderTurnIndicator()}
+        {isActive && showBackground && (
+          <View style={styles.wrapper}>
+            <View style={styles.starWrapper}>
+              {stars.map((star, i) => {
+                const animatedStyle = star.even
+                  ? { opacity: blinkingOpacityEven }
+                  : { opacity: blinkingOpacityOdd };
+                return (
+                  <Animated.View
+                    key={i}
+                    pointerEvents="none"
+                    style={[
+                      styles.star,
+                      animatedStyle,
+                      {
+                        position: "absolute",
+                        top: star.top * skaleFactor,
+                        [star.side === "left" ? "left" : "right"]:
+                          star.offset * skaleFactor,
+                        transform: [
+                          { scale: star.scale },
+                          { rotate: star.rotate },
+                        ],
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={starImage}
+                      style={styles.bgImage}
+                      resizeMode="contain"
+                    />
+                  </Animated.View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        <Animated.View
+          style={[
+            styles.avatarContainer,
+            currentPlayer === player || winner === player
+              ? isFirstPlayer
+                ? styles.activeFirstPlayerContainer
+                : styles.activeSecondPlayerContainer
+              : isFirstPlayer
+                ? styles.firstPlayerAvatar
+                : styles.secondPlayerAvatar,
+            winner
+              ? {
+                  transform: [{ translateY: winner === player ? -40 : 0 }],
+                  borderWidth: winner === player ? 6 : 3,
+                }
+              : animatedStyle,
+          ]}
+        >
+          <Image
+            source={photo}
+            style={[
+              styles.avatar,
+              isFirstPlayer
+                ? { backgroundColor: "#dc851b" }
+                : { backgroundColor: "#3d4ab0" },
+            ]}
+          />
+        </Animated.View>
+        <Text style={styles.playerName}>{name}</Text>
+      </View>
     </Animated.View>
   );
 };
@@ -264,7 +369,7 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   avatarContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     marginBottom: 10,
     position: "relative",
@@ -273,7 +378,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: AVATAR_SIZE,
     height: AVATAR_SIZE,
-    borderRadius: 50,
+    borderRadius: 150,
     resizeMode: "cover",
     zIndex: 999,
   },
@@ -281,8 +386,9 @@ const styles = StyleSheet.create({
     color: "white",
     position: "relative",
     fontFamily: "Fredoka",
+    fontSize: 25,
     textTransform: "uppercase",
-    width: 100,
+    width: 150,
     textAlign: "center",
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
@@ -320,7 +426,7 @@ const styles = StyleSheet.create({
   turnTextAboveAvatar: {
     color: "#FFE97C",
     fontFamily: "Fredoka",
-    fontSize: 15,
+    fontSize: 25,
     lineHeight: 18.3,
     textAlign: "center",
     textShadowColor: "#B14EFF",
@@ -337,17 +443,17 @@ const styles = StyleSheet.create({
     borderColor: "#FFE97C",
     shadowColor: "#C57CFF",
     shadowOpacity: 1,
-    borderRadius: 50,
+    borderRadius: 150,
     shadowRadius: 10,
     elevation: 10,
   },
   secondPlayerAvatar: {
-    borderRadius: 50,
+    borderRadius: 150,
     borderWidth: 3,
     borderColor: "#ADEFFF",
   },
   activeFirstPlayerContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     position: "relative",
     borderWidth: 6,
@@ -358,17 +464,17 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   activeSecondPlayerContainer: {
-    borderRadius: 50,
+    borderRadius: 150,
     overflow: "hidden",
     marginBottom: 10,
     position: "relative",
     borderWidth: 6,
-    borderColor: "#B5F1FF",
+    borderColor: "#C57CFF",
   },
   rotatingBackground: {
     position: "absolute",
     top: -60,
-    left: -10,
+    left: 30,
     width: AVATAR_SIZE + 50,
     height: AVATAR_SIZE + 50,
     zIndex: 700,
@@ -376,6 +482,16 @@ const styles = StyleSheet.create({
   bgImage: {
     width: "100%",
     height: "100%",
+  },
+  wrapper: {
+    width: width * 0.22,
+  },
+  starWrapper: {
+    position: "relative",
+  },
+  star: {
+    height: 100 * skaleFactor,
+    width: 150 * skaleFactor,
   },
 });
 

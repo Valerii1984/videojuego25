@@ -1,5 +1,5 @@
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -24,8 +24,12 @@ import { useTicTacToeGame } from "../hooks/useTicTacToeGame";
 import { useTicTacToeAnimations } from "../hooks/useTicTacToeAnimations";
 import { useSound } from "../hooks/useSound";
 import * as ScreenOrientation from "expo-screen-orientation";
+import BackgroundWrapper from "./TicTacToe/litlecomponent/BackgroundWrapper";
+import BackgroundWave from "./TicTacToe/litlecomponent/BackgroundWave";
+import { Image as ExpoImage } from "expo-image";
+import { Audio } from "expo-av";
 
-const { height: screenHeight } = Dimensions.get("window");
+const { width, height: screenHeight } = Dimensions.get("window");
 const baseHeight = 375;
 const scale = screenHeight / baseHeight;
 const scaled = (n: number) => Math.round(n * scale);
@@ -71,38 +75,38 @@ type Props =
 
 const I18N = {
   "en-US": {
-    player1: "Player 1",
-    player2: "Player 2",
+    player1: "Quinn",
+    player2: "Pooh",
     badge: (c: string) => c.toUpperCase(),
   },
   "de-DE": {
-    player1: "Spieler 1",
-    player2: "Spieler 2",
+    player1: "Quinn",
+    player2: "Puuh",
     badge: (c: string) => c.toUpperCase(),
   },
   "es-ES": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "es-419": {
-    player1: "Jugador 1",
-    player2: "Jugador 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "fr-FR": {
-    player1: "Joueur 1",
-    player2: "Joueur 2",
+    player1: "Quinn",
+    player2: "Pouh",
     badge: (c: string) => c.toUpperCase(),
   },
   "it-IT": {
-    player1: "Giocatore 1",
-    player2: "Giocatore 2",
+    player1: "Quinn",
+    player2: "Puh",
     badge: (c: string) => c.toUpperCase(),
   },
   "pt-BR": {
-    player1: "Jogador 1",
-    player2: "Jogador 2",
+    player1: "Quinn",
+    player2: "Puff",
     badge: (c: string) => c.toUpperCase(),
   },
 } as const;
@@ -122,12 +126,78 @@ const normalizeLocale = (raw?: string): LocaleTag => {
 const DEFAULTS = {
   backgroundImage:
     require("../assets/WTP_BGS_ALL_0048.png") as ImageSourcePropType,
-  name1: "Player 1",
-  name2: "Player 2",
+  name1: "Quinn",
+  name2: "Pooh",
   photo1: require("../assets/9.png") as ImageSourcePropType,
   photo2: require("../assets/82.png") as ImageSourcePropType,
   winGif: require("../assets/animations/success-animation.json") as any,
   lang: "en" as Language,
+};
+
+/** ── ассеты роботов ───────────────────────────────────────────────────── */
+
+const HERO = {
+  hero1: {
+    anim: require("../assets/hero/hero1/anim.webp"),
+    voice: require("../assets/hero/hero1/hero.m4a"),
+  },
+  hero2: {
+    anim: require("../assets/hero/hero2/anim.webp"),
+    voice: require("../assets/hero/hero2/hero.m4a"),
+  },
+  hero3: {
+    anim: require("../assets/hero/hero3/anim.webp"),
+    voice: require("../assets/hero/hero3/hero.m4a"),
+  },
+  hero4: {
+    anim: require("../assets/hero/hero4/anim.webp"),
+    voice: require("../assets/hero/hero4/hero.m4a"),
+  },
+  hero5: {
+    anim: require("../assets/hero/hero5/anim.webp"),
+    voice: require("../assets/hero/hero5/hero.m4a"),
+  },
+  hero6: {
+    anim: require("../assets/hero/hero6/anim.webp"),
+    voice: require("../assets/hero/hero6/hero.m4a"),
+  },
+} as const;
+
+type HeroKey = keyof typeof HERO;
+
+/** ── стикер-робот ─────────────────────────────────────────────────────── */
+let heroSize = null;
+const HeroSticker: React.FC<{
+  hero: HeroKey;
+  size?: number;
+  opacity?: number;
+  onReady?: () => void;
+}> = ({ hero, size, opacity = 1, onReady }) => {
+  const source = HERO[hero].anim;
+  const base = Math.min(width, screenHeight) * 0.55;
+  const clamped = Math.max(320, Math.min(base, 460));
+  const finalSize = size ?? clamped;
+  heroSize = finalSize;
+
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (loaded) onReady?.();
+  }, [loaded, onReady]);
+
+  return (
+    <ExpoImage
+      source={source}
+      style={{
+        width: finalSize,
+        height: finalSize,
+        backgroundColor: "transparent",
+        opacity,
+      }}
+      contentFit="contain"
+      onLoadEnd={() => setLoaded(true)}
+    />
+  );
 };
 
 const resolveImage = (
@@ -205,6 +275,8 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
 
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
   const [screenW, setScreenW] = useState(Dimensions.get("window").width);
+
+  const [resetKey, setResetKey] = useState(false);
   useEffect(() => {
     const sub = Dimensions.addEventListener("change", ({ window }) => {
       setScreenH(window.height);
@@ -290,6 +362,10 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
   const ellipseOpacity = useRef(new Animated.Value(0)).current;
   const gameContainerTranslateY = useRef(new Animated.Value(0)).current;
   const gameContainerOpacity = useRef(new Animated.Value(1)).current;
+  const heroOutOpacity = useRef(new Animated.Value(1)).current;
+
+  const boardIntro = useRef(new Animated.Value(0)).current;
+  const playersIntro = useRef(new Animated.Value(0)).current;
 
   const playersFade = useRef(new Animated.Value(1)).current;
 
@@ -307,35 +383,112 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     Animated.parallel([
       Animated.timing(ellipseTranslateY, {
         toValue: screenHeight + ARC_BOTTOM_PAD,
-        duration: 850,
+        duration: 1250,
+        delay: 150,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(ellipseOpacity, {
         toValue: 0,
-        duration: 650,
+        duration: 850,
         useNativeDriver: true,
       }),
       Animated.timing(gameContainerTranslateY, {
         toValue: screenHeight + ARC_BOTTOM_PAD,
-        duration: 850,
+        duration: 1050,
         easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(gameContainerOpacity, {
         toValue: 0,
-        duration: 650,
+        duration: 850,
+        useNativeDriver: true,
+      }),
+      Animated.timing(heroOutOpacity, {
+        toValue: 0,
+        duration: 600,
         useNativeDriver: true,
       }),
     ]).start(() => onDone?.());
+  };
+
+  useEffect(() => {
+    const startEntranceAnimation = () => {
+      Animated.sequence([
+        Animated.timing(ellipseTranslateY, {
+          toValue: 0,
+          duration: 1000,
+          delay: 10,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(ellipseOpacity, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(boardIntro, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(playersIntro, {
+          toValue: 1,
+          duration: 900,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
+    startEntranceAnimation();
+    return () => {};
+  }, [resetKey]);
+
+  const boardIntroStyle = {
+    opacity: boardIntro,
+    transform: [
+      {
+        translateY: boardIntro.interpolate({
+          inputRange: [0, 1],
+          outputRange: [30, 0],
+        }),
+      },
+    ],
+  };
+
+  const playersIntroStyle = {
+    opacity: playersIntro,
+    transform: [
+      {
+        translateY: playersIntro.interpolate({
+          inputRange: [0, 1],
+          outputRange: [20, 0],
+        }),
+      },
+    ],
+  };
+
+  const hintIntroStyle = {
+    opacity: playersIntro,
+    transform: [
+      {
+        translateY: playersIntro.interpolate({
+          inputRange: [0, 1],
+          outputRange: [40, 0],
+        }),
+      },
+    ],
   };
 
   const resetStage = () => {
     playersFade.setValue(1);
     gameContainerTranslateY.setValue(0);
     gameContainerOpacity.setValue(1);
-    ellipseTranslateY.setValue(0);
+    ellipseTranslateY.setValue(Dimensions.get("window").height);
     ellipseOpacity.setValue(0);
+    playersIntro.setValue(0);
+    boardIntro.setValue(0);
   };
 
   useEffect(() => {
@@ -436,6 +589,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     setRoundKey((k) => k + 1);
     resetGame();
     setIsGameStarted(true);
+    setResetKey(!resetKey);
     if (ENABLE_BACKGROUND_MUSIC) playBackgroundMusic();
     setTimeout(() => {
       setShowBoard(true);
@@ -453,6 +607,90 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     ? gameState.board
     : EMPTY_BOARD;
 
+  const [heroKey, setHeroKey] = useState<HeroKey | null>(null);
+  const [showHero, setShowHero] = useState(false);
+  const [heroReady, setHeroReady] = useState(false);
+
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const runIdRef = useRef(0);
+  // Сколько держим героя до появления поздравления
+  const ROBOT_MS = 2800;
+  const winner = gameState.winner;
+  const chooseHero = useMemo<HeroKey | null>(() => {
+    if (!gameComplete || winner == null) return null;
+    if (winner === "X") return Math.random() < 0.5 ? "hero1" : "hero2";
+    if (winner === "draw") return Math.random() < 0.5 ? "hero3" : "hero4";
+    return Math.random() < 0.5 ? "hero5" : "hero6";
+  }, [gameComplete, winner]);
+
+  const clearTimersAndSound = () => {
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current = [];
+    if (soundRef.current) {
+      soundRef.current.stopAsync().catch(() => {});
+      soundRef.current.unloadAsync().catch(() => {});
+      soundRef.current = null;
+    }
+  };
+
+  // Порядок: робот → (ROBOT_MS) → контент/конфетти
+  useEffect(() => {
+    if (!gameComplete) {
+      clearTimersAndSound();
+      setShowHero(false);
+      setHeroKey(null);
+      setHeroReady(false);
+      return;
+    }
+
+    const myRunId = ++runIdRef.current;
+
+    if (chooseHero) setHeroKey(chooseHero);
+    setShowHero(true);
+    setHeroReady(false);
+
+    const readyTimer = setTimeout(() => {
+      if (runIdRef.current !== myRunId) return;
+      setHeroReady(true);
+    }, 800);
+    timersRef.current.push(readyTimer);
+
+    const hideHeroTimer = setTimeout(() => {
+      if (runIdRef.current !== myRunId) return;
+      setShowHero(false);
+    }, ROBOT_MS);
+    timersRef.current.push(hideHeroTimer);
+
+    return () => clearTimersAndSound();
+  }, [gameComplete, chooseHero]);
+
+  // Голос робота — после загрузки кадра
+  useEffect(() => {
+    if (!gameComplete || !chooseHero || !showHero || !heroReady) return;
+
+    const myRunId = runIdRef.current;
+    const voiceTimer = setTimeout(async () => {
+      if (runIdRef.current !== myRunId) return;
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          HERO[chooseHero].voice,
+          {
+            shouldPlay: true,
+            volume: 1.0,
+          }
+        );
+        if (runIdRef.current !== myRunId) {
+          await sound.unloadAsync();
+          return;
+        }
+        soundRef.current = sound;
+        await sound.playAsync();
+      } catch {}
+    }, 120);
+    timersRef.current.push(voiceTimer);
+  }, [gameComplete, chooseHero, showHero, heroReady]);
+
   return (
     <ImageBackground
       source={resolvedBackground}
@@ -464,38 +702,41 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
         translucent={true}
         backgroundColor="transparent"
       />
-
       <Animated.View
         style={[
-          styles.gameContainer,
-          introStyle,
-          gameContainerStyle,
+          styles.container,
           {
-            opacity: gameContainerOpacity,
-            transform: [{ translateY: gameContainerTranslateY }],
-            alignItems: "center",
+            transform: [{ translateY: ellipseTranslateY }],
+            opacity: ellipseOpacity,
           },
         ]}
-        testID="game-content"
       >
+        <BackgroundWave
+          style={[styles.ellipseBackground, { transform: [{ scaleX: 1.2 }] }]}
+        />
         <Animated.View
           style={[
-            styles.playersContainer,
+            styles.gameContainer,
+            introStyle,
+            gameContainerStyle,
             {
-              opacity: playersFade,
-              width: stageWidth,
-              alignSelf: "center",
+              opacity: gameContainerOpacity,
+              transform: [{ translateY: gameContainerTranslateY }],
+              alignItems: "center",
             },
           ]}
+          testID="game-content"
         >
-          <View style={styles.bandBlurWrapper}>
-            <BlurView
-              intensity={40}
-              tint="dark"
-              experimentalBlurMethod="dimezisBlurView"
-              style={StyleSheet.absoluteFill}
-            />
-
+          <Animated.View
+            style={[
+              styles.playersContainer,
+              {
+                opacity: playersFade,
+                width: stageWidth,
+                alignSelf: "center",
+              },
+            ]}
+          >
             <View style={styles.bandInner}>
               <View
                 style={{
@@ -516,9 +757,9 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   boardHeight={boardHeight}
                   isFirstPlayer={true}
                   lang={lang}
+                  style={[playersIntroStyle]}
                 />
               </View>
-
               <View
                 style={[
                   styles.boardWrapper,
@@ -543,6 +784,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   onBotVictory={playSadGameSound}
                   suppressContent={suppressContent}
                   roundKey={roundKey}
+                  style={[boardIntroStyle]}
                 />
               </View>
 
@@ -565,51 +807,59 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   boardHeight={boardHeight}
                   isFirstPlayer={false}
                   lang={lang}
+                  style={[playersIntroStyle]}
                 />
               </View>
             </View>
-          </View>
-        </Animated.View>
+          </Animated.View>
 
-        {/* Кнопка-подсказка */}
-        <Animated.View
-          style={[
-            { position: "absolute", bottom: 22, right: 22 },
-            hintStyles.wrap,
-            hintAnimatedStyle,
-          ]}
-        >
-          <View style={hintStyles.glow} pointerEvents="none" />
-          <View style={hintStyles.ring}>
-            <LinearGradient
-              colors={GRADIENT_COLORS}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
-              style={hintStyles.gradient}
-            >
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPressIn={() => animateHintButton(0.94)}
-                onPressOut={() => animateHintButton(1)}
-                onPress={() => {
-                  playNotificationSound();
-                  animateHintButton(1.06);
-                  setShowHint(true);
-                  if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
-                  hintTimerRef.current = setTimeout(
-                    () => setShowHint(false),
-                    2500
-                  );
-                }}
-                style={hintStyles.touch}
+          {/* Кнопка-подсказка */}
+          <Animated.View
+            style={[
+              { position: "absolute", bottom: 22, right: 22 },
+              hintStyles.wrap,
+              // hintAnimatedStyle,
+              hintIntroStyle,
+            ]}
+          >
+            <View style={hintStyles.glow} pointerEvents="none" />
+            <View style={hintStyles.ring}>
+              <LinearGradient
+                colors={GRADIENT_COLORS}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+                style={hintStyles.gradient}
               >
-                <Image source={eyePng} style={hintStyles.eye} />
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPressIn={() => animateHintButton(0.94)}
+                  onPressOut={() => animateHintButton(1)}
+                  onPress={() => {
+                    playNotificationSound();
+                    animateHintButton(1.06);
+                    setShowHint(true);
+                    if (hintTimerRef.current)
+                      clearTimeout(hintTimerRef.current);
+                    hintTimerRef.current = setTimeout(
+                      () => setShowHint(false),
+                      2500
+                    );
+                  }}
+                  style={hintStyles.touch}
+                >
+                  <Image source={eyePng} style={hintStyles.eye} />
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          </Animated.View>
         </Animated.View>
+        {/* Робот */}
+        {showHero && heroKey && (
+          <Animated.View style={[styles.heroWrap]} pointerEvents="none">
+            <HeroSticker hero={heroKey} onReady={() => setHeroReady(true)} />
+          </Animated.View>
+        )}
       </Animated.View>
-
       {showGameOver && (
         <GameOverScreen
           winner={gameState.winner}
@@ -627,6 +877,15 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
 };
 
 const styles = StyleSheet.create({
+  heroWrap: {
+    height: heroSize,
+    width: heroSize,
+    position: "absolute",
+    right: "20%",
+    bottom: 30,
+    zIndex: 20,
+    backgroundColor: "transparent",
+  },
   container: { flex: 1, width: "100%", height: "100%" },
   gameContainer: {
     flex: 1,
@@ -659,6 +918,12 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
+  },
+  ellipseBackground: {
+    position: "absolute",
+    top: "10%",
+    width: "100%",
+    height: "100%",
   },
 });
 
