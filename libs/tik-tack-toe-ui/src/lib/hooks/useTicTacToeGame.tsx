@@ -93,105 +93,87 @@ function isDraw(board: Board) {
   return checkWinner(board).winner === "draw";
 }
 
-// Возвращаем уже в формате [row, col] | null
-// function computeBestMove(board: Board): [number, number] | null {
-//   for (let r = 0; r < 3; r++) {
-//     for (let c = 0; c < 3; c++) {
-//       if (board[r][c] === null) return [r, c];
-//     }
-//   }
-//   return null;
-// }
+// ──────────────────────────────────────
+// Вспомогательные функции для minimax
+// ──────────────────────────────────────
 
-function computeBestMove(
+function otherPlayer(p: Player): Player {
+  return p === "X" ? "O" : "X";
+}
+
+function getAvailableMoves(board: Board): [number, number][] {
+  const result: [number, number][] = [];
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if (board[r][c] === null) result.push([r, c]);
+    }
+  }
+  return result;
+}
+
+function minimax(
   board: Board,
-  ai: Player = "O",
-  human: Player = "X"
+  current: Player,
+  maxPlayer: Player,
+  depth: number
+): { score: number; move: [number, number] | null } {
+  const { winner } = checkWinner(board);
+
+  if (winner === maxPlayer) {
+    return { score: 10 - depth, move: null };
+  }
+  if (winner && winner !== "draw" && winner !== maxPlayer) {
+    return { score: depth - 10, move: null };
+  }
+  if (winner === "draw") {
+    return { score: 0, move: null };
+  }
+
+  const moves = getAvailableMoves(board);
+  if (moves.length === 0) {
+    return { score: 0, move: null };
+  }
+
+  const isMaximizing = current === maxPlayer;
+  let bestScore = isMaximizing ? -Infinity : Infinity;
+  let bestMove: [number, number] | null = null;
+
+  for (const [r, c] of moves) {
+    const next = cloneBoard(board);
+    next[r][c] = current;
+
+    const res = minimax(next, otherPlayer(current), maxPlayer, depth + 1);
+
+    if (isMaximizing) {
+      if (res.score > bestScore) {
+        bestScore = res.score;
+        bestMove = [r, c];
+      }
+    } else {
+      if (res.score < bestScore) {
+        bestScore = res.score;
+        bestMove = [r, c];
+      }
+    }
+  }
+
+  return { score: bestScore, move: bestMove };
+}
+
+/**
+ * Лучший ход для указанного игрока.
+ * - Для ИИ: player = "O"
+ * - Для подсказки: player = "X"
+ */
+function computeBestMoveFor(
+  board: Board,
+  player: Player
 ): [number, number] | null {
-  const lines: [number, number][][] = [
-    [
-      [0, 0],
-      [0, 1],
-      [0, 2],
-    ],
-    [
-      [1, 0],
-      [1, 1],
-      [1, 2],
-    ],
-    [
-      [2, 0],
-      [2, 1],
-      [2, 2],
-    ],
-    [
-      [0, 0],
-      [1, 0],
-      [2, 0],
-    ],
-    [
-      [0, 1],
-      [1, 1],
-      [2, 1],
-    ],
-    [
-      [0, 2],
-      [1, 2],
-      [2, 2],
-    ],
-    [
-      [0, 0],
-      [1, 1],
-      [2, 2],
-    ],
-    [
-      [0, 2],
-      [1, 1],
-      [2, 0],
-    ],
-  ];
+  const { winner } = checkWinner(board);
+  if (winner) return null;
 
-  const clone = (b: Board) => b.map((r) => [...r]);
-
-  for (const line of lines) {
-    const [[r1, c1], [r2, c2], [r3, c3]] = line;
-    const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
-    if (cells.filter((v) => v === ai).length === 2 && cells.includes(null)) {
-      const idx = cells.indexOf(null);
-      return line[idx];
-    }
-  }
-
-  for (const line of lines) {
-    const [[r1, c1], [r2, c2], [r3, c3]] = line;
-    const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
-    if (cells.filter((v) => v === human).length === 2 && cells.includes(null)) {
-      const idx = cells.indexOf(null);
-      return line[idx];
-    }
-  }
-
-  if (board[1][1] === null) return [1, 1];
-
-  const corners: [number, number][] = [
-    [0, 0],
-    [0, 2],
-    [2, 0],
-    [2, 2],
-  ];
-  const freeCorner = corners.find(([r, c]) => board[r][c] === null);
-  if (freeCorner) return freeCorner;
-
-  const edges: [number, number][] = [
-    [0, 1],
-    [1, 0],
-    [1, 2],
-    [2, 1],
-  ];
-  const freeEdge = edges.find(([r, c]) => board[r][c] === null);
-  if (freeEdge) return freeEdge;
-
-  return null;
+  const res = minimax(board, player, player, 0);
+  return res.move;
 }
 
 export function useTicTacToeGame(onTick?: () => void) {
@@ -209,7 +191,8 @@ export function useTicTacToeGame(onTick?: () => void) {
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const bestMove = computeBestMove(gameState.board);
+  // bestMove используем как подсказку для ИГРОКА (X)
+  const bestMove = computeBestMoveFor(gameState.board, "X");
 
   const applyMove = useCallback(
     (row: number, col: number, by: Player) => {
@@ -271,7 +254,7 @@ export function useTicTacToeGame(onTick?: () => void) {
 
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     aiTimerRef.current = setTimeout(() => {
-      const move = computeBestMove(gameState.board);
+      const move = computeBestMoveFor(gameState.board, "O"); // умный ход ИИ
       if (move) applyMove(move[0], move[1], "O");
     }, AI_THINK_DELAY_MS);
 
