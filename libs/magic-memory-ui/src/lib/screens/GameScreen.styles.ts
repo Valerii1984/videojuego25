@@ -8,46 +8,114 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
     paddingVertical: 10,
-    paddingTop: 62,
+    paddingTop: 0, // смещение теперь управляется из GameScreen через cardsTopOffset
   },
   row: {
     justifyContent: "space-around",
     marginVertical: 5,
   },
 
-  /** ───────── Hint pill (фиолетовая, как в ТикТак) ───────── */
-  // стало
-  hintGlowPurple: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
+  statsPanel: {
+    position: "absolute",
+    flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    // чуть мягче и ровнее свет
-    shadowColor: "rgba(144,33,232,0.8)",
-    shadowOpacity: 1,
+    top: 60,
+    width: "90%",
+    alignSelf: "center",
+    zIndex: 1000,
+    padding: 10,
+    flexWrap: "wrap",
+  },
+  statsItem: {
+    backgroundColor: "#C57CFF",
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    minWidth: 100,
+    flexShrink: 0,
+    flexGrow: 0,
+    alignItems: "center",
+  },
+  statsText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "FredokaSemiBold",
+    textAlign: "center",
+  },
+
+  /** ───────── Фиолетовая подсказка (круг) ───────── */
+  hintGlowPurple: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#9021E8",
+    shadowOpacity: 0.8,
     shadowRadius: 25,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 12, // Android свет
+    elevation: 0,
   },
   hintBorderPurple: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     borderWidth: 3,
     borderColor: "#C57CFF",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#8E3BFF", // ← сплошной фон под градиентом, чтобы ничего не просвечивало
-    overflow: "hidden",
+    backgroundColor: "transparent",
   },
+  // градиент полностью заполняет область внутри бордера — без зазора
   hintButtonInnerPurple: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: "100%",
+    height: "100%",
+    borderRadius: 27,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#8E3BFF", // ← запасной сплошной фон
+  },
+
+  /** ───────── Кнопка уровней (пилюля, как на скрине клиента) ───────── */
+  difficultyGlow: {
+    width: 120,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#9021E8",
+    shadowOpacity: 0.8,
+    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
+  difficultyBorder: {
+    width: 104,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 3,
+    borderColor: "#C57CFF",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  difficultyButton: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  difficultyTouch: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  difficultyIcon: {
+    width: 26,
+    height: 26,
+    tintColor: "#FFFFFF",
   },
 
   backButton: {
@@ -104,6 +172,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 5,
   },
+
   playAgainButton: {
     position: "absolute",
     width: Math.min(200, width * 0.5),
@@ -138,6 +207,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     gap: 6,
+    backgroundColor: "transparent",
+    borderRadius: 0,
   },
   playAgainText: {
     fontFamily: "FredokaSemiBold",
@@ -160,6 +231,53 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     zIndex: 10,
     backgroundColor: "rgba(0, 0, 0, 0.03)",
+  },
+
+  robotContainer: {
+    position: "absolute",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 5000,
+    elevation: 50,
+    width: 130,
+    height: 130,
+    pointerEvents: "none",
+  },
+  robotImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
+
+  difficultySmallWrapper: {
+    position: "absolute",
+    left: 30,
+    bottom: 40,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#9021E8",
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 3,
+  },
+  difficultySmallButton: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: "#C57CFF",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  difficultySmallIcon: {
+    width: 26,
+    height: 26,
+    tintColor: "#FFFFFF",
+    resizeMode: "contain",
   },
 });
 

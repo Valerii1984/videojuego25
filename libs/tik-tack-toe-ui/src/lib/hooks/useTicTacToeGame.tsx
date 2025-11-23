@@ -18,8 +18,8 @@ const EMPTY_BOARD: Board = [
   [null, null, null],
 ];
 
-// UX тайминги
-const AI_THINK_DELAY_MS = 400;
+// UX тайминги – делаем ИИ чуть "задумчивее"
+const AI_THINK_DELAY_MS = 800;
 const BETWEEN_TURNS_DELAY_MS = 300;
 const LAST_MOVE_FREEZE_MS = 1200;
 
@@ -93,14 +93,89 @@ function isDraw(board: Board) {
   return checkWinner(board).winner === "draw";
 }
 
-// Возвращаем уже в формате [row, col] | null
-function computeBestMove(board: Board): [number, number] | null {
+// ──────────────────────────────────────
+// Умный ИИ: minimax для произвольного игрока
+// playerToMove — за кого сейчас считаем лучший ход ("X" или "O")
+// для ИИ мы вызываем с "O", а для подсказки/хинта — с "X"
+// ──────────────────────────────────────
+
+function otherPlayer(p: Player): Player {
+  return p === "X" ? "O" : "X";
+}
+
+function getAvailableMoves(board: Board): [number, number][] {
+  const result: [number, number][] = [];
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 3; c++) {
-      if (board[r][c] === null) return [r, c];
+      if (board[r][c] === null) result.push([r, c]);
     }
   }
-  return null;
+  return result;
+}
+
+function minimax(
+  board: Board,
+  current: Player,
+  maxPlayer: Player,
+  depth: number
+): { score: number; move: [number, number] | null } {
+  const { winner } = checkWinner(board);
+
+  if (winner === maxPlayer) {
+    return { score: 10 - depth, move: null };
+  }
+  if (winner && winner !== "draw" && winner !== maxPlayer) {
+    return { score: depth - 10, move: null };
+  }
+  if (winner === "draw") {
+    return { score: 0, move: null };
+  }
+
+  const moves = getAvailableMoves(board);
+  if (moves.length === 0) {
+    return { score: 0, move: null };
+  }
+
+  const isMaximizing = current === maxPlayer;
+  let bestScore = isMaximizing ? -Infinity : Infinity;
+  let bestMove: [number, number] | null = null;
+
+  for (const [r, c] of moves) {
+    const next = cloneBoard(board);
+    next[r][c] = current;
+
+    const res = minimax(next, otherPlayer(current), maxPlayer, depth + 1);
+
+    if (isMaximizing) {
+      if (res.score > bestScore) {
+        bestScore = res.score;
+        bestMove = [r, c];
+      }
+    } else {
+      if (res.score < bestScore) {
+        bestScore = res.score;
+        bestMove = [r, c];
+      }
+    }
+  }
+
+  return { score: bestScore, move: bestMove };
+}
+
+/**
+ * ЛУЧШИЙ ход для указанного игрока.
+ * - Для ИИ: player = "O"
+ * - Для хинта: player = "X"
+ */
+function computeBestMoveFor(
+  board: Board,
+  player: Player
+): [number, number] | null {
+  const { winner } = checkWinner(board);
+  if (winner) return null;
+
+  const res = minimax(board, player, player, 0);
+  return res.move;
 }
 
 export function useTicTacToeGame(onTick?: () => void) {
@@ -118,7 +193,8 @@ export function useTicTacToeGame(onTick?: () => void) {
   const aiTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const endTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const bestMove = computeBestMove(gameState.board);
+  // bestMove используем как подсказку для ИГРОКА, поэтому считаем для "X"
+  const bestMove = computeBestMoveFor(gameState.board, "X");
 
   const applyMove = useCallback(
     (row: number, col: number, by: Player) => {
@@ -180,7 +256,7 @@ export function useTicTacToeGame(onTick?: () => void) {
 
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     aiTimerRef.current = setTimeout(() => {
-      const move = computeBestMove(gameState.board);
+      const move = computeBestMoveFor(gameState.board, "O"); // УМНЫЙ ход ИИ
       if (move) applyMove(move[0], move[1], "O");
     }, AI_THINK_DELAY_MS);
 
@@ -220,7 +296,7 @@ export function useTicTacToeGame(onTick?: () => void) {
     setIsGameStarted,
     isGameStarted,
     gameState,
-    bestMove, // [row, col] | null
+    bestMove, // [row, col] | null – теперь реально лучший ход для X
     gameComplete,
     handleCellPress,
     resetGame,
