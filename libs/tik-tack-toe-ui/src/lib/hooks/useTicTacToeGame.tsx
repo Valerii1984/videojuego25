@@ -19,7 +19,7 @@ const EMPTY_BOARD: Board = [
 ];
 
 // UX тайминги
-const AI_THINK_DELAY_MS = 600;
+const AI_THINK_DELAY_MS = 800;
 const BETWEEN_TURNS_DELAY_MS = 400;
 const LAST_MOVE_FREEZE_MS = 1500;
 

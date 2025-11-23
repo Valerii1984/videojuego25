@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Player } from "../../types/tic-tac-toe";
@@ -15,10 +17,10 @@ import {
   useLoopingRotation,
   useAvatarStars,
 } from "./Animation";
-import StarCrown from "./litlecomponent/StarCrown";
 
 const { width } = Dimensions.get("window");
 const AVATAR_SIZE = 120;
+const skaleFactor = width / 1500;
 
 type LocaleTag =
   | "en-US"
@@ -64,6 +66,7 @@ interface PlayerAvatarProps {
   boardHeight?: number;
   isFirstPlayer?: boolean;
   lang?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
@@ -77,9 +80,14 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
   boardHeight,
   isFirstPlayer,
   lang,
+  style,
 }) => {
   const isActive = (!winner && currentPlayer === player) || winner === player;
   const [showBackground, setShowBackground] = useState(false);
+
+  const starImage = isFirstPlayer
+    ? require("../../assets/star-yellow.png")
+    : require("../../assets/star-purple.png");
 
   const { activeStars, starTriggers, removeStar } = useAvatarStars(
     isActive && showBackground,
@@ -94,6 +102,66 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     !winner && currentPlayer === player,
     { lowOpacity: 0.4, durationMs: 350 }
   );
+
+  const blinkingOpacityOdd = useBlinkingOpacity(isActive, {
+    lowOpacity: 0.4,
+    durationMs: 2550,
+  });
+  const blinkingOpacityEven = useBlinkingOpacity(isActive, {
+    lowOpacity: 0.45,
+    durationMs: 2050,
+  });
+
+  const stars = [
+    {
+      top: -130,
+      offset: 0,
+      scale: 0.7,
+      rotate: "-8deg",
+      even: false,
+      side: "left",
+    },
+    {
+      top: 0,
+      offset: -40,
+      scale: 0.5,
+      rotate: "60deg",
+      even: true,
+      side: "left",
+    },
+    {
+      top: 100,
+      offset: -15,
+      scale: 0.5,
+      rotate: "20deg",
+      even: false,
+      side: "left",
+    },
+    {
+      top: -130,
+      offset: 0,
+      scale: 0.6,
+      rotate: "30deg",
+      even: true,
+      side: "right",
+    },
+    {
+      top: 0,
+      offset: -45,
+      scale: 0.5,
+      rotate: "35deg",
+      even: false,
+      side: "right",
+    },
+    {
+      top: 100,
+      offset: -15,
+      scale: 0.4,
+      rotate: "0deg",
+      even: true,
+      side: "right",
+    },
+  ];
 
   useEffect(() => {
     if (!isActive || !showBackground) {
@@ -147,6 +215,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         styles.playerContainer,
         { overflow: "visible" },
         boardHeight ? { height: boardHeight } : undefined,
+        style,
       ]}
       testID={testID}
     >
@@ -210,8 +279,44 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         )}
 
         {renderTurnIndicator()}
+        {isActive && showBackground && (
+          <View style={styles.wrapper}>
+            <View style={styles.starWrapper}>
+              {stars.map((star, i) => {
+                const animatedStyle = star.even
+                  ? { opacity: blinkingOpacityEven }
+                  : { opacity: blinkingOpacityOdd };
+                return (
+                  <Animated.View
+                    key={i}
+                    pointerEvents="none"
+                    style={[
+                      styles.star,
+                      animatedStyle,
+                      {
+                        position: "absolute",
+                        top: star.top * skaleFactor,
+                        [star.side === "left" ? "left" : "right"]:
+                          star.offset * skaleFactor,
+                        transform: [
+                          { scale: star.scale },
+                          { rotate: star.rotate },
+                        ],
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={starImage}
+                      style={styles.bgImage}
+                      resizeMode="contain"
+                    />
+                  </Animated.View>
+                );
+              })}
+            </View>
+          </View>
+        )}
 
-        <StarCrown isActive={isActive} isFirstPlayer={!!isFirstPlayer} />
         <Animated.View
           style={[
             styles.avatarContainer,
@@ -369,7 +474,7 @@ const styles = StyleSheet.create({
   rotatingBackground: {
     position: "absolute",
     top: -60,
-    left: -10,
+    left: 30,
     width: AVATAR_SIZE + 50,
     height: AVATAR_SIZE + 50,
     zIndex: 700,
@@ -377,6 +482,16 @@ const styles = StyleSheet.create({
   bgImage: {
     width: "100%",
     height: "100%",
+  },
+  wrapper: {
+    width: width * 0.22,
+  },
+  starWrapper: {
+    position: "relative",
+  },
+  star: {
+    height: 100 * skaleFactor,
+    width: 150 * skaleFactor,
   },
 });
 

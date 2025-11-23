@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -9,6 +9,7 @@ import {
   StyleProp,
   ImageStyle,
   ImageSourcePropType,
+  ViewStyle,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { Board, Player } from "../../types/tic-tac-toe";
@@ -100,6 +101,7 @@ interface GameBoardProps {
   onBotVictory?: () => void;
   suppressContent?: boolean;
   roundKey?: number;
+  style?: StyleProp<ViewStyle>;
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({
@@ -117,6 +119,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   onBotVictory,
   suppressContent = false,
   roundKey,
+  style,
 }) => {
   const countMoves = board
     .flat()
@@ -390,10 +393,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.board,
         { width: cellSize * 3 + 10, height: cellSize * 3 + 10 },
+        style,
       ]}
       testID="game-board"
       onLayout={onLayout}
@@ -460,7 +464,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           ))}
         </View>
       ))}
-    </View>
+    </Animated.View>
   );
 };
 
