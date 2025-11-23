@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   difficultyIcon: {
-    width: 26,
-    height: 26,
+    width: 46,
+    height: 46,
     tintColor: "#FFFFFF",
   },
 
