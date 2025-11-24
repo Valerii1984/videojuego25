@@ -21,6 +21,7 @@ import { Image as ExpoImage } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
+import { setStatusBarHidden } from "expo-status-bar";
 import { Audio } from "expo-av";
 import { Asset } from "expo-asset";
 
@@ -150,7 +151,7 @@ const STRINGS: Record<LocaleTag, Record<TKey, string>> = {
     congrats: "Gratulacje!",
     playAgain: "Zagraj ponownie",
     match: "Para!",
-    upgradePrompt: "Przejść на trudniejszy poziom?",
+    upgradePrompt: "Przejść на трудniejszy poziом?",
   },
 };
 
@@ -282,7 +283,7 @@ const GameScreen = () => {
     });
     return () => sub?.remove?.();
   }, []);
-  const { height: screenHeight } = screen;
+  const { height: screenHeight, width: screenWidth } = screen;
 
   const [redealTick, setRedealTick] = useState(0);
 
@@ -387,10 +388,11 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
+  // ==== ПРАВКА: корректное скрытие статусбара ====
   useEffect(() => {
     const hideBars = async () => {
       try {
-        StatusBar.setHidden(true, "none");
+        setStatusBarHidden(true, "fade");
         if (Platform.OS === "android") {
           await NavigationBar.setVisibilityAsync("hidden");
           await NavigationBar.setBehaviorAsync("overlay-swipe");
@@ -398,17 +400,20 @@ const GameScreen = () => {
       } catch {}
     };
     hideBars();
+
     const subShow = Keyboard.addListener("keyboardDidShow", hideBars);
     const subHide = Keyboard.addListener("keyboardDidHide", hideBars);
+
     return () => {
       subShow.remove();
       subHide.remove();
-      StatusBar.setHidden(false, "none");
+      setStatusBarHidden(false, "fade");
       if (Platform.OS === "android") {
         NavigationBar.setVisibilityAsync("visible").catch(() => {});
       }
     };
   }, []);
+  // ================================================
 
   useEffect(() => {
     if (!isWeb) {
@@ -848,7 +853,62 @@ const GameScreen = () => {
   const getNumColumns = () =>
     gridLevel === 6 ? 3 : gridLevel === 8 ? 4 : gridLevel === 10 ? 5 : 6;
 
-  const getCardSize = () => (gridLevel <= 6 ? 112 : 100);
+  // ==== ПРАВКА: адаптивный размер карточек под маленькие экраны ====
+  const getCardSize = () => {
+    const cols = getNumColumns();
+    const rows = 2;
+    const isNarrowScreen = screenWidth < 900;
+
+    // ==== уровни 6 и 8 — крупные карты ====
+    if (gridLevel <= 8) {
+      const baseSize = gridLevel === 6 ? 112 : 104;
+
+      const horizontalPadding = isNarrowScreen ? 60 : 40;
+      const horizontalMarginPerCard = 10;
+
+      const maxWidthPerCard =
+        (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) /
+        cols;
+
+      // только по ширине ограничиваем, по высоте они и так влезают
+      const size = Math.min(baseSize, maxWidthPerCard);
+
+      return Math.max(90, Math.round(size)); // остаются большими
+    }
+
+    // ==== уровни 10 и 12 — аккуратно, чтобы не лезли на кнопки ====
+    const baseSize = gridLevel === 10 ? 96 : 92;
+
+    const horizontalPadding = isNarrowScreen ? 80 : 40;
+    const horizontalMarginPerCard = 10;
+    const maxWidthPerCard =
+      (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
+
+    const verticalMarginPerRow = 10;
+    const reservedTop = cardsTopOffset + scaled(20);
+    const reservedBottom = isNarrowScreen ? scaled(190) : scaled(150);
+
+    const availableHeight = Math.max(
+      80,
+      screenHeight - reservedTop - reservedBottom
+    );
+
+    const maxHeightPerCard =
+      (availableHeight - (rows - 1) * verticalMarginPerRow) / rows;
+
+    let size = Math.min(baseSize, maxWidthPerCard, maxHeightPerCard);
+
+    if (isNarrowScreen && gridLevel >= 10) {
+      size *= 0.9;
+    }
+    if (isNarrowScreen && gridLevel === 12) {
+      size *= 0.88;
+    }
+
+    return Math.max(72, Math.round(size));
+  };
+
+  // ================================================================
 
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
@@ -1023,6 +1083,7 @@ const GameScreen = () => {
         />
       </View>
 
+      {/* оставляем старый StatusBar, он уже не ломает нам фуллскрин */}
       <StatusBar hidden />
 
       <View
