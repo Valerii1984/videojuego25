@@ -237,7 +237,7 @@ const GameScreen = () => {
     );
   }
 
-  const locale = normalizeLocale((cfg as any).lang);
+  const locale = normalizeLocale(cfg.language ?? (cfg as any).lang);
   const t = (key: TKey) => (STRINGS[locale] || STRINGS["en-US"])[key];
 
   const [age, setAge] = useState<number>(Math.max(6, (cfg as any).age));

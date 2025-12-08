@@ -93,17 +93,6 @@ function isDraw(board: Board) {
   return checkWinner(board).winner === "draw";
 }
 
-// Возвращаем уже в формате [row, col] | null
-// function computeBestMove(board: Board): [number, number] | null {
-//   for (let r = 0; r < 3; r++) {
-//     for (let c = 0; c < 3; c++) {
-//       if (board[r][c] === null) return [r, c];
-//     }
-//   }
-//   return null;
-// }
-
-
 function computeBestMove(
   board: Board,
   ai: Player = "O",
@@ -152,11 +141,10 @@ function computeBestMove(
     ],
   ];
 
-  const clone = (b: Board) => b.map((r) => [...r]);
-
   for (const line of lines) {
     const [[r1, c1], [r2, c2], [r3, c3]] = line;
     const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
+
     if (cells.filter((v) => v === ai).length === 2 && cells.includes(null)) {
       const idx = cells.indexOf(null);
       return line[idx];
@@ -166,6 +154,7 @@ function computeBestMove(
   for (const line of lines) {
     const [[r1, c1], [r2, c2], [r3, c3]] = line;
     const cells = [board[r1][c1], board[r2][c2], board[r3][c3]];
+
     if (cells.filter((v) => v === human).length === 2 && cells.includes(null)) {
       const idx = cells.indexOf(null);
       return line[idx];
@@ -231,6 +220,7 @@ export function useTicTacToeGame(onTick?: () => void) {
         if (winner) {
           next.winner = winner;
           next.winningLine = line;
+
           if (endTimerRef.current) clearTimeout(endTimerRef.current);
           endTimerRef.current = setTimeout(() => {
             setGameComplete(true);
@@ -238,6 +228,7 @@ export function useTicTacToeGame(onTick?: () => void) {
         } else if (isDraw(next.board)) {
           next.winner = "draw";
           next.winningLine = null;
+
           if (endTimerRef.current) clearTimeout(endTimerRef.current);
           endTimerRef.current = setTimeout(() => {
             setGameComplete(true);
@@ -254,14 +245,23 @@ export function useTicTacToeGame(onTick?: () => void) {
     [onTick]
   );
 
+  // 🛑 БЛОКИРУЕМ ХОДЫ НЕ В СВОЙ ХОД
   const handleCellPress = useCallback(
     (row: number, col: number) => {
-      if (isInputLocked || gameComplete) return;
+      if (gameComplete) return;
+      if (isInputLocked) return;
+
+      // ❗ НОВАЯ КРИТИЧЕСКАЯ ПРОВЕРКА
+      if (gameState.currentPlayer !== "X") return;
+
+      if (gameState.board[row][col] != null) return;
+
       setIsInputLocked(true);
       applyMove(row, col, "X");
+
       setTimeout(() => setIsInputLocked(false), BETWEEN_TURNS_DELAY_MS);
     },
-    [applyMove, gameComplete, isInputLocked]
+    [applyMove, gameComplete, isInputLocked, gameState]
   );
 
   useEffect(() => {
@@ -291,12 +291,14 @@ export function useTicTacToeGame(onTick?: () => void) {
   const resetGame = useCallback(() => {
     if (aiTimerRef.current) clearTimeout(aiTimerRef.current);
     if (endTimerRef.current) clearTimeout(endTimerRef.current);
+
     setGameState({
       board: cloneBoard(EMPTY_BOARD),
       currentPlayer: "X",
       winner: null,
       winningLine: null,
     });
+
     setGameComplete(false);
     setIsInputLocked(false);
   }, []);
@@ -312,7 +314,7 @@ export function useTicTacToeGame(onTick?: () => void) {
     setIsGameStarted,
     isGameStarted,
     gameState,
-    bestMove, // [row, col] | null
+    bestMove,
     gameComplete,
     handleCellPress,
     resetGame,

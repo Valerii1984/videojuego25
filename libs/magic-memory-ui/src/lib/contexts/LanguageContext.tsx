@@ -11,7 +11,6 @@ import { mapToSupported, SupportedLocale } from "../i18n";
 
 type Ctx = {
   language: SupportedLocale;
-
   setLanguage: (lang: SupportedLocale) => void;
 };
 
@@ -42,17 +41,27 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   const cfg = usePropConfig();
 
   const initial = useMemo<SupportedLocale>(() => {
-    const fromProp = cfg?.lang ? mapToSupported(cfg.lang) : undefined;
-    return fromProp ?? getDeviceLocale() ?? "en-US";
-  }, []);
+    // ONLY cfg.language now → if missing, fallback to system → en-US
+    const fromLanguageProp = (cfg && (cfg as any).language) as
+      | string
+      | undefined;
+
+    if (fromLanguageProp) return mapToSupported(fromLanguageProp);
+    return getDeviceLocale() ?? "en-US";
+  }, [cfg]);
 
   const [language, setLanguage] = useState<SupportedLocale>(initial);
 
   useEffect(() => {
-    if (cfg?.lang) {
-      setLanguage(mapToSupported(cfg.lang));
+    // Apply external update ONLY from cfg.language
+    const fromLanguageProp = (cfg && (cfg as any).language) as
+      | string
+      | undefined;
+
+    if (fromLanguageProp) {
+      setLanguage(mapToSupported(fromLanguageProp));
     }
-  }, [cfg?.lang]);
+  }, [cfg?.language]);
 
   const value = useMemo(() => ({ language, setLanguage }), [language]);
 
