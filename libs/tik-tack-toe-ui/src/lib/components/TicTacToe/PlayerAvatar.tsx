@@ -20,8 +20,11 @@ import {
 
 const { width, height } = Dimensions.get("window");
 const AVATAR_SIZE = 110;
-const STAR_HEIGHT = (height * 15) / 100;
-const STAR_WIDTH = (width * 10) / 100;
+const skaleFactor = width / 1600;
+const STAR_HEIGHT = (AVATAR_SIZE * 15 * skaleFactor) / 100;
+const STAR_WIDTH = (AVATAR_SIZE * 10 * skaleFactor) / 100;
+
+const AVATAR_RADIUS = AVATAR_SIZE / 2;
 
 type LocaleTag =
   | "en-US"
@@ -112,56 +115,14 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     lowOpacity: 0.45,
     durationMs: 2050,
   });
-
   const stars = [
-    {
-      top: -3,
-      offset: -3,
-      scale: 0.7,
-      rotate: "-8deg",
-      even: false,
-      side: "left",
-    },
-    {
-      top: 12,
-      offset: -5,
-      scale: 0.5,
-      rotate: "60deg",
-      even: true,
-      side: "left",
-    },
-    {
-      top: 25,
-      offset: -3,
-      scale: 0.5,
-      rotate: "20deg",
-      even: false,
-      side: "left",
-    },
-    {
-      top: -3,
-      offset: -3,
-      scale: 0.6,
-      rotate: "30deg",
-      even: true,
-      side: "right",
-    },
-    {
-      top: 12,
-      offset: -5,
-      scale: 0.5,
-      rotate: "35deg",
-      even: false,
-      side: "right",
-    },
-    {
-      top: 25,
-      offset: -3,
-      scale: 0.4,
-      rotate: "0deg",
-      even: true,
-      side: "right",
-    },
+    { angle: 250, distance: 1.15, scale: 1.5, rotate: "30deg", even: false },
+    { angle: 180, distance: 0.85, scale: 1.4, rotate: "70deg", even: true },
+    { angle: 120, distance: 1.35, scale: 1.2, rotate: "10deg", even: false },
+
+    { angle: 320, distance: 1.65, scale: 1.5, rotate: "40deg", even: true },
+    { angle: 0, distance: 1.65, scale: 1.2, rotate: "25deg", even: false },
+    { angle: 40, distance: 1.75, scale: 1, rotate: "15deg", even: true },
   ];
 
   useEffect(() => {
@@ -311,6 +272,12 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                   const animatedStyle = star.even
                     ? { opacity: blinkingOpacityEven }
                     : { opacity: blinkingOpacityOdd };
+
+                  const rad = (star.angle * Math.PI) / 180;
+
+                  const x = Math.cos(rad) * AVATAR_RADIUS * star.distance;
+                  const y = Math.sin(rad) * AVATAR_RADIUS * star.distance;
+
                   return (
                     <Animated.View
                       key={i}
@@ -320,9 +287,8 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                         animatedStyle,
                         {
                           position: "absolute",
-                          top: (height * star.top) / 100,
-                          [star.side === "left" ? "left" : "right"]:
-                            (width * star.offset) / 100,
+                          top: AVATAR_RADIUS + y,
+                          left: AVATAR_RADIUS + x,
                           transform: [
                             { scale: star.scale },
                             { rotate: star.rotate },
@@ -332,7 +298,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                     >
                       <Image
                         source={starImage}
-                        style={styles.bgImage}
+                        style={{ width: 20, height: 20 }}
                         resizeMode="contain"
                       />
                     </Animated.View>
@@ -493,9 +459,6 @@ const styles = StyleSheet.create({
   },
   starWrapper: {
     position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: "-50%" }, { translateY: "-50%" }],
     width: AVATAR_SIZE + 50,
     height: AVATAR_SIZE + 50,
   },
