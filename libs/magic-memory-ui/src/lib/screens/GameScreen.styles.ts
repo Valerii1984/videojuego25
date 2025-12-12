@@ -78,8 +78,7 @@ const styles = StyleSheet.create({
 
   /** ───────── Кнопка уровней (пилюля, как на скрине клиента) ───────── */
   difficultyGlow: {
-    width: 120,
-    height: 64,
+    aspectRatio: 5 / 3,
     borderRadius: 32,
     justifyContent: "center",
     alignItems: "center",
@@ -90,7 +89,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   difficultyBorder: {
-    width: 104,
+    width: "100%",
     height: 50,
     borderRadius: 25,
     borderWidth: 3,
