@@ -44,7 +44,7 @@ import { usePropConfig } from "../contexts/PropConfigContext";
 import { useSound } from "../contexts/SoundContext";
 import { ROBOT_SPRITES, ROBOT_VOICES } from "../../assets/hero";
 
-const { height } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 const baseHeight = 375;
 const scale = height / baseHeight;
 const scaled = (size: number) => Math.round(size * scale);
@@ -732,7 +732,7 @@ const GameScreen = () => {
           }, 250);
           completionTimers.current.push(hideCardsTimer);
 
-          const ROBOT_VISIBLE_MS = 2000;
+          const ROBOT_VISIBLE_MS = 100;
 
           const robotHideTimer: TimeoutId = setTimeout(async () => {
             if (!isGameActive) return;
@@ -1097,7 +1097,7 @@ const GameScreen = () => {
             <RNAnimated.View
               style={{
                 position: "absolute",
-                left: 30,
+                left: (width * 1.5) / 100,
                 bottom: buttonsBottom,
                 zIndex: 1000,
                 opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
@@ -1131,7 +1131,7 @@ const GameScreen = () => {
             <RNAnimated.View
               style={{
                 position: "absolute",
-                right: 30,
+                right: (width * 2) / 100,
                 bottom: buttonsBottom,
                 zIndex: 1000,
                 opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
