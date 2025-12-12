@@ -289,15 +289,6 @@ const GameBoard: React.FC<GameBoardProps> = ({
     const isHintCell =
       hintVisible && hintCell?.[0] === row && hintCell?.[1] === col;
 
-    console.log("renderCell:", {
-      row,
-      col,
-      cell,
-      isWinningCell,
-      isHintCell,
-      suppressContent,
-    });
-
     const handleCellPress = () => {
       onHintUsed();
       onCellPress(row, col);

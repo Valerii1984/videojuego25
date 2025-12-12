@@ -743,6 +743,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   width: avatarColumnWidth,
                   alignItems: "center",
                   justifyContent: "center",
+                  marginTop: 20,
                 }}
               >
                 <PlayerAvatar
@@ -793,6 +794,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   width: avatarColumnWidth,
                   alignItems: "center",
                   justifyContent: "center",
+                  marginTop: 20,
                 }}
               >
                 <PlayerAvatar
@@ -895,7 +897,6 @@ const styles = StyleSheet.create({
   playersContainer: {
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: scaled(12),
     marginTop: scaled(18),
     marginBottom: scaled(16),
   },
@@ -909,8 +910,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: scaled(16),
-    paddingVertical: scaled(12),
   },
   boardWrapper: {
     aspectRatio: 1,

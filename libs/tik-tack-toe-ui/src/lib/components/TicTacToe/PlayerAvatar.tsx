@@ -18,9 +18,13 @@ import {
   useAvatarStars,
 } from "./Animation";
 
-const { width } = Dimensions.get("window");
-const AVATAR_SIZE = 120;
-const skaleFactor = width / 1500;
+const { width, height } = Dimensions.get("window");
+const AVATAR_SIZE = 110;
+const skaleFactor = width / 1600;
+const STAR_HEIGHT = (AVATAR_SIZE * 15 * skaleFactor) / 100;
+const STAR_WIDTH = (AVATAR_SIZE * 10 * skaleFactor) / 100;
+
+const AVATAR_RADIUS = AVATAR_SIZE / 2;
 
 type LocaleTag =
   | "en-US"
@@ -111,56 +115,14 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     lowOpacity: 0.45,
     durationMs: 2050,
   });
-
   const stars = [
-    {
-      top: -130,
-      offset: 0,
-      scale: 0.7,
-      rotate: "-8deg",
-      even: false,
-      side: "left",
-    },
-    {
-      top: 0,
-      offset: -40,
-      scale: 0.5,
-      rotate: "60deg",
-      even: true,
-      side: "left",
-    },
-    {
-      top: 100,
-      offset: -15,
-      scale: 0.5,
-      rotate: "20deg",
-      even: false,
-      side: "left",
-    },
-    {
-      top: -130,
-      offset: 0,
-      scale: 0.6,
-      rotate: "30deg",
-      even: true,
-      side: "right",
-    },
-    {
-      top: 0,
-      offset: -45,
-      scale: 0.5,
-      rotate: "35deg",
-      even: false,
-      side: "right",
-    },
-    {
-      top: 100,
-      offset: -15,
-      scale: 0.4,
-      rotate: "0deg",
-      even: true,
-      side: "right",
-    },
+    { angle: 250, distance: 1.15, scale: 1.5, rotate: "30deg", even: false },
+    { angle: 180, distance: 0.85, scale: 1.4, rotate: "70deg", even: true },
+    { angle: 120, distance: 1.35, scale: 1.2, rotate: "10deg", even: false },
+
+    { angle: 320, distance: 1.65, scale: 1.5, rotate: "40deg", even: true },
+    { angle: 0, distance: 1.65, scale: 1.2, rotate: "25deg", even: false },
+    { angle: 40, distance: 1.75, scale: 1, rotate: "15deg", even: true },
   ];
 
   useEffect(() => {
@@ -219,12 +181,6 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
       ]}
       testID={testID}
     >
-      {/* <LinearGradient
-        colors={["rgba(43, 23, 178, 0)", "rgba(39, 25, 135, 0.3)"]}
-        style={[styles.gradientBackground, { overflow: "visible" }]}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      > */}
       {isFirstPlayer ? (
         <Image
           source={require("../../assets/border_player.png")}
@@ -240,93 +196,9 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
       )}
 
       <View style={[styles.contentContainer, { overflow: "visible" }]}>
-        {isActive && showBackground && (
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.rotatingBackground,
-              {
-                transform: [
-                  {
-                    rotate: (
-                      rotation as unknown as Animated.AnimatedInterpolation<number>
-                    ).interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ["0deg", "360deg"],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <Image
-              source={
-                isFirstPlayer
-                  ? require("../../assets/bg_player.png")
-                  : require("../../assets/bg_player2.png")
-              }
-              style={styles.bgImage}
-            />
-            {activeStars.map((starId) => (
-              <AnimatedStar
-                key={starId}
-                isActive={starTriggers.includes(starId)}
-                onComplete={() => removeStar(starId)}
-                isFirstPlayer={!!isFirstPlayer}
-              />
-            ))}
-          </Animated.View>
-        )}
-
-        {renderTurnIndicator()}
-        {isActive && showBackground && (
-          <View style={styles.wrapper}>
-            <View style={styles.starWrapper}>
-              {stars.map((star, i) => {
-                const animatedStyle = star.even
-                  ? { opacity: blinkingOpacityEven }
-                  : { opacity: blinkingOpacityOdd };
-                return (
-                  <Animated.View
-                    key={i}
-                    pointerEvents="none"
-                    style={[
-                      styles.star,
-                      animatedStyle,
-                      {
-                        position: "absolute",
-                        top: star.top * skaleFactor,
-                        [star.side === "left" ? "left" : "right"]:
-                          star.offset * skaleFactor,
-                        transform: [
-                          { scale: star.scale },
-                          { rotate: star.rotate },
-                        ],
-                      },
-                    ]}
-                  >
-                    <Image
-                      source={starImage}
-                      style={styles.bgImage}
-                      resizeMode="contain"
-                    />
-                  </Animated.View>
-                );
-              })}
-            </View>
-          </View>
-        )}
-
         <Animated.View
           style={[
-            styles.avatarContainer,
-            currentPlayer === player || winner === player
-              ? isFirstPlayer
-                ? styles.activeFirstPlayerContainer
-                : styles.activeSecondPlayerContainer
-              : isFirstPlayer
-                ? styles.firstPlayerAvatar
-                : styles.secondPlayerAvatar,
+            styles.avatarContentContainer,
             winner
               ? {
                   transform: [{ translateY: winner === player ? -40 : 0 }],
@@ -335,15 +207,106 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
               : animatedStyle,
           ]}
         >
-          <Image
-            source={photo}
+          <Animated.View
             style={[
-              styles.avatar,
-              isFirstPlayer
-                ? { backgroundColor: "#dc851b" }
-                : { backgroundColor: "#3d4ab0" },
+              styles.avatarContainer,
+              currentPlayer === player || winner === player
+                ? isFirstPlayer
+                  ? styles.activeFirstPlayerContainer
+                  : styles.activeSecondPlayerContainer
+                : isFirstPlayer
+                  ? styles.firstPlayerAvatar
+                  : styles.secondPlayerAvatar,
             ]}
-          />
+          >
+            <Image
+              source={photo}
+              style={[
+                styles.avatar,
+                isFirstPlayer
+                  ? { backgroundColor: "#dc851b" }
+                  : { backgroundColor: "#3d4ab0" },
+              ]}
+            />
+          </Animated.View>
+          {renderTurnIndicator()}
+          {isActive && showBackground && (
+            <View style={styles.wrapper}>
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  styles.rotatingBackground,
+                  {
+                    transform: [
+                      {
+                        rotate: (
+                          rotation as unknown as Animated.AnimatedInterpolation<number>
+                        ).interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "360deg"],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <Image
+                  source={
+                    isFirstPlayer
+                      ? require("../../assets/bg_player.png")
+                      : require("../../assets/bg_player2.png")
+                  }
+                  style={styles.bgImage}
+                />
+                {activeStars.map((starId) => (
+                  <AnimatedStar
+                    key={starId}
+                    isActive={starTriggers.includes(starId)}
+                    onComplete={() => removeStar(starId)}
+                    isFirstPlayer={!!isFirstPlayer}
+                  />
+                ))}
+              </Animated.View>
+              <View style={styles.starWrapper}>
+                {stars.map((star, i) => {
+                  const animatedStyle = star.even
+                    ? { opacity: blinkingOpacityEven }
+                    : { opacity: blinkingOpacityOdd };
+
+                  const rad = (star.angle * Math.PI) / 180;
+
+                  const x = Math.cos(rad) * AVATAR_RADIUS * star.distance;
+                  const y = Math.sin(rad) * AVATAR_RADIUS * star.distance;
+
+                  return (
+                    <Animated.View
+                      key={i}
+                      pointerEvents="none"
+                      style={[
+                        styles.star,
+                        animatedStyle,
+                        {
+                          position: "absolute",
+                          top: AVATAR_RADIUS + y,
+                          left: AVATAR_RADIUS + x,
+                          transform: [
+                            { scale: star.scale },
+                            { rotate: star.rotate },
+                          ],
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={starImage}
+                        style={{ width: 20, height: 20 }}
+                        resizeMode="contain"
+                      />
+                    </Animated.View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </Animated.View>
         <Text style={styles.playerName}>{name}</Text>
       </View>
@@ -365,14 +328,19 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     alignItems: "center",
-    minWidth: AVATAR_SIZE * 1.55,
-    justifyContent: "flex-end",
+    minWidth: "100%",
+    height: "100%",
+    justifyContent: "center",
+  },
+  avatarContentContainer: {
+    width: width * 0.22,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
   avatarContainer: {
     borderRadius: 150,
     overflow: "hidden",
-    marginBottom: 10,
-    position: "relative",
     zIndex: 999,
   },
   avatar: {
@@ -401,7 +369,7 @@ const styles = StyleSheet.create({
     maxWidth: 240,
     minWidth: 92,
     position: "absolute",
-    top: "-90%",
+    top: -60,
     zIndex: 10,
     justifyContent: "center",
     alignItems: "center",
@@ -409,19 +377,19 @@ const styles = StyleSheet.create({
   },
   leftBorderImage: {
     position: "absolute",
-    left: -1,
+    left: "-5%",
     bottom: 0,
     width: 3,
     height: "100%",
-    zIndex: 100000,
+    zIndex: 100,
   },
   rightBorderImage: {
     position: "absolute",
-    right: -2,
+    right: "-5%",
     bottom: 0,
     width: 3,
     height: "100%",
-    zIndex: 701,
+    zIndex: 100,
   },
   turnTextAboveAvatar: {
     color: "#FFE97C",
@@ -446,52 +414,57 @@ const styles = StyleSheet.create({
     borderRadius: 150,
     shadowRadius: 10,
     elevation: 10,
+    width: AVATAR_SIZE + 6,
   },
   secondPlayerAvatar: {
     borderRadius: 150,
     borderWidth: 3,
     borderColor: "#ADEFFF",
+    width: AVATAR_SIZE + 6,
   },
   activeFirstPlayerContainer: {
     borderRadius: 150,
     overflow: "hidden",
-    position: "relative",
     borderWidth: 6,
     borderColor: "#FFE97C",
     shadowColor: "#C57CFF",
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 10,
+    width: AVATAR_SIZE + 12,
+    backgroundColor: "pink",
+    alignItems: "center",
   },
   activeSecondPlayerContainer: {
     borderRadius: 150,
     overflow: "hidden",
-    marginBottom: 10,
-    position: "relative",
     borderWidth: 6,
     borderColor: "#C57CFF",
+    width: AVATAR_SIZE + 12,
+    alignItems: "center",
   },
   rotatingBackground: {
-    position: "absolute",
-    top: -60,
-    left: 30,
     width: AVATAR_SIZE + 50,
     height: AVATAR_SIZE + 50,
-    zIndex: 700,
   },
   bgImage: {
     width: "100%",
     height: "100%",
   },
   wrapper: {
-    width: width * 0.22,
+    position: "absolute",
+    inset: 0,
+    alignItems: "center",
+    justifyContent: "center",
   },
   starWrapper: {
-    position: "relative",
+    position: "absolute",
+    width: AVATAR_SIZE + 50,
+    height: AVATAR_SIZE + 50,
   },
   star: {
-    height: 100 * skaleFactor,
-    width: 150 * skaleFactor,
+    height: STAR_HEIGHT,
+    width: STAR_WIDTH,
   },
 });
 
