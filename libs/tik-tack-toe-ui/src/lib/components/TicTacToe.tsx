@@ -910,6 +910,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    paddingVertical: scaled(12),
   },
   boardWrapper: {
     aspectRatio: 1,

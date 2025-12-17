@@ -202,7 +202,6 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
             winner
               ? {
                   transform: [{ translateY: winner === player ? -40 : 0 }],
-                  borderWidth: winner === player ? 6 : 3,
                 }
               : animatedStyle,
           ]}
@@ -217,6 +216,9 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
                 : isFirstPlayer
                   ? styles.firstPlayerAvatar
                   : styles.secondPlayerAvatar,
+              winner && {
+                borderWidth: winner === player ? 6 : 3,
+              },
             ]}
           >
             <Image
@@ -318,7 +320,6 @@ const styles = StyleSheet.create({
   playerContainer: {
     alignItems: "center",
     width: width * 0.22,
-    justifyContent: "flex-end",
   },
   gradientBackground: {
     flex: 1,
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: "100%",
     height: "100%",
-    justifyContent: "center",
+    justifyContent: "flex-end",
   },
   avatarContentContainer: {
     width: width * 0.22,
@@ -356,7 +357,8 @@ const styles = StyleSheet.create({
     fontFamily: "Fredoka",
     fontSize: 25,
     textTransform: "uppercase",
-    width: 150,
+    marginVertical: "10%",
+    width: "100%",
     textAlign: "center",
     textShadowColor: "rgba(0, 0, 0, 0.5)",
     textShadowOffset: { width: 1, height: 1 },
@@ -366,11 +368,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 14,
-    maxWidth: 240,
     minWidth: 92,
     position: "absolute",
-    top: -60,
-    zIndex: 10,
+    top: -55,
+    zIndex: 100,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "transparent",
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 3,
     height: "100%",
-    zIndex: 100,
+    zIndex: 10,
   },
   rightBorderImage: {
     position: "absolute",
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 3,
     height: "100%",
-    zIndex: 100,
+    zIndex: 10,
   },
   turnTextAboveAvatar: {
     color: "#FFE97C",
@@ -461,6 +462,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: AVATAR_SIZE + 50,
     height: AVATAR_SIZE + 50,
+    zIndex: 990,
   },
   star: {
     height: STAR_HEIGHT,
