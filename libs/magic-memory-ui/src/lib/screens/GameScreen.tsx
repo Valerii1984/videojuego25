@@ -732,7 +732,7 @@ const GameScreen = () => {
           }, 250);
           completionTimers.current.push(hideCardsTimer);
 
-          const ROBOT_VISIBLE_MS = 100;
+          const ROBOT_VISIBLE_MS = 800;
 
           const robotHideTimer: TimeoutId = setTimeout(async () => {
             if (!isGameActive) return;
@@ -859,28 +859,20 @@ const GameScreen = () => {
     const rows = 2;
     const isNarrowScreen = screenWidth < 900;
 
-    // ==== уровни 6 и 8 — крупные карты ====
-    if (gridLevel <= 8) {
-      const baseSize = gridLevel === 6 ? 112 : 104;
+    // Базовый размер зависит от уровня, дальше ограничиваем и по ширине, и по высоте,
+    // чтобы сетка не уезжала под дугу/кнопки на разных девайсах.
+    const baseSize =
+      gridLevel === 6
+        ? 112
+        : gridLevel === 8
+          ? 104
+          : gridLevel === 10
+            ? 96
+            : 92;
 
-      const horizontalPadding = isNarrowScreen ? 60 : 40;
-      const horizontalMarginPerCard = 10;
-
-      const maxWidthPerCard =
-        (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) /
-        cols;
-
-      // только по ширине ограничиваем, по высоте они и так влезают
-      const size = Math.min(baseSize, maxWidthPerCard);
-
-      return Math.max(90, Math.round(size)); // остаются большими
-    }
-
-    // ==== уровни 10 и 12 — аккуратно, чтобы не лезли на кнопки ====
-    const baseSize = gridLevel === 10 ? 96 : 92;
-
-    const horizontalPadding = isNarrowScreen ? 80 : 40;
+    const horizontalPadding = isNarrowScreen ? (gridLevel <= 8 ? 60 : 80) : 40;
     const horizontalMarginPerCard = 10;
+
     const maxWidthPerCard =
       (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
 
@@ -898,6 +890,7 @@ const GameScreen = () => {
 
     let size = Math.min(baseSize, maxWidthPerCard, maxHeightPerCard);
 
+    // Небольшая подстройка для плотных уровней на узких экранах.
     if (isNarrowScreen && gridLevel >= 10) {
       size *= 0.9;
     }
@@ -905,7 +898,8 @@ const GameScreen = () => {
       size *= 0.88;
     }
 
-    return Math.max(72, Math.round(size));
+    const minSize = gridLevel <= 8 ? 90 : 72;
+    return Math.max(minSize, Math.round(size));
   };
 
   // ================================================================
@@ -988,8 +982,6 @@ const GameScreen = () => {
                 }}
                 pointerEvents="none"
                 collapsable={false}
-                renderToHardwareTextureAndroid
-                needsOffscreenAlphaCompositing
               >
                 <ExpoImage
                   source={SAFE_SPRITES[activeRobotIndex] || HERO_FALLBACK}
@@ -1095,87 +1087,93 @@ const GameScreen = () => {
         {isGameActive && !showCongrats && !showPlayAgain && (
           <>
             <RNAnimated.View
+              pointerEvents="box-none"
               style={{
                 position: "absolute",
-                left: (width * 1.5) / 100,
+                left: 0,
+                right: 0,
                 bottom: buttonsBottom,
                 zIndex: 1000,
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                paddingHorizontal: (width * 2) / 100,
                 opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
                 transform: [{ translateY: arcTransY as any }],
               }}
             >
-              <View style={styles.difficultyGlow}>
-                <View style={styles.difficultyBorder}>
-                  <LinearGradient
-                    colors={["#C780FF", "#7500D1"] as const}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={styles.difficultyButton}
-                  >
-                    <TouchableOpacity
-                      onPress={handleDifficultyPress}
-                      activeOpacity={0.9}
-                      style={styles.difficultyTouch}
-                    >
-                      <Image
-                        source={DIFFICULTY_PNG}
-                        style={styles.difficultyIcon}
-                        resizeMode="contain"
-                      />
-                    </TouchableOpacity>
-                  </LinearGradient>
-                </View>
-              </View>
-            </RNAnimated.View>
-
-            <RNAnimated.View
-              style={{
-                position: "absolute",
-                right: (width * 2) / 100,
-                bottom: buttonsBottom,
-                zIndex: 1000,
-                opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
-                transform: [
-                  { translateY: arcTransY as any },
-                  { scale: hintScaleRN as any },
-                ],
-              }}
-            >
-              <TouchableOpacity
-                onPress={handleHint}
-                activeOpacity={1}
-                onPressIn={() =>
-                  RNAnimated.timing(hintScaleRN, {
-                    toValue: 1.1,
-                    duration: 100,
-                    useNativeDriver: true,
-                  }).start()
-                }
-                onPressOut={() =>
-                  RNAnimated.timing(hintScaleRN, {
-                    toValue: 1,
-                    duration: 100,
-                    useNativeDriver: true,
-                  }).start()
-                }
-              >
-                <View style={styles.hintGlowPurple}>
-                  <View style={styles.hintBorderPurple}>
+              {/* Кнопка выбора уровня (слева) */}
+              <View style={{ alignItems: "center" }}>
+                <View style={styles.difficultyGlow}>
+                  <View style={styles.difficultyBorder}>
                     <LinearGradient
                       colors={["#C780FF", "#7500D1"] as const}
-                      start={{ x: 0.5, y: 0 }}
-                      end={{ x: 0.5, y: 1 }}
-                      style={styles.hintButtonInnerPurple}
+                      start={{ x: 0, y: 0.5 }}
+                      end={{ x: 1, y: 0.5 }}
+                      style={styles.difficultyButton}
                     >
-                      <Image
-                        source={EYE_PNG}
-                        style={{ width: 26, height: 26, tintColor: "#FFFFFF" }}
-                        resizeMode="contain"
-                      />
+                      <TouchableOpacity
+                        onPress={handleDifficultyPress}
+                        activeOpacity={0.9}
+                        style={styles.difficultyTouch}
+                      >
+                        <Image
+                          source={DIFFICULTY_PNG}
+                          style={styles.difficultyIcon}
+                          resizeMode="contain"
+                        />
+                      </TouchableOpacity>
                     </LinearGradient>
                   </View>
                 </View>
-              </TouchableOpacity>
+              </View>
+
+              {/* Кнопка подсказки (справа) */}
+              <RNAnimated.View
+                style={{
+                  transform: [{ scale: hintScaleRN as any }],
+                }}
+              >
+                <TouchableOpacity
+                  onPress={handleHint}
+                  activeOpacity={1}
+                  onPressIn={() =>
+                    RNAnimated.timing(hintScaleRN, {
+                      toValue: 1.1,
+                      duration: 100,
+                      useNativeDriver: true,
+                    }).start()
+                  }
+                  onPressOut={() =>
+                    RNAnimated.timing(hintScaleRN, {
+                      toValue: 1,
+                      duration: 100,
+                      useNativeDriver: true,
+                    }).start()
+                  }
+                >
+                  <View style={styles.hintGlowPurple}>
+                    <View style={styles.hintBorderPurple}>
+                      <LinearGradient
+                        colors={["#C780FF", "#7500D1"] as const}
+                        start={{ x: 0.5, y: 0 }}
+                        end={{ x: 0.5, y: 1 }}
+                        style={styles.hintButtonInnerPurple}
+                      >
+                        <Image
+                          source={EYE_PNG}
+                          style={{
+                            width: 26,
+                            height: 26,
+                            tintColor: "#FFFFFF",
+                          }}
+                          resizeMode="contain"
+                        />
+                      </LinearGradient>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              </RNAnimated.View>
             </RNAnimated.View>
           </>
         )}

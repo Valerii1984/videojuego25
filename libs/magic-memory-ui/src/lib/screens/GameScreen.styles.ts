@@ -8,7 +8,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "center",
     paddingVertical: 10,
-    paddingTop: 0, // смещение теперь управляется из GameScreen через cardsTopOffset
+    paddingTop: 0,
+    overflow: "visible",
   },
   row: {
     justifyContent: "space-around",
@@ -230,6 +231,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     zIndex: 10,
     backgroundColor: "rgba(0, 0, 0, 0.03)",
+    pointerEvents: "none", // 🔥 КРИТИЧНО
   },
 
   robotContainer: {
