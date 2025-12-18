@@ -365,13 +365,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
               style={[
                 styles.hintBackground,
                 {
-                  position: "absolute",
-                  top: cellSize / 2 - 8,
-                  left: cellSize / 2 - 8,
-                  justifyContent: "center",
-                  alignItems: "center",
                   transform: [{ scale: hintScale }],
-                  zIndex: 10,
                 },
               ]}
             >
