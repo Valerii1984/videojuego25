@@ -732,7 +732,7 @@ const GameScreen = () => {
           }, 250);
           completionTimers.current.push(hideCardsTimer);
 
-          const ROBOT_VISIBLE_MS = 800;
+          const ROBOT_VISIBLE_MS = 850;
 
           const robotHideTimer: TimeoutId = setTimeout(async () => {
             if (!isGameActive) return;
@@ -853,32 +853,58 @@ const GameScreen = () => {
   const getNumColumns = () =>
     gridLevel === 6 ? 3 : gridLevel === 8 ? 4 : gridLevel === 10 ? 5 : 6;
 
-  // ==== ПРАВКА: адаптивный размер карточек под маленькие экраны ====
+  // ==== ПРАВКА: адаптивный размер карточек (малые экраны + большие экраны) ====
   const getCardSize = () => {
     const cols = getNumColumns();
     const rows = 2;
-    const isNarrowScreen = screenWidth < 900;
 
-    // Базовый размер зависит от уровня, дальше ограничиваем и по ширине, и по высоте,
-    // чтобы сетка не уезжала под дугу/кнопки на разных девайсах.
-    const baseSize =
-      gridLevel === 6
-        ? 112
-        : gridLevel === 8
-          ? 104
-          : gridLevel === 10
-            ? 96
-            : 92;
+    // Классы экранов (в лендскейпе screenWidth обычно больше)
+    const minDim = Math.min(screenWidth, screenHeight);
+    const isSmall = screenWidth < 860; // мелкие телефоны
+    const isBigPhone = screenWidth >= 930; // большие телефоны (типа Pixel/Plus)
+    const isTablet = minDim >= 700 || screenWidth >= 1200; // планшеты/очень большие экраны
 
-    const horizontalPadding = isNarrowScreen ? (gridLevel <= 8 ? 60 : 80) : 40;
+    // База (потом всё равно ограничим шириной/высотой)
+    const baseByLevel = (lvl: 6 | 8 | 10 | 12) => {
+      if (isTablet) {
+        return lvl === 6 ? 150 : lvl === 8 ? 142 : lvl === 10 ? 122 : 116;
+      }
+      if (isBigPhone) {
+        return lvl === 6 ? 132 : lvl === 8 ? 126 : lvl === 10 ? 110 : 106;
+      }
+      // маленькие/средние — как было (ничего не трогаем для мелких гаджетов)
+      return lvl === 6 ? 112 : lvl === 8 ? 104 : lvl === 10 ? 96 : 92;
+    };
+
+    let baseSize = baseByLevel(gridLevel);
+
+    // Чуть больше свободы по ширине на крупных экранах
+    const horizontalPadding = isSmall
+      ? gridLevel <= 8
+        ? 60
+        : 80
+      : isTablet
+        ? 32
+        : 40;
     const horizontalMarginPerCard = 10;
 
     const maxWidthPerCard =
       (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
 
+    // Резерв по низу: чтобы карты не заходили под кнопки (и дугу) и не теряли кликабельность
     const verticalMarginPerRow = 10;
-    const reservedTop = cardsTopOffset + scaled(20);
-    const reservedBottom = isNarrowScreen ? scaled(190) : scaled(150);
+    const reservedTop = cardsTopOffset + scaled(18);
+
+    const buttonsRowHeight = scaled(92); // ~70px кнопка + "свечение"/бордер
+    const reservedBottomBase =
+      buttonsBottom + buttonsRowHeight + scaled(isTablet ? 26 : 18);
+
+    // На плотных уровнях добавляем чуть больше воздуха
+    const reservedBottom = isSmall
+      ? gridLevel >= 10
+        ? scaled(220)
+        : scaled(200)
+      : reservedBottomBase + (gridLevel >= 10 ? scaled(14) : 0);
 
     const availableHeight = Math.max(
       80,
@@ -890,13 +916,9 @@ const GameScreen = () => {
 
     let size = Math.min(baseSize, maxWidthPerCard, maxHeightPerCard);
 
-    // Небольшая подстройка для плотных уровней на узких экранах.
-    if (isNarrowScreen && gridLevel >= 10) {
-      size *= 0.9;
-    }
-    if (isNarrowScreen && gridLevel === 12) {
-      size *= 0.88;
-    }
+    // Небольшая подстройка для плотных уровней на узких экранах (для маленьких всё как раньше)
+    if (isSmall && gridLevel >= 10) size *= 0.9;
+    if (isSmall && gridLevel === 12) size *= 0.88;
 
     const minSize = gridLevel <= 8 ? 90 : 72;
     return Math.max(minSize, Math.round(size));
@@ -982,6 +1004,8 @@ const GameScreen = () => {
                 }}
                 pointerEvents="none"
                 collapsable={false}
+                renderToHardwareTextureAndroid
+                needsOffscreenAlphaCompositing
               >
                 <ExpoImage
                   source={SAFE_SPRITES[activeRobotIndex] || HERO_FALLBACK}
@@ -1087,93 +1111,87 @@ const GameScreen = () => {
         {isGameActive && !showCongrats && !showPlayAgain && (
           <>
             <RNAnimated.View
-              pointerEvents="box-none"
               style={{
                 position: "absolute",
-                left: 0,
-                right: 0,
+                left: (width * 1.5) / 100,
                 bottom: buttonsBottom,
                 zIndex: 1000,
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingHorizontal: (width * 2) / 100,
                 opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
                 transform: [{ translateY: arcTransY as any }],
               }}
             >
-              {/* Кнопка выбора уровня (слева) */}
-              <View style={{ alignItems: "center" }}>
-                <View style={styles.difficultyGlow}>
-                  <View style={styles.difficultyBorder}>
+              <View style={styles.difficultyGlow}>
+                <View style={styles.difficultyBorder}>
+                  <LinearGradient
+                    colors={["#C780FF", "#7500D1"] as const}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.difficultyButton}
+                  >
+                    <TouchableOpacity
+                      onPress={handleDifficultyPress}
+                      activeOpacity={0.9}
+                      style={styles.difficultyTouch}
+                    >
+                      <Image
+                        source={DIFFICULTY_PNG}
+                        style={styles.difficultyIcon}
+                        resizeMode="contain"
+                      />
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </View>
+              </View>
+            </RNAnimated.View>
+
+            <RNAnimated.View
+              style={{
+                position: "absolute",
+                right: (width * 2) / 100,
+                bottom: buttonsBottom,
+                zIndex: 1000,
+                opacity: RNAnimated.multiply(arcOpacity as any, gridOpacityRN),
+                transform: [
+                  { translateY: arcTransY as any },
+                  { scale: hintScaleRN as any },
+                ],
+              }}
+            >
+              <TouchableOpacity
+                onPress={handleHint}
+                activeOpacity={1}
+                onPressIn={() =>
+                  RNAnimated.timing(hintScaleRN, {
+                    toValue: 1.1,
+                    duration: 100,
+                    useNativeDriver: true,
+                  }).start()
+                }
+                onPressOut={() =>
+                  RNAnimated.timing(hintScaleRN, {
+                    toValue: 1,
+                    duration: 100,
+                    useNativeDriver: true,
+                  }).start()
+                }
+              >
+                <View style={styles.hintGlowPurple}>
+                  <View style={styles.hintBorderPurple}>
                     <LinearGradient
                       colors={["#C780FF", "#7500D1"] as const}
-                      start={{ x: 0, y: 0.5 }}
-                      end={{ x: 1, y: 0.5 }}
-                      style={styles.difficultyButton}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                      style={styles.hintButtonInnerPurple}
                     >
-                      <TouchableOpacity
-                        onPress={handleDifficultyPress}
-                        activeOpacity={0.9}
-                        style={styles.difficultyTouch}
-                      >
-                        <Image
-                          source={DIFFICULTY_PNG}
-                          style={styles.difficultyIcon}
-                          resizeMode="contain"
-                        />
-                      </TouchableOpacity>
+                      <Image
+                        source={EYE_PNG}
+                        style={{ width: 26, height: 26, tintColor: "#FFFFFF" }}
+                        resizeMode="contain"
+                      />
                     </LinearGradient>
                   </View>
                 </View>
-              </View>
-
-              {/* Кнопка подсказки (справа) */}
-              <RNAnimated.View
-                style={{
-                  transform: [{ scale: hintScaleRN as any }],
-                }}
-              >
-                <TouchableOpacity
-                  onPress={handleHint}
-                  activeOpacity={1}
-                  onPressIn={() =>
-                    RNAnimated.timing(hintScaleRN, {
-                      toValue: 1.1,
-                      duration: 100,
-                      useNativeDriver: true,
-                    }).start()
-                  }
-                  onPressOut={() =>
-                    RNAnimated.timing(hintScaleRN, {
-                      toValue: 1,
-                      duration: 100,
-                      useNativeDriver: true,
-                    }).start()
-                  }
-                >
-                  <View style={styles.hintGlowPurple}>
-                    <View style={styles.hintBorderPurple}>
-                      <LinearGradient
-                        colors={["#C780FF", "#7500D1"] as const}
-                        start={{ x: 0.5, y: 0 }}
-                        end={{ x: 0.5, y: 1 }}
-                        style={styles.hintButtonInnerPurple}
-                      >
-                        <Image
-                          source={EYE_PNG}
-                          style={{
-                            width: 26,
-                            height: 26,
-                            tintColor: "#FFFFFF",
-                          }}
-                          resizeMode="contain"
-                        />
-                      </LinearGradient>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              </RNAnimated.View>
+              </TouchableOpacity>
             </RNAnimated.View>
           </>
         )}

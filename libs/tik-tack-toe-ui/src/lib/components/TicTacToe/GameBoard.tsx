@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -21,6 +21,9 @@ import {
   useAvatarStars,
 } from "./Animation";
 import { StarAdvise } from "../../assets/svg/star-advise";
+
+const clamp = (v: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, v));
 
 type AnimatedAvatarProps = {
   source: ImageSourcePropType;
@@ -222,8 +225,31 @@ const GameBoard: React.FC<GameBoardProps> = ({
     .padStart(2, "0");
   const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
 
-  const { width } = useWindowDimensions();
-  const cellSize = Math.floor(width / 10);
+  const { width, height } = useWindowDimensions();
+  const shortSide = Math.min(width, height);
+  const longSide = Math.max(width, height);
+  const isLandscape = width > height;
+
+  /**
+   * Board sizing:
+   * - Do NOT shrink on big screens (Pixel 8 landscape etc.)
+   * - Keep safe on very small phones
+   */
+  const isSmallDevice = shortSide < 390 || (shortSide < 430 && longSide < 780);
+
+  const cellSize = clamp(
+    Math.floor(
+      isSmallDevice
+        ? shortSide * 0.18
+        : longSide >= 1100 || shortSide >= 700
+          ? shortSide * 0.24
+          : isLandscape && longSide >= 850
+            ? shortSide * 0.21
+            : shortSide * 0.2
+    ),
+    52,
+    140
+  );
 
   const WinningCellEffects: React.FC<{
     isActive: boolean;
@@ -309,6 +335,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             {
               width: cellSize,
               height: cellSize,
+              borderRadius: clamp(Math.round(cellSize * 0.18), 12, 20),
               backgroundColor: "#184BD933",
             },
           ]}
@@ -364,9 +391,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
             <Animated.View
               style={[
                 styles.hintBackground,
-                {
-                  transform: [{ scale: hintScale }],
-                },
+                { transform: [{ scale: hintScale }], borderRadius: 999 },
               ]}
             >
               <StarAdvise width={16} height={16} />
@@ -381,7 +406,11 @@ const GameBoard: React.FC<GameBoardProps> = ({
     <Animated.View
       style={[
         styles.board,
-        { width: cellSize * 3 + 10, height: cellSize * 3 + 10 },
+        {
+          width: cellSize * 3 + 10,
+          height: cellSize * 3 + 10,
+          overflow: "hidden", // IMPORTANT: lines should not bleed over avatars
+        },
         style,
       ]}
       testID="game-board"
@@ -400,46 +429,59 @@ const GameBoard: React.FC<GameBoardProps> = ({
         </View>
       </View>
 
+      {/* horizontal lines */}
       {[1, 2].map((i: number) => (
-        <Image
+        <View
           key={`h-${i}`}
-          source={require("../../assets/horizontal_line.png")}
+          pointerEvents="none"
           style={{
             position: "absolute",
             top: i * cellSize - 1,
             left: 0,
             width: cellSize * 3,
             height: 2,
-            resizeMode: "stretch",
+            zIndex: 1,
           }}
-        />
+        >
+          <Image
+            source={require("../../assets/horizontal_line.png")}
+            style={{ width: "100%", height: "100%", resizeMode: "stretch" }}
+          />
+        </View>
       ))}
 
+      {/* vertical lines */}
       {[1, 2].map((i: number) => (
-        <LinearGradient
+        <View
           key={`v-${i}`}
-          colors={[
-            "rgba(183, 0, 255, 0.2)",
-            "#00CCFF",
-            "#00CCFF",
-            "rgba(183, 0, 255, 0.2)",
-          ]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          locations={[0, 0.3, 0.9, 1]}
+          pointerEvents="none"
           style={{
             position: "absolute",
             left: i * cellSize - 1,
             top: 0,
             width: 2,
             height: cellSize * 3,
+            zIndex: 1,
           }}
-        />
+        >
+          <LinearGradient
+            colors={[
+              "rgba(183, 0, 255, 0.2)",
+              "#00CCFF",
+              "#00CCFF",
+              "rgba(183, 0, 255, 0.2)",
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            locations={[0, 0.3, 0.9, 1]}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </View>
       ))}
 
       {board.map((row: Board[number], rowIndex: number) => (
         <View key={`row-${rowIndex}`} style={styles.row}>
-          {row.map((cell: Player, colIndex: number) => (
+          {row.map((_cell: Player, colIndex: number) => (
             <View
               key={`cell-${rowIndex}-${colIndex}`}
               style={styles.cellWrapper}
@@ -461,7 +503,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#184BD933",
-    borderRadius: 20,
     overflow: "visible",
   },
   cellImage: {},
@@ -507,22 +548,17 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  photo2Cell: {
-    borderWidth: 3,
-    borderColor: "#ADEFFF",
-  },
-  hintContainer: { position: "absolute", width: 32, height: 32, zIndex: 20 },
+  photo2Cell: { borderWidth: 3, borderColor: "#ADEFFF" },
   hintBackground: {
-    flex: 1,
     backgroundColor: "#90A6FF99",
-    borderRadius: 16,
     borderWidth: 1,
     borderColor: "#6876B94D",
     padding: 2,
     justifyContent: "center",
     alignItems: "center",
+    width: 32,
+    height: 32,
   },
-  iconButton: { padding: 6 },
 });
 
 export default GameBoard;
