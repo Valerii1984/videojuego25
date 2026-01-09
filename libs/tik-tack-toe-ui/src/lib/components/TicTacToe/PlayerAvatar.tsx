@@ -120,8 +120,10 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
     return clamp(Math.round(shortSide * 0.21), 90, 130);
   }, [shortSide, longSide, isLandscape, isSmallDevice]);
 
+  const BASE_AVATAR_SIZE = 120;
+  const AVATAR_SCALE = AVATAR_SIZE / BASE_AVATAR_SIZE;
   const AVATAR_RADIUS = AVATAR_SIZE / 2;
-
+  const BASE_AVATAR_RADIUS = BASE_AVATAR_SIZE / 2;
   // push avatar + 'Your turn' slightly down on tiny screens so they don't cross the arc
   const smallDeviceDownShift = isSmallDevice
     ? Math.round(AVATAR_SIZE * 0.22)
@@ -159,12 +161,12 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
 
   const stars = useMemo(
     () => [
-      { angle: 250, distance: 1.15, scale: 1.5, rotate: "30deg", even: false },
-      { angle: 180, distance: 0.85, scale: 1.4, rotate: "70deg", even: true },
-      { angle: 120, distance: 1.35, scale: 1.2, rotate: "10deg", even: false },
-      { angle: 320, distance: 1.65, scale: 1.5, rotate: "40deg", even: true },
-      { angle: 0, distance: 1.65, scale: 1.2, rotate: "25deg", even: false },
-      { angle: 40, distance: 1.75, scale: 1, rotate: "15deg", even: true },
+      { angle: 230, distance: 1.65, scale: 0.5, rotate: "30deg", even: false },
+      { angle: 180, distance: 1.55, scale: 0.4, rotate: "70deg", even: true },
+      { angle: 140, distance: 1.45, scale: 0.2, rotate: "10deg", even: false },
+      { angle: 310, distance: 1.55, scale: 0.5, rotate: "40deg", even: true },
+      { angle: 0, distance: 1.45, scale: 0.2, rotate: "25deg", even: false },
+      { angle: 40, distance: 1.35, scale: 0, rotate: "15deg", even: true },
     ],
     []
   );
@@ -269,7 +271,7 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
         <Animated.View
           style={[
             styles.avatarContentContainer,
-            { width: containerWidth, zIndex: 9990 },
+            { zIndex: 9990 },
             winner
               ? {
                   transform: [{ translateY: winner === player ? -40 : 0 }],
@@ -318,88 +320,99 @@ const PlayerAvatar: React.FC<PlayerAvatarProps> = ({
           {renderTurnIndicator()}
 
           {isActive && showBackground && (
-            <View style={styles.wrapper} pointerEvents="none">
-              <Animated.View
-                style={[
-                  styles.rotatingBackground,
-                  {
-                    width: AVATAR_SIZE + 50,
-                    height: AVATAR_SIZE + 50,
-                    transform: [
-                      {
-                        rotate: (
-                          rotation as unknown as Animated.AnimatedInterpolation<number>
-                        ).interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ["0deg", "360deg"],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <Image
-                  source={
-                    isFirstPlayer
-                      ? require("../../assets/bg_player.png")
-                      : require("../../assets/bg_player2.png")
-                  }
-                  style={styles.bgImage}
-                />
-                {activeStars.map((starId) => (
-                  <AnimatedStar
-                    key={starId}
-                    isActive={starTriggers.includes(starId)}
-                    onComplete={() => removeStar(starId)}
-                    isFirstPlayer={!!isFirstPlayer}
-                    avatarSize={AVATAR_SIZE}
-                  />
-                ))}
-              </Animated.View>
-
-              <View
-                style={[
-                  styles.starWrapper,
-                  { width: AVATAR_SIZE + 50, height: AVATAR_SIZE + 50 },
-                ]}
-              >
-                {stars.map((star, i) => {
-                  const animatedStyle = star.even
-                    ? { opacity: blinkingOpacityEven }
-                    : { opacity: blinkingOpacityOdd };
-
-                  const rad = (star.angle * Math.PI) / 180;
-                  const x = Math.cos(rad) * AVATAR_RADIUS * star.distance;
-                  const y = Math.sin(rad) * AVATAR_RADIUS * star.distance;
-
-                  return (
-                    <Animated.View
-                      key={i}
-                      pointerEvents="none"
-                      style={[
-                        styles.star,
-                        animatedStyle,
+            <>
+              <View style={styles.wrapper} pointerEvents="none">
+                <Animated.View
+                  style={[
+                    styles.rotatingBackground,
+                    {
+                      aspectRatio: 1 / 1,
+                      transform: [
+                        { scale: 1.4 },
                         {
-                          position: "absolute",
-                          top: AVATAR_RADIUS + y,
-                          left: AVATAR_RADIUS + x,
-                          transform: [
-                            { scale: star.scale },
-                            { rotate: star.rotate },
-                          ],
+                          rotate: (
+                            rotation as unknown as Animated.AnimatedInterpolation<number>
+                          ).interpolate({
+                            inputRange: [0, 1],
+                            outputRange: ["0deg", "360deg"],
+                          }),
                         },
-                      ]}
-                    >
-                      <Image
-                        source={starImage}
-                        style={{ width: 20, height: 20 }}
-                        resizeMode="contain"
-                      />
-                    </Animated.View>
-                  );
-                })}
+                      ],
+                    },
+                  ]}
+                >
+                  <Image
+                    source={
+                      isFirstPlayer
+                        ? require("../../assets/bg_player.png")
+                        : require("../../assets/bg_player2.png")
+                    }
+                    style={styles.bgImage}
+                  />
+                  {activeStars.map((starId) => (
+                    <AnimatedStar
+                      key={starId}
+                      isActive={starTriggers.includes(starId)}
+                      onComplete={() => removeStar(starId)}
+                      isFirstPlayer={!!isFirstPlayer}
+                      avatarSize={AVATAR_SIZE}
+                    />
+                  ))}
+                </Animated.View>
               </View>
-            </View>
+              <View style={[styles.wrapper]} pointerEvents="none">
+                <View
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative",
+                  }}
+                >
+                  {stars.map((star, i) => {
+                    const animatedStyle = star.even
+                      ? { opacity: blinkingOpacityEven }
+                      : { opacity: blinkingOpacityOdd };
+
+                    const rad = (star.angle * Math.PI) / 180;
+                    const x =
+                      Math.cos(rad) *
+                        (BASE_AVATAR_RADIUS * star.distance) *
+                        AVATAR_SCALE +
+                      AVATAR_RADIUS;
+                    const y =
+                      Math.sin(rad) *
+                        (BASE_AVATAR_RADIUS * star.distance) *
+                        AVATAR_SCALE +
+                      AVATAR_RADIUS;
+                    return (
+                      <Animated.View
+                        key={i}
+                        pointerEvents="none"
+                        style={[
+                          styles.star,
+                          animatedStyle,
+                          {
+                            position: "absolute",
+                            top: y,
+                            left: x,
+                            transform: [
+                              { scale: AVATAR_SCALE * (1 + star.scale) },
+                              { rotate: star.rotate },
+                            ],
+                          },
+                        ]}
+                      >
+                        <Image
+                          source={starImage}
+                          style={{ width: 20, height: 20 }}
+                          resizeMode="contain"
+                        />
+                      </Animated.View>
+                    );
+                  })}
+                </View>
+              </View>
+            </>
           )}
         </Animated.View>
 
@@ -534,6 +547,8 @@ const styles = StyleSheet.create({
   },
   starWrapper: {
     position: "absolute",
+    top: "50%",
+    left: "50%",
     zIndex: 990,
   },
   star: {
