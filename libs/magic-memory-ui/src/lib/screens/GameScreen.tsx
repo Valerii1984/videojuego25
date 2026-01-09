@@ -243,11 +243,6 @@ const GameScreen = () => {
   const [age, setAge] = useState<number>(Math.max(6, (cfg as any).age));
   const gridLevel = useMemo(() => toGridLevel(age), [age]);
 
-  const cardsTopOffset = useMemo(
-    () => (gridLevel === 6 ? scaled(30) : scaled(40)),
-    [gridLevel]
-  );
-
   const pairsNeeded = useMemo(() => Math.floor(age / 2), [age]);
 
   const [cards, setCards] = useState<Card[]>([]);
@@ -284,6 +279,12 @@ const GameScreen = () => {
     return () => sub?.remove?.();
   }, []);
   const { height: screenHeight, width: screenWidth } = screen;
+  const minDim = Math.min(screenWidth, screenHeight);
+  const isSmallScreen = minDim < 420;
+  const cardsTopOffset = useMemo(() => {
+    if (isSmallScreen && gridLevel >= 10) return scaled(18);
+    return gridLevel === 6 ? scaled(30) : scaled(40);
+  }, [gridLevel, isSmallScreen]);
 
   const [redealTick, setRedealTick] = useState(0);
 
@@ -388,7 +389,6 @@ const GameScreen = () => {
     [(cfg as any).frontCardSide, gridLevel, age]
   );
 
-  // ==== ПРАВКА: корректное скрытие статусбара ====
   useEffect(() => {
     const hideBars = async () => {
       try {
@@ -413,7 +413,6 @@ const GameScreen = () => {
       }
     };
   }, []);
-  // ================================================
 
   useEffect(() => {
     if (!isWeb) {
@@ -853,26 +852,16 @@ const GameScreen = () => {
   const getNumColumns = () =>
     gridLevel === 6 ? 3 : gridLevel === 8 ? 4 : gridLevel === 10 ? 5 : 6;
 
-  // ==== ПРАВКА: адаптивный размер карточек (малые экраны + большие экраны) ====
   const getCardSize = () => {
-    console.log("getCardSize hit", screenWidth, screenHeight);
-
     const cols = getNumColumns();
     const rows = 2;
 
-    // Классы экранов (в лендскейпе screenWidth обычно больше)
     const minDim = Math.min(screenWidth, screenHeight);
 
-    // small = реально маленькие телефоны (ориентируемся на minDim!)
     const isSmall = minDim < 420;
-
-    // bigPhone = крупные телефоны в landscape/large phones
     const isBigPhone = minDim >= 480 && minDim < 700;
-
-    // tablet
     const isTablet = minDim >= 700;
 
-    // База (потом всё равно ограничим шириной/высотой)
     const baseByLevel = (lvl: 6 | 8 | 10 | 12) => {
       if (isTablet) {
         return lvl === 6 ? 150 : lvl === 8 ? 142 : lvl === 10 ? 122 : 116;
@@ -880,13 +869,11 @@ const GameScreen = () => {
       if (isBigPhone) {
         return lvl === 6 ? 132 : lvl === 8 ? 126 : lvl === 10 ? 110 : 106;
       }
-      // маленькие/средние — как было (ничего не трогаем для мелких гаджетов)
       return lvl === 6 ? 112 : lvl === 8 ? 104 : lvl === 10 ? 96 : 92;
     };
 
-    let baseSize = baseByLevel(gridLevel);
+    const baseSize = baseByLevel(gridLevel);
 
-    // Чуть больше свободы по ширине на крупных экранах
     const horizontalPadding = isSmall
       ? gridLevel <= 8
         ? 60
@@ -894,33 +881,34 @@ const GameScreen = () => {
       : isTablet
         ? 32
         : 40;
+
     const horizontalMarginPerCard = isSmall ? 10 : 6;
 
     const maxWidthPerCard =
       (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
 
-    // Резерв по низу: чтобы карты не заходили под кнопки (и дугу) и не теряли кликабельность
-    // Резерв по низу: чтобы карты не заходили под кнопки (и дугу) и не теряли кликабельность
     const verticalMarginPerRow = isSmall ? 10 : 6;
 
     const reservedTop = isSmall
       ? cardsTopOffset + scaled(18)
       : Math.min(cardsTopOffset + scaled(10), Math.round(screenHeight * 0.14));
 
-    // --- FIX: не режем высоту на больших экранах (в landscape это критично) ---
     const buttonsRowHeight = isSmall
       ? scaled(92)
       : Math.min(96, Math.round(screenHeight * 0.2));
 
-    const reservedBottomBase =
-      buttonsBottom + buttonsRowHeight + (isSmall ? scaled(18) : 10);
+    const buttonSafeGap = isSmall ? scaled(52) : scaled(16);
+    const levelSafeGap =
+      isSmall && gridLevel === 12
+        ? scaled(65)
+        : isSmall && gridLevel === 10
+          ? scaled(35)
+          : 0;
 
-    // На плотных уровнях добавляем чуть больше воздуха
     const reservedBottom = isSmall
-      ? gridLevel >= 10
-        ? scaled(220)
-        : scaled(200)
-      : reservedBottomBase + (gridLevel >= 10 ? scaled(14) : 0);
+      ? buttonsBottom + buttonsRowHeight + buttonSafeGap + levelSafeGap
+      : buttonsBottom + buttonsRowHeight + (gridLevel >= 10 ? scaled(14) : 10);
+
     const availableHeight = Math.max(
       80,
       screenHeight - reservedTop - reservedBottom
@@ -931,11 +919,10 @@ const GameScreen = () => {
 
     let size = Math.min(baseSize, maxWidthPerCard, maxHeightPerCard);
 
-    // --- апскейл только для больших экранов, если есть свободное место ---
-    const maxPossible = Math.min(maxWidthPerCard, maxHeightPerCard);
-    const headroom = maxPossible / Math.max(1, baseSize);
-
     if (!isSmall) {
+      const maxPossible = Math.min(maxWidthPerCard, maxHeightPerCard);
+      const headroom = maxPossible / Math.max(1, baseSize);
+
       const cap = isTablet
         ? gridLevel === 6
           ? 1.55
@@ -956,21 +943,22 @@ const GameScreen = () => {
       size = Math.min(maxPossible, baseSize * targetScale);
     }
 
-    // Небольшая подстройка для плотных уровней на узких экранах (для маленьких всё как раньше)
-    if (isSmall && gridLevel >= 10) size *= 0.9;
-    if (isSmall && gridLevel === 12) size *= 0.88;
+    if (isSmall && gridLevel === 10) size *= 1.01;
+    if (isSmall && gridLevel === 12) size *= 0.9;
 
-    if (!isSmall && gridLevel >= 10) {
-      size *= gridLevel === 10 ? 1.06 : 1.08;
-    }
+    const minSize = isSmall
+      ? gridLevel <= 8
+        ? 88
+        : gridLevel === 10
+          ? 78
+          : 74
+      : gridLevel <= 8
+        ? 90
+        : 72;
 
-    const minSize = gridLevel <= 8 ? 90 : 72;
     return Math.max(minSize, Math.round(size));
   };
 
-  // ================================================================
-  const minDim = Math.min(screenWidth, screenHeight);
-  const isSmallScreen = minDim < 420;
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
     const faceSource = (item as any).__source as any;
@@ -1145,7 +1133,6 @@ const GameScreen = () => {
         />
       </View>
 
-      {/* оставляем старый StatusBar, он уже не ломает нам фуллскрин */}
       <StatusBar hidden />
 
       <View
@@ -1176,7 +1163,6 @@ const GameScreen = () => {
                 paddingHorizontal: (width * 2) / 100,
               }}
             >
-              {/* ===== КНОПКА СЛОЖНОСТИ (СПИДОМЕТР) ===== */}
               <RNAnimated.View>
                 <View style={styles.difficultyGlow}>
                   <View style={styles.difficultyBorder}>
@@ -1202,7 +1188,6 @@ const GameScreen = () => {
                 </View>
               </RNAnimated.View>
 
-              {/* ===== КНОПКА ПОДСКАЗКИ (ГЛАЗ) ===== */}
               <RNAnimated.View
                 style={{
                   transform: [{ scale: hintScaleRN as any }],
