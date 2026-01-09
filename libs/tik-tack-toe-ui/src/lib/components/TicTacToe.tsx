@@ -273,6 +273,8 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
   const [showGameOver, setShowGameOver] = useState(false);
   const hintTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [isBlocked, setIsBlocked] = useState(true);
+
   const [screenH, setScreenH] = useState(Dimensions.get("window").height);
   const [screenW, setScreenW] = useState(Dimensions.get("window").width);
 
@@ -413,36 +415,35 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
   };
 
   useEffect(() => {
-    const startEntranceAnimation = () => {
-      Animated.sequence([
-        Animated.timing(ellipseTranslateY, {
-          toValue: 0,
-          duration: 1000,
-          delay: 10,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(ellipseOpacity, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: true,
-        }),
-        Animated.timing(boardIntro, {
-          toValue: 1,
-          duration: 800,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(playersIntro, {
-          toValue: 1,
-          duration: 900,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    };
-    startEntranceAnimation();
-    return () => {};
+    setIsBlocked(true);
+    Animated.sequence([
+      Animated.timing(ellipseTranslateY, {
+        toValue: 0,
+        duration: 1000,
+        delay: 10,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(ellipseOpacity, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.timing(boardIntro, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(playersIntro, {
+        toValue: 1,
+        duration: 900,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsBlocked(false);
+    });
   }, [resetKey]);
 
   const boardIntroStyle = {
@@ -770,6 +771,14 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   },
                 ]}
               >
+                {isBlocked && (
+                  <View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      zIndex: 100000,
+                    }}
+                  />
+                )}
                 <GameBoard
                   key={`board-${roundKey}`}
                   board={displayedBoard}
@@ -914,7 +923,6 @@ const styles = StyleSheet.create({
   },
   boardWrapper: {
     aspectRatio: 1,
-    borderRadius: scaled(40),
     overflow: "hidden",
     justifyContent: "center",
     alignItems: "center",
