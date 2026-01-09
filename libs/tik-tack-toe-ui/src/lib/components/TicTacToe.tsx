@@ -907,7 +907,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: scaled(18),
-    marginBottom: scaled(16),
   },
   bandBlurWrapper: {
     width: "100%",

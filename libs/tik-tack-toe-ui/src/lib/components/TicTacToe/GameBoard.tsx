@@ -450,7 +450,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           pointerEvents="none"
           style={{
             position: "absolute",
-            left: i * cellSize - 1,
+            left: i * cellSize + 4,
             top: 0,
             width: 2,
             height: cellSize * 3,
