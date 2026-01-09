@@ -237,19 +237,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
    */
   const isSmallDevice = shortSide < 390 || (shortSide < 430 && longSide < 780);
 
-  const cellSize = clamp(
-    Math.floor(
-      isSmallDevice
-        ? shortSide * 0.18
-        : longSide >= 1100 || shortSide >= 700
-          ? shortSide * 0.24
-          : isLandscape && longSide >= 850
-            ? shortSide * 0.21
-            : shortSide * 0.2
-    ),
-    52,
-    140
-  );
+  const getCellRatio = () => {
+    if (shortSide < 360) return 0.2;
+    if (shortSide < 480) return 0.23;
+    if (shortSide < 700) return 0.28;
+    return 0.3;
+  };
+
+  const cellSize = clamp(Math.round(shortSide * getCellRatio()), 52, 140);
 
   const WinningCellEffects: React.FC<{
     isActive: boolean;
@@ -409,9 +404,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
         {
           width: cellSize * 3 + 10,
           height: cellSize * 3 + 10,
-          overflow: "hidden", // IMPORTANT: lines should not bleed over avatars
         },
-        style,
       ]}
       testID="game-board"
       onLayout={onLayout}
@@ -457,7 +450,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           pointerEvents="none"
           style={{
             position: "absolute",
-            left: i * cellSize - 1,
+            left: i * cellSize + 4,
             top: 0,
             width: 2,
             height: cellSize * 3,
@@ -496,8 +489,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  board: {},
-  row: { flexDirection: "row", position: "relative" },
+  board: { overflow: "hidden" },
+  row: {
+    flexDirection: "row",
+    position: "relative",
+    justifyContent: "center",
+  },
   cellWrapper: { position: "relative" },
   cell: {
     justifyContent: "center",
