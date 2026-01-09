@@ -855,14 +855,22 @@ const GameScreen = () => {
 
   // ==== ПРАВКА: адаптивный размер карточек (малые экраны + большие экраны) ====
   const getCardSize = () => {
+    console.log("getCardSize hit", screenWidth, screenHeight);
+
     const cols = getNumColumns();
     const rows = 2;
 
     // Классы экранов (в лендскейпе screenWidth обычно больше)
     const minDim = Math.min(screenWidth, screenHeight);
-    const isSmall = screenWidth < 860; // мелкие телефоны
-    const isBigPhone = screenWidth >= 930; // большие телефоны (типа Pixel/Plus)
-    const isTablet = minDim >= 700 || screenWidth >= 1200; // планшеты/очень большие экраны
+
+    // small = реально маленькие телефоны (ориентируемся на minDim!)
+    const isSmall = minDim < 420;
+
+    // bigPhone = крупные телефоны в landscape/large phones
+    const isBigPhone = minDim >= 480 && minDim < 700;
+
+    // tablet
+    const isTablet = minDim >= 700;
 
     // База (потом всё равно ограничим шириной/высотой)
     const baseByLevel = (lvl: 6 | 8 | 10 | 12) => {
@@ -886,18 +894,26 @@ const GameScreen = () => {
       : isTablet
         ? 32
         : 40;
-    const horizontalMarginPerCard = 10;
+    const horizontalMarginPerCard = isSmall ? 10 : 6;
 
     const maxWidthPerCard =
       (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
 
     // Резерв по низу: чтобы карты не заходили под кнопки (и дугу) и не теряли кликабельность
-    const verticalMarginPerRow = 10;
-    const reservedTop = cardsTopOffset + scaled(18);
+    // Резерв по низу: чтобы карты не заходили под кнопки (и дугу) и не теряли кликабельность
+    const verticalMarginPerRow = isSmall ? 10 : 6;
 
-    const buttonsRowHeight = scaled(92); // ~70px кнопка + "свечение"/бордер
+    const reservedTop = isSmall
+      ? cardsTopOffset + scaled(18)
+      : Math.min(cardsTopOffset + scaled(10), Math.round(screenHeight * 0.14));
+
+    // --- FIX: не режем высоту на больших экранах (в landscape это критично) ---
+    const buttonsRowHeight = isSmall
+      ? scaled(92)
+      : Math.min(96, Math.round(screenHeight * 0.2));
+
     const reservedBottomBase =
-      buttonsBottom + buttonsRowHeight + scaled(isTablet ? 26 : 18);
+      buttonsBottom + buttonsRowHeight + (isSmall ? scaled(18) : 10);
 
     // На плотных уровнях добавляем чуть больше воздуха
     const reservedBottom = isSmall
@@ -905,7 +921,6 @@ const GameScreen = () => {
         ? scaled(220)
         : scaled(200)
       : reservedBottomBase + (gridLevel >= 10 ? scaled(14) : 0);
-
     const availableHeight = Math.max(
       80,
       screenHeight - reservedTop - reservedBottom
@@ -916,16 +931,46 @@ const GameScreen = () => {
 
     let size = Math.min(baseSize, maxWidthPerCard, maxHeightPerCard);
 
+    // --- апскейл только для больших экранов, если есть свободное место ---
+    const maxPossible = Math.min(maxWidthPerCard, maxHeightPerCard);
+    const headroom = maxPossible / Math.max(1, baseSize);
+
+    if (!isSmall) {
+      const cap = isTablet
+        ? gridLevel === 6
+          ? 1.55
+          : gridLevel === 8
+            ? 1.48
+            : gridLevel === 10
+              ? 1.32
+              : 1.26
+        : gridLevel === 6
+          ? 1.35
+          : gridLevel === 8
+            ? 1.28
+            : gridLevel === 10
+              ? 1.18
+              : 1.15;
+
+      const targetScale = Math.min(cap, Math.max(1, headroom * 0.98));
+      size = Math.min(maxPossible, baseSize * targetScale);
+    }
+
     // Небольшая подстройка для плотных уровней на узких экранах (для маленьких всё как раньше)
     if (isSmall && gridLevel >= 10) size *= 0.9;
     if (isSmall && gridLevel === 12) size *= 0.88;
+
+    if (!isSmall && gridLevel >= 10) {
+      size *= gridLevel === 10 ? 1.06 : 1.08;
+    }
 
     const minSize = gridLevel <= 8 ? 90 : 72;
     return Math.max(minSize, Math.round(size));
   };
 
   // ================================================================
-
+  const minDim = Math.min(screenWidth, screenHeight);
+  const isSmallScreen = minDim < 420;
   const renderItem = ({ item }: { item: Card }) => {
     const cardSize = getCardSize();
     const faceSource = (item as any).__source as any;
@@ -935,7 +980,8 @@ const GameScreen = () => {
       <RNAnimated.View
         style={{
           position: "relative",
-          marginHorizontal: 5,
+          marginHorizontal: isSmallScreen ? 5 : 3,
+
           justifyContent: "center",
           alignItems: "center",
           width: cardSize,
