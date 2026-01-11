@@ -330,6 +330,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
     gameComplete,
     handleCellPress,
     resetGame,
+    setAssistMode, // ✅ добавили
   } = useTicTacToeGame(() => {
     playNotificationSound();
   });
@@ -824,12 +825,10 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
             </View>
           </Animated.View>
 
-          {/* Кнопка-подсказка */}
           <Animated.View
             style={[
               { position: "absolute", bottom: 22, right: 22 },
               hintStyles.wrap,
-              // hintAnimatedStyle,
               hintIntroStyle,
             ]}
           >
@@ -847,6 +846,7 @@ const TicTacToe: React.FC<Props> = (rawProps) => {
                   onPressOut={() => animateHintButton(1)}
                   onPress={() => {
                     playNotificationSound();
+                    setAssistMode(true);
                     animateHintButton(1.06);
                     setShowHint(true);
                     if (hintTimerRef.current)
