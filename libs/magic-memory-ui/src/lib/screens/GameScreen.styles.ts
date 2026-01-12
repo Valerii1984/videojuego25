@@ -164,15 +164,17 @@ const styles = StyleSheet.create({
   congratsText: {
     position: "absolute",
     color: "#FFFFFF",
-    fontSize: Math.min(40, width * 0.08),
-    fontFamily: "FredokaSemiBold",
+    fontSize: Math.min(48, width * 0.09), // было 40/0.08 — ближе к макету 48
+    fontFamily: "FredokaSemiBold", // оставляем
+    fontWeight: "600", // ✅ как просит клиент
+    lineHeight: Math.round(Math.min(48, width * 0.09) * 0.8), // ✅ 80%
+    letterSpacing: 0,
     textAlign: "center",
     zIndex: 10,
     textShadowColor: "rgba(197, 124, 255, 0.5)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 5,
   },
-
   playAgainButton: {
     position: "absolute",
     width: Math.min(200, width * 0.5),

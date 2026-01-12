@@ -211,7 +211,10 @@ const getSrc = (c?: Card): string | undefined => {
 };
 
 const ARC_BOTTOM_PAD = scaled(48);
-const ELLIPSE_TOP = scaled(50) + 30;
+
+// 👇 НАСКОЛЬКО ПОДНИМАЕМ ДУГУ (можно потом 10/12/14 подкрутить)
+const ARC_LIFT = scaled(26);
+const ELLIPSE_TOP = scaled(50) + 30 - ARC_LIFT;
 
 const buttonsBottom = scaled(12);
 
@@ -282,7 +285,18 @@ const GameScreen = () => {
   const minDim = Math.min(screenWidth, screenHeight);
   const isSmallScreen = minDim < 420;
   const cardsTopOffset = useMemo(() => {
-    if (isSmallScreen && gridLevel >= 10) return scaled(18);
+    // маленькие экраны
+    if (isSmallScreen) {
+      if (gridLevel === 12) return scaled(6); // 🔼 поднимаем сильнее
+      if (gridLevel >= 10) return scaled(10);
+      if (gridLevel <= 8) return scaled(14);
+    }
+
+    // большие экраны
+    if (!isSmallScreen) {
+      if (gridLevel === 12) return scaled(20); // 🔼 ВАЖНО: уводим сетку выше кнопок
+    }
+
     return gridLevel === 6 ? scaled(30) : scaled(40);
   }, [gridLevel, isSmallScreen]);
 
@@ -864,25 +878,26 @@ const GameScreen = () => {
 
     const baseByLevel = (lvl: 6 | 8 | 10 | 12) => {
       if (isTablet) {
-        return lvl === 6 ? 150 : lvl === 8 ? 142 : lvl === 10 ? 122 : 116;
+        return lvl === 6 ? 150 : lvl === 8 ? 142 : lvl === 10 ? 128 : 122; // было 122/116
       }
       if (isBigPhone) {
-        return lvl === 6 ? 132 : lvl === 8 ? 126 : lvl === 10 ? 110 : 106;
+        return lvl === 6 ? 132 : lvl === 8 ? 126 : lvl === 10 ? 116 : 112; // было 110/106
       }
-      return lvl === 6 ? 112 : lvl === 8 ? 104 : lvl === 10 ? 96 : 92;
+      // small phones
+      return lvl === 6 ? 118 : lvl === 8 ? 116 : lvl === 10 ? 102 : 98; // было 112/112/96/92
     };
 
     const baseSize = baseByLevel(gridLevel);
-
     const horizontalPadding = isSmall
       ? gridLevel <= 8
-        ? 60
-        : 80
+        ? 52 // было 60 → освободим ширину, карты станут больше
+        : 56
       : isTablet
         ? 32
         : 40;
 
-    const horizontalMarginPerCard = isSmall ? 10 : 6;
+    const horizontalMarginPerCard =
+      isSmall && gridLevel >= 10 ? 8 : isSmall ? 10 : 6;
 
     const maxWidthPerCard =
       (screenWidth - horizontalPadding - cols * horizontalMarginPerCard) / cols;
@@ -892,6 +907,8 @@ const GameScreen = () => {
     const reservedTop = isSmall
       ? cardsTopOffset + scaled(18)
       : Math.min(cardsTopOffset + scaled(10), Math.round(screenHeight * 0.14));
+
+    const reservedTopAdjusted = Math.max(0, reservedTop - ARC_LIFT);
 
     const buttonsRowHeight = isSmall
       ? scaled(92)
@@ -911,7 +928,7 @@ const GameScreen = () => {
 
     const availableHeight = Math.max(
       80,
-      screenHeight - reservedTop - reservedBottom
+      screenHeight - reservedTopAdjusted - reservedBottom
     );
 
     const maxHeightPerCard =
@@ -929,23 +946,22 @@ const GameScreen = () => {
           : gridLevel === 8
             ? 1.48
             : gridLevel === 10
-              ? 1.32
-              : 1.26
+              ? 1.42 // было 1.32
+              : 1.36 // было 1.26
         : gridLevel === 6
           ? 1.35
           : gridLevel === 8
             ? 1.28
             : gridLevel === 10
-              ? 1.18
-              : 1.15;
-
+              ? 1.38 // было 1.28
+              : 1.32; // было 1.24
       const targetScale = Math.min(cap, Math.max(1, headroom * 0.98));
       size = Math.min(maxPossible, baseSize * targetScale);
     }
-
-    if (isSmall && gridLevel === 10) size *= 1.01;
-    if (isSmall && gridLevel === 12) size *= 0.9;
-
+    if (isSmall && gridLevel === 10) size *= 1.14;
+    if (isSmall && gridLevel === 12) size *= 1.2;
+    if (isSmall && gridLevel === 6) size *= 1.06;
+    if (isSmall && gridLevel === 8) size *= 1.05;
     const minSize = isSmall
       ? gridLevel <= 8
         ? 88
