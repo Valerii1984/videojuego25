@@ -164,10 +164,10 @@ const styles = StyleSheet.create({
   congratsText: {
     position: "absolute",
     color: "#FFFFFF",
-    fontSize: Math.min(48, width * 0.09), // было 40/0.08 — ближе к макету 48
-    fontFamily: "FredokaSemiBold", // оставляем
-    fontWeight: "600", // ✅ как просит клиент
-    lineHeight: Math.round(Math.min(48, width * 0.09) * 0.8), // ✅ 80%
+    fontSize: Math.min(48, width * 0.09),
+    fontFamily: "FredokaBold", // ✅ жирно как в макете
+    // fontWeight: "600",        // ❌ УБРАТЬ
+    lineHeight: Math.round(Math.min(48, width * 0.09) * 0.8),
     letterSpacing: 0,
     textAlign: "center",
     zIndex: 10,

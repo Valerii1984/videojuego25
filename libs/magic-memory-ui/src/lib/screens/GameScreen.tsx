@@ -18,6 +18,7 @@ import {
   Easing as RNEasing,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
+import { loadMagicMemoryFonts } from "../utils/loadFonts";
 import { LinearGradient } from "expo-linear-gradient";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
@@ -221,6 +222,10 @@ const buttonsBottom = scaled(12);
 const GameScreen = () => {
   const { playBackgroundMusic, resumeBackgroundMusic, playNotificationSound } =
     useSound();
+
+  useEffect(() => {
+    loadMagicMemoryFonts().catch(console.warn);
+  }, []);
 
   const unlockedRef = useRef(false);
 
